@@ -18,9 +18,10 @@ import EditorialDashboard from '@/app/dashboard/editorial/page';
 import EditorialEditor from '@/app/dashboard/editorial/new/page';
 import SubscribePage from '@/app/subscribe/page';
 import CheckoutPage from '@/app/checkout/page';
+import AuthPage from '@/app/auth/page';
 
 
-export type View = 'landing' | 'main' | 'article' | 'live' | 'off-the-record' | 'post-selection' | 'editor-news' | 'editorial-dashboard' | 'editor-editorial' | 'subscribe' | 'checkout';
+export type View = 'landing' | 'main' | 'article' | 'live' | 'off-the-record' | 'post-selection' | 'editor-news' | 'editorial-dashboard' | 'editor-editorial' | 'subscribe' | 'checkout' | 'auth';
 
 export default function Home() {
   const [isDark, setIsDark] = useState(false);
@@ -96,12 +97,14 @@ export default function Home() {
         return <SubscribePage onViewChange={handleViewChange} />;
       case 'checkout':
         return <CheckoutPage onViewChange={handleViewChange} />;
+      case 'auth':
+        return <AuthPage onViewChange={handleViewChange} />;
       default:
         return <LandingPage key="landing" onViewChange={handleViewChange} />;
     }
   }
 
-  const showFooter = !['article', 'live', 'off-the-record', 'post-selection', 'editor-news', 'editorial-dashboard', 'editor-editorial', 'subscribe', 'checkout'].includes(currentView);
+  const showFooter = !['article', 'live', 'off-the-record', 'post-selection', 'editor-news', 'editorial-dashboard', 'editor-editorial', 'subscribe', 'checkout', 'auth'].includes(currentView);
 
   return (
     <main>

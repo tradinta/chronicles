@@ -27,14 +27,33 @@ export default function Navbar({ isDark, toggleTheme, onViewChange, currentView,
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+  
+  const isAuth = currentView === 'auth';
 
   const navClasses = cn(
     "fixed top-0 left-0 right-0 z-40 transition-all duration-500 ease-in-out px-6 md:px-12 h-20 flex items-center justify-between",
     isFocusMode ? 'opacity-0 hover:opacity-100' : 'opacity-100',
-    (isScrolled || currentView !== 'landing')
+    (isScrolled || currentView !== 'landing' && !isAuth)
       ? 'bg-background/80 backdrop-blur-md border-b border-border' 
-      : 'bg-transparent'
+      : 'bg-transparent',
+    isAuth ? 'bg-transparent' : ''
   );
+  
+  // Auth Page Navbar (Minimal)
+  if (isAuth) {
+    return (
+      <nav className={navClasses}>
+        <div className="flex-shrink-0 cursor-pointer" onClick={() => onViewChange('landing')}>
+          <h1 className={`font-serif text-2xl tracking-tighter font-bold text-foreground`}>
+            The Chronicle<span className="text-primary">.</span>
+          </h1>
+        </div>
+        <button onClick={toggleTheme} className={`text-muted-foreground hover:text-foreground`}>
+            {isDark ? <Sun strokeWidth={1.5} size={20} /> : <Moon strokeWidth={1.5} size={20} />}
+        </button>
+      </nav>
+    );
+  }
 
   return (
     <>
@@ -45,9 +64,9 @@ export default function Navbar({ isDark, toggleTheme, onViewChange, currentView,
         transition={{ duration: 0.6 }}
       >
         <div className="flex items-center space-x-4">
-          {(currentView === 'article' || currentView === 'live' || currentView === 'off-the-record') && (
+          {(currentView === 'article' || currentView === 'live' || currentView === 'off-the-record' || currentView === 'subscribe' || currentView === 'checkout') && (
             <button 
-              onClick={() => onViewChange('main')}
+              onClick={() => onViewChange(currentView === 'checkout' ? 'subscribe' : 'main')}
               className="p-2 rounded-full transition-colors text-muted-foreground hover:bg-secondary"
             >
               <ArrowLeft size={20} />
@@ -62,7 +81,7 @@ export default function Navbar({ isDark, toggleTheme, onViewChange, currentView,
 
         <div className={cn(
           "hidden md:flex items-center space-x-8 transition-opacity duration-300",
-          (currentView === 'article') ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          (currentView === 'article' || currentView === 'subscribe' || currentView === 'checkout') ? 'opacity-0 pointer-events-none' : 'opacity-100'
         )}>
           <div onClick={() => onViewChange('live')} className="relative group cursor-pointer h-full flex items-center">
             <span className="flex items-center text-sm font-medium tracking-wide text-primary group-hover:text-foreground transition-colors duration-300">
@@ -76,12 +95,18 @@ export default function Navbar({ isDark, toggleTheme, onViewChange, currentView,
               Off the Record
             </span>
           </div>
-           <Link href="/subscribe" className="text-sm font-medium tracking-wide text-muted-foreground hover:text-foreground transition-colors">
+           <button onClick={() => onViewChange('subscribe')} className="text-sm font-medium tracking-wide text-muted-foreground hover:text-foreground transition-colors">
             Subscribe
-          </Link>
+          </button>
         </div>
 
         <div className="flex items-center space-x-6">
+          <button
+             onClick={() => onViewChange('auth')}
+             className={`hidden md:block text-xs font-bold tracking-wider uppercase transition-colors text-muted-foreground hover:text-foreground`}
+           >
+             Sign In
+           </button>
           <Link href="/dashboard"
             className="flex items-center space-x-2 px-3 py-1.5 rounded-full transition-all duration-300 bg-secondary text-secondary-foreground hover:bg-secondary/80">
              <PenTool size={16} />
