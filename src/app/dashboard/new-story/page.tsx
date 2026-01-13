@@ -2,12 +2,12 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
-  Send, Type, Quote, Heading2, AlertCircle, Zap, Minimize2,
+  Send, Type, Quote, Heading2, AlertCircle, Zap,
   ImagePlus,
-  Bot, Sparkles, Wand2,
-  Layout, Book, Check, BrainCircuit, AlignLeft
+  Layout, Book, Check, BrainCircuit, AlignLeft,
+  Minimize2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore } from '@/firebase';
@@ -18,6 +18,7 @@ import Image from 'next/image';
 import EditorSidebar from '@/components/editor/EditorSidebar';
 import EditorBlock from '@/components/editor/EditorBlock';
 import { EntryModal } from '@/components/editor/EntryModal';
+import { generateHeadlines } from '@/ai/flows/editor-flow';
 
 const NewsEditorPage = () => {
   const { toast } = useToast();
@@ -25,7 +26,7 @@ const NewsEditorPage = () => {
   const { user } = useUser();
   const firestore = useFirestore();
 
-  const [showEntryModal, setShowEntryModal] = useState(false);
+  const [showEntryModal, setShowEntryModal] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [isBreaking, setIsBreaking] = useState(false);
@@ -34,6 +35,7 @@ const NewsEditorPage = () => {
   const [subheading, setSubheading] = useState('');
   const [coverImageUrl, setCoverImageUrl] = useState('');
   const [tags, setTags] = useState<string[]>(['Election 2024']);
+  const [category, setCategory] = useState('Politics');
   
   const [blocks, setBlocks] = useState([
     { id: 1, type: 'paragraph', content: "The global summit concluded today with a historic agreement..." },
@@ -44,7 +46,15 @@ const NewsEditorPage = () => {
   
   const [isDark, setIsDark] = useState(false);
   useEffect(() => {
-    setIsDark(document.documentElement.classList.contains('dark'));
+    const isDarkPrefered = document.documentElement.classList.contains('dark');
+    setIsDark(isDarkPrefered);
+    
+    const handleThemeChange = () => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    };
+    
+    window.addEventListener('theme-changed', handleThemeChange);
+    return () => window.removeEventListener('theme-changed', handleThemeChange);
   }, []);
 
   const addBlock = (type: string) => {
@@ -70,7 +80,7 @@ const NewsEditorPage = () => {
     const content = blocks.map(block => {
       switch(block.type) {
         case 'h2': return `<h2>${block.content}</h2>`;
-        case 'quote': return `<blockquote><p>${block.content}</p><footer>${block.source || ''}</footer></blockquote>`;
+        case 'quote': return `<blockquote><p>${block.content}</p><footer>${(block as any).source || ''}</footer></blockquote>`;
         case 'paragraph': return `<p>${block.content}</p>`;
         case 'image': return `<figure><img src="${(block as any).imageUrl || ''}" alt="${(block as any).caption || ''}" /><figcaption>${(block as any).caption || ''}</figcaption></figure>`
         default: return '';
@@ -83,7 +93,8 @@ const NewsEditorPage = () => {
       content,
       imageUrl: coverImageUrl,
       authorId: user.uid,
-      category: 'Politics', // Hardcoded for now
+      category: category,
+      tags: tags
     };
 
     try {
@@ -153,7 +164,7 @@ const NewsEditorPage = () => {
 
   return (
     <div className={`min-h-screen pt-16 flex transition-colors duration-500 ${isDark ? 'bg-stone-900' : 'bg-stone-50'}`}>
-      <EntryModal show={showEntryModal} setShow={setShowEntryModal} isDark={isDark} />
+      <EntryModal show={showEntryModal} setShow={setShowEntryModal} isDark={isDark} setCategory={setCategory} />
       
       {/* Main Content Area */}
       <main className={`flex-1 transition-all duration-300 ease-in-out`}>
@@ -179,7 +190,7 @@ const NewsEditorPage = () => {
              
              <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center space-x-3">
-                   <span className={`text-xs font-bold uppercase tracking-widest ${isDark ? 'text-primary' : 'text-primary'}`}>Politics / Election 2024</span>
+                   <span className={`text-xs font-bold uppercase tracking-widest ${isDark ? 'text-primary' : 'text-primary'}`}>{category}</span>
                 </div>
                 <div className="flex items-center space-x-4">
                    <button 
@@ -241,19 +252,20 @@ const NewsEditorPage = () => {
           </div>
         </div>
       </main>
-
-      <EditorSidebar
-        isOpen={isSidebarOpen}
-        setIsOpen={setIsSidebarOpen}
-        isFocusMode={isFocusMode}
-        isDark={isDark}
-        headline={headline}
-        subheading={subheading}
-        blocks={blocks}
-        tags={tags}
-        setTags={setTags}
-        coverImageUrl={coverImageUrl}
-      />
+      <div className={`relative z-20 transition-all duration-300 ${isSidebarOpen ? 'w-96' : 'w-0'}`}>
+        <EditorSidebar
+          isOpen={isSidebarOpen}
+          setIsOpen={setIsSidebarOpen}
+          isFocusMode={isFocusMode}
+          isDark={isDark}
+          headline={headline}
+          subheading={subheading}
+          blocks={blocks}
+          tags={tags}
+          setTags={setTags}
+          coverImageUrl={coverImageUrl}
+        />
+      </div>
 
       <motion.div animate={{ y: isFocusMode ? 100 : 0 }} className={`fixed bottom-0 left-0 right-0 h-16 border-t px-6 flex items-center justify-end z-30 transition-transform duration-500 ${isDark ? 'bg-stone-900/80 backdrop-blur-md border-stone-800' : 'bg-white/80 backdrop-blur-md border-stone-200'}`}>
          <div className="flex items-center space-x-4">

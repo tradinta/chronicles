@@ -2,7 +2,16 @@
 'use client';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export const EntryModal = ({ show, setShow, isDark }) => (
+type EntryModalProps = {
+  show: boolean;
+  setShow: (show: boolean) => void;
+  isDark: boolean;
+  setCategory: (category: string) => void;
+};
+
+const kenyanCategories = ['Politics', 'Business', 'Counties', 'Technology', 'Sports', 'Africa', 'World', 'Opinion'];
+
+export const EntryModal = ({ show, setShow, isDark, setCategory }: EntryModalProps) => (
     <AnimatePresence>
       {show && (
         <motion.div 
@@ -22,20 +31,14 @@ export const EntryModal = ({ show, setShow, isDark }) => (
              
              <div className="space-y-6">
                 <div>
-                   <label className={`block text-xs font-bold uppercase tracking-widest mb-3 ${isDark ? 'text-stone-500' : 'text-stone-500'}`}>Format</label>
-                   <div className="grid grid-cols-2 gap-3">
-                      {['Standard Report', 'Breaking Wire', 'Longform', 'Investigation'].map((type, i) => (
-                        <button key={i} className={`text-left p-3 rounded-lg border text-sm transition-all hover:border-primary group ${isDark ? 'border-stone-700 bg-stone-800/50 text-stone-300' : 'border-stone-200 bg-stone-50 text-stone-700'}`}>
-                           <span className="block font-medium group-hover:text-primary transition-colors">{type}</span>
-                        </button>
-                      ))}
-                   </div>
-                </div>
-                <div>
                    <label className={`block text-xs font-bold uppercase tracking-widest mb-3 ${isDark ? 'text-stone-500' : 'text-stone-500'}`}>Primary Section</label>
-                   <div className="flex flex-wrap gap-2">
-                      {['Politics', 'Business', 'Technology', 'Science', 'Culture'].map((cat, i) => (
-                        <button key={i} className={`px-4 py-2 rounded-full border text-xs font-medium transition-colors ${isDark ? 'border-stone-700 text-stone-400 hover:border-stone-500 hover:text-stone-200' : 'border-stone-300 text-stone-600 hover:border-stone-400 hover:text-stone-900'}`}>
+                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {kenyanCategories.map((cat, i) => (
+                        <button 
+                          key={i} 
+                          onClick={() => setCategory(cat)}
+                          className={`px-4 py-2 rounded-md border text-xs font-medium transition-colors ${isDark ? 'border-stone-700 text-stone-400 hover:border-stone-500 hover:text-stone-200' : 'border-stone-300 text-stone-600 hover:border-stone-400 hover:text-stone-900'}`}
+                        >
                            {cat}
                         </button>
                       ))}

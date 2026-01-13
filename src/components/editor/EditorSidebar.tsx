@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, AlignLeft, CheckCircle2, Bot, Book, Globe, X, Wand2, BrainCircuit } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
-import { generateHeadlines } from '@/ai/flows/editor-flow';
+import { generateHeadlines, improveWriting } from '@/ai/flows/editor-flow';
 
 const SidebarTab = ({ id, icon: Icon, label, activeTab, setActiveTab }) => (
     <button
@@ -82,7 +82,7 @@ const EditorSidebar = ({ isOpen, setIsOpen, isFocusMode, isDark, headline, subhe
         setAiSuggestions([]);
         try {
             const content = blocks.map(b => b.content).join(' ');
-            const result = await generateHeadlines({ content });
+            const result = await generateHeadlines({ content, existingHeadline: headline });
             setAiSuggestions(result.headlines);
         } catch (error) {
             console.error("AI headline generation failed:", error);
@@ -91,17 +91,42 @@ const EditorSidebar = ({ isOpen, setIsOpen, isFocusMode, isDark, headline, subhe
             setIsLoadingAi(false);
         }
     };
+
+    const handleImproveWriting = async () => {
+        setIsLoadingAi(true);
+        setAiSuggestions([]);
+         try {
+            const content = blocks.map(b => b.content).join(' ');
+            const result = await improveWriting({ text: content });
+            setAiSuggestions([result.improvedText]);
+        } catch (error) {
+            console.error("AI writing improvement failed:", error);
+            setAiSuggestions(['AI suggestion failed.']);
+        } finally {
+            setIsLoadingAi(false);
+        }
+    }
+    
+    const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' || e.key === ',') {
+          e.preventDefault();
+          const value = e.currentTarget.value.trim();
+          if (value && !tags.includes(value)) {
+            setTags([...tags, value]);
+          }
+          e.currentTarget.value = '';
+        }
+    };
+
+    const removeTag = (tagToRemove: string) => {
+        setTags(tags.filter(tag => tag !== tagToRemove));
+    };
   
     return (
       <div className={`
-        fixed top-0 bottom-0 right-0 w-96 border-l-2 transition-transform duration-300 z-30 flex flex-col
-        lg:relative lg:top-auto lg:bottom-auto lg:h-auto lg:border-l-0
-        ${isOpen ? 'translate-x-0' : 'translate-x-full'}
+        flex flex-col h-full
         ${isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-200'}
       `}>
-        <button onClick={() => setIsOpen(false)} className="absolute top-4 right-4 p-2 rounded-full hover:bg-stone-800 transition-colors text-stone-500 lg:hidden">
-            <X size={18} />
-        </button>
         <div className={`h-16 border-b flex items-center px-4 ${isDark ? 'border-stone-800' : 'border-stone-200'}`}>
            <h3 className="font-serif text-lg font-semibold">Studio</h3>
         </div>
@@ -132,6 +157,18 @@ const EditorSidebar = ({ isOpen, setIsOpen, isFocusMode, isDark, headline, subhe
                     <ArticleOutline blocks={blocks} />
                  </div>
                  <div>
+                    <h4 className="text-xs font-bold tracking-widest uppercase mb-4 text-stone-500 dark:text-stone-400">Tags</h4>
+                    <div className={`flex flex-wrap gap-2 p-2 rounded-lg border min-h-[40px] ${isDark ? 'bg-stone-800/50 border-stone-700' : 'bg-white border-stone-200'}`}>
+                        {tags.map(tag => (
+                            <div key={tag} className={`flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full ${isDark ? 'bg-stone-700 text-stone-300' : 'bg-stone-200 text-stone-700'}`}>
+                                <span>{tag}</span>
+                                <button onClick={() => removeTag(tag)} className='hover:text-red-500'><X size={12} /></button>
+                            </div>
+                        ))}
+                        <input onKeyDown={handleTagKeyDown} type="text" placeholder="Add tag..." className={`flex-1 bg-transparent text-xs outline-none ${isDark ? 'placeholder-stone-600' : 'placeholder-stone-400'}`} />
+                    </div>
+                 </div>
+                 <div>
                     <h4 className="text-xs font-bold tracking-widest uppercase mb-4 text-stone-500 dark:text-stone-400">Search Preview</h4>
                     <SEOPreview headline={headline} subheading={subheading} isDark={isDark} />
                  </div>
@@ -147,6 +184,9 @@ const EditorSidebar = ({ isOpen, setIsOpen, isFocusMode, isDark, headline, subhe
                       </div>
                       <button onClick={handleGenerateHeadlines} disabled={isLoadingAi} className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold uppercase rounded shadow-lg transition-colors disabled:opacity-50">
                           {isLoadingAi ? 'Generating...' : 'Generate Headlines'}
+                      </button>
+                      <button onClick={handleImproveWriting} disabled={isLoadingAi} className="w-full py-2 bg-indigo-600/50 hover:bg-indigo-500/50 text-white text-xs font-bold uppercase rounded shadow-lg transition-colors disabled:opacity-50">
+                          {isLoadingAi ? 'Improving...' : 'Improve Writing'}
                       </button>
                    </div>
                    {aiSuggestions.length > 0 && (
