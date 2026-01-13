@@ -35,10 +35,10 @@ const ArticleOutline = ({ blocks }) => {
     );
 };
 
-const SEOPreview = ({ headline, subheading, isDark }) => (
+const SEOPreview = ({ headline, subheading, slug, isDark }) => (
     <div className={`p-4 rounded-lg text-sm border ${isDark ? 'bg-stone-800/50 border-stone-700' : 'bg-white border-stone-200'}`}>
        <div className="text-blue-600 dark:text-blue-400 text-base font-medium truncate mb-1">{headline || "Your Headline Will Appear Here..."} | Kihumba</div>
-       <div className="text-green-700 dark:text-green-500 text-xs mb-2">https://kihumba.com/news/story-slug</div>
+       <div className="text-green-700 dark:text-green-500 text-xs mb-2">https://kihumba.com/news/{slug || 'story-slug'}</div>
        <p className={`text-xs leading-snug ${isDark ? 'text-stone-400' : 'text-stone-600'}`}>
          {subheading || "This is how your story will appear in search results. Make sure to include relevant keywords and a compelling summary."}
        </p>
@@ -59,7 +59,7 @@ const PreFlightChecklist = ({ checklistItems, isDark }) => (
 );
 
 
-const EditorSidebar = ({ isOpen, setIsOpen, isFocusMode, isDark, headline, subheading, blocks, tags, setTags, coverImageUrl }) => {
+const EditorSidebar = ({ isOpen, setIsOpen, isFocusMode, isDark, headline, subheading, slug, blocks, tags, setTags, coverImageUrl }) => {
     const [activeTab, setActiveTab] = useState('checklist');
     const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
     const [isLoadingAi, setIsLoadingAi] = useState(false);
@@ -171,7 +171,7 @@ const EditorSidebar = ({ isOpen, setIsOpen, isFocusMode, isDark, headline, subhe
                  </div>
                  <div>
                     <h4 className="text-xs font-bold tracking-widest uppercase mb-4 text-muted-foreground">Search Preview</h4>
-                    <SEOPreview headline={headline} subheading={subheading} isDark={isDark} />
+                    <SEOPreview headline={headline} subheading={subheading} slug={slug} isDark={isDark} />
                  </div>
                </div>
              )}
@@ -210,5 +210,3 @@ const EditorSidebar = ({ isOpen, setIsOpen, isFocusMode, isDark, headline, subhe
 };
 
 export default EditorSidebar;
-
-    

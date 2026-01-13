@@ -30,6 +30,7 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, Dialog
 import { Button } from '@/components/ui/button';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { createSlug } from '@/lib/utils';
 
 const AUTOSAVE_INTERVAL = 10000; // 10 seconds
 const LOCAL_STORAGE_KEY = 'kihumba_editor_autosave';
@@ -49,6 +50,7 @@ const NewsEditorPage = () => {
   
   const [headline, setHeadline] = useState('');
   const [subheading, setSubheading] = useState('');
+  const [slug, setSlug] = useState('');
   const [coverImageUrl, setCoverImageUrl] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [category, setCategory] = useState('');
@@ -69,6 +71,10 @@ const NewsEditorPage = () => {
       }
     }
   }, [user]);
+
+  useEffect(() => {
+    setSlug(createSlug(headline));
+  }, [headline]);
   
   const [blocks, setBlocks] = useState([
     { id: Date.now(), type: 'paragraph', content: "" },
@@ -90,6 +96,7 @@ const NewsEditorPage = () => {
     return {
       headline,
       subheading,
+      slug,
       coverImageUrl,
       tags,
       category,
@@ -97,7 +104,7 @@ const NewsEditorPage = () => {
       blocks,
       timestamp: new Date().toISOString(),
     };
-  }, [headline, subheading, coverImageUrl, tags, category, articleFormat, blocks]);
+  }, [headline, subheading, slug, coverImageUrl, tags, category, articleFormat, blocks]);
 
   // Autosave to localStorage
   useEffect(() => {
@@ -155,6 +162,7 @@ const NewsEditorPage = () => {
   const restoreDraft = (draft: any) => {
     setHeadline(draft.headline || '');
     setSubheading(draft.subheading || '');
+    setSlug(draft.slug || '');
     setCoverImageUrl(draft.coverImageUrl || '');
     setTags(draft.tags || []);
     setCategory(draft.category || '');
@@ -195,6 +203,7 @@ const NewsEditorPage = () => {
     const articleData = {
       title: headline,
       summary: subheading,
+      slug: slug || createSlug(headline),
       content,
       imageUrl: coverImageUrl,
       authorId: user.uid,
@@ -435,6 +444,7 @@ const NewsEditorPage = () => {
               isDark={isDark}
               headline={headline}
               subheading={subheading}
+              slug={slug}
               blocks={blocks}
               tags={tags}
               setTags={setTags}
@@ -469,6 +479,7 @@ const NewsEditorPage = () => {
                 isDark={isDark}
                 headline={headline}
                 subheading={subheading}
+                slug={slug}
                 blocks={blocks}
                 tags={tags}
                 setTags={setTags}

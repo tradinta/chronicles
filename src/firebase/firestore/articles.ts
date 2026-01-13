@@ -8,10 +8,12 @@ import { FirestorePermissionError } from '@/firebase/errors';
 type ArticleData = {
     title: string;
     summary: string;
+    slug: string;
     content: string;
     imageUrl: string;
     authorId: string;
     category: string;
+    tags: string[];
 }
 
 /**

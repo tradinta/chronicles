@@ -52,6 +52,10 @@
           "type": "string",
           "description": "Unique identifier for the Article entity."
         },
+        "slug": {
+          "type": "string",
+          "description": "URL-friendly identifier for the article, generated from the title."
+        },
         "authorId": {
           "type": "string",
           "description": "Reference to Author. (Relationship: Author 1:N Article)"
@@ -92,6 +96,7 @@
       },
       "required": [
         "id",
+        "slug",
         "authorId",
         "title",
         "content",
