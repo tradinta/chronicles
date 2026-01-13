@@ -10,8 +10,6 @@ import {
   SidebarMenuButton,
   SidebarTrigger,
   SidebarInset,
-  SidebarGroup,
-  SidebarGroupLabel,
   SidebarMenuSub,
   SidebarMenuSubButton,
 } from "@/components/ui/sidebar";
