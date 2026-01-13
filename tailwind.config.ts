@@ -17,9 +17,6 @@ export default {
     },
     extend: {
       fontFamily: {
-        body: ['Inter', 'sans-serif'],
-        headline: ['Playfair Display', 'serif'],
-        code: ['monospace'],
         sans: ['Inter', 'sans-serif'],
         serif: ['Playfair Display', 'serif'],
       },
@@ -117,5 +114,3 @@ export default {
   },
   plugins: [require('tailwindcss-animate')],
 } satisfies Config;
-
-    
