@@ -13,7 +13,8 @@ import {
   Save,
   Clock,
   Server,
-  Laptop
+  Laptop,
+  ChevronDown
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore } from '@/firebase';
@@ -27,6 +28,7 @@ import { EntryModal } from '@/components/editor/EntryModal';
 import { generateHeadlines, improveWriting } from '@/ai/flows/editor-flow';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const AUTOSAVE_INTERVAL = 10000; // 10 seconds
 const LOCAL_STORAGE_KEY = 'kihumba_editor_autosave';
@@ -48,6 +50,13 @@ const NewsEditorPage = () => {
   const [tags, setTags] = useState<string[]>([]);
   const [category, setCategory] = useState('');
   const [articleFormat, setArticleFormat] = useState('');
+  const [author, setAuthor] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      setAuthor(user.displayName || 'Anonymous');
+    }
+  }, [user]);
   
   const [blocks, setBlocks] = useState([
     { id: Date.now(), type: 'paragraph', content: "" },
@@ -319,7 +328,23 @@ const NewsEditorPage = () => {
              />
 
              <div className="flex items-center space-x-6 text-xs font-mono uppercase tracking-wide opacity-60 text-stone-500 dark:text-stone-500">
-                <span>{user?.displayName || 'Loading...'}</span>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <button className="flex items-center space-x-2 hover:opacity-100 opacity-60">
+                           <span>Posting as: {author}</span>
+                           <ChevronDown size={14} />
+                        </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => setAuthor(user?.displayName || 'Anonymous')}>
+                           {user?.displayName || 'Registered Name'}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setAuthor('Anonymous')}>
+                           Anonymous
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+                
                 <span>•</span>
                 <span>{new Date().toLocaleDateString()}</span>
                 <span>•</span>
@@ -357,7 +382,7 @@ const NewsEditorPage = () => {
           >
             <EditorSidebar
               isOpen={isSidebarOpen}
-              setIsOpen={setIsSidebarOpen}
+              setIsOpen={setIsOpen}
               isFocusMode={isFocusMode}
               isDark={isDark}
               headline={headline}
@@ -391,7 +416,7 @@ const NewsEditorPage = () => {
             >
               <EditorSidebar
                 isOpen={isSidebarOpen}
-                setIsOpen={setIsSidebarOpen}
+                setIsOpen={setIsOpen}
                 isFocusMode={isFocusMode}
                 isDark={isDark}
                 headline={headline}
@@ -487,3 +512,5 @@ const NewsEditorPage = () => {
 };
 
 export default NewsEditorPage;
+
+    

@@ -30,7 +30,7 @@ export default function ArticleFooter({ onViewChange }: ArticleFooterProps) {
               <Link href="/author/sarah-jenkins" className="hover:text-primary transition-colors">About Sarah Jenkins</Link>
             </h3>
             <p className="text-sm leading-relaxed text-muted-foreground">
-              Sarah is the Senior Tech Correspondent for The Chronicle, covering the intersection of AI, ethics, and human psychology. She previously worked as a researcher at the Institute for Digital Future.
+              Sarah is the Senior Tech Correspondent for Kihumba, covering the intersection of AI, ethics, and human psychology. She previously worked as a researcher at the Institute for Digital Future.
             </p>
           </div>
         </div>
@@ -48,3 +48,5 @@ export default function ArticleFooter({ onViewChange }: ArticleFooterProps) {
     </div>
   );
 }
+
+    
