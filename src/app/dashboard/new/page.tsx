@@ -13,6 +13,8 @@ import {
   Clock, 
   Globe 
 } from 'lucide-react';
+import Link from 'next/link';
+import { useUser } from '@/firebase';
 
 // --- Types ---
 type AssignmentType = 'standard' | 'live' | 'secret' | 'editorial';
@@ -88,6 +90,7 @@ const Ticker = () => (
 
 export default function AssignmentChooser() {
   const router = useRouter();
+  const { user } = useUser();
   const [selected, setSelected] = useState<AssignmentType | null>(null);
   const [hovered, setHovered] = useState<AssignmentType | null>(null);
   const [dateStr, setDateStr] = useState('');
@@ -220,9 +223,9 @@ export default function AssignmentChooser() {
             </motion.h1>
             <div className="hidden lg:block text-right max-w-xs">
                 <p className="font-sans text-xs text-muted-foreground leading-relaxed border-l-2 border-primary pl-3">
-                    Select your reporting format. <br/>
-                    All drafts are subject to editorial review.<br/>
-                    Accuracy is paramount.
+                    Welcome back, <span className="font-bold">{user?.displayName?.split(' ')[0] || 'Editor'}</span>. Select a format to begin.
+                    <br/>
+                    <Link href="/dashboard" className="text-primary hover:underline">Return to dashboard</Link>.
                 </p>
             </div>
         </div>
