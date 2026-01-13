@@ -98,7 +98,10 @@ const AuthPage = () => {
     } catch (error: any) {
       setLoading(false);
       let description = "An unexpected error occurred. Please try again.";
-      if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+      if (error.code === 'auth/user-not-found') {
+        setAuthMode('signup');
+        description = "No account found with this email. Please sign up instead.";
+      } else if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
         description = "Invalid email or password. Please check your credentials and try again.";
       } else if (error.code === 'auth/email-already-in-use') {
         description = "An account with this email address already exists.";
@@ -264,5 +267,3 @@ const AuthPage = () => {
 };
 
 export default AuthPage;
-
-    
