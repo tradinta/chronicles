@@ -74,6 +74,7 @@ export type Article = {
   image?: ImagePlaceholder;
   content?: string;
   author?: string;
+  isBreaking?: boolean;
 };
 
 export const breakingNews: Article[] = [
@@ -101,7 +102,8 @@ export const articles: Article[] = [
       summary: "A shift in climate patterns and remote work policies has triggered an unexpected demographic flow across Europe.",
       time: "2h",
       readTime: "6 min read",
-      image: placeholderImages.find(p => p.id === 'nordic-migration')
+      image: placeholderImages.find(p => p.id === 'nordic-migration'),
+      isBreaking: true,
     },
     {
       id: 102,

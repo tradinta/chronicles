@@ -3,7 +3,7 @@
 
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Clock, Share2 } from 'lucide-react';
+import { Clock, Share2, Zap } from 'lucide-react';
 import type { Article } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
@@ -59,6 +59,12 @@ export default function ArticleRow({ article, onViewChange }: ArticleRowProps) {
 
         <div className="md:col-span-9 lg:col-span-7 flex flex-col justify-center h-full pt-1">
           <div className="flex items-center space-x-3 mb-2">
+            {article.isBreaking && (
+                <span className="flex items-center text-[10px] font-bold tracking-widest uppercase text-red-500">
+                    <Zap size={12} className="mr-1.5 fill-red-500"/>
+                    Breaking
+                </span>
+            )}
             <span className="text-[10px] font-bold tracking-widest uppercase text-primary">
               {article.category}
             </span>
