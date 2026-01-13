@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useCollection } from '@/firebase';
-import { collection, query, where, limit } from 'firebase/firestore';
+import { collection, query, where, limit, orderBy } from 'firebase/firestore';
 
 const StatCard = ({ icon: Icon, value, label, isDark }) => (
   <div className={`p-6 rounded-xl border transition-all ${isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-200'}`}>
