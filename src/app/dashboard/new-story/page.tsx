@@ -256,7 +256,7 @@ export default function NewsEditorPage() {
           {/* Modular Editor Area */}
           <div className="min-h-[500px] pb-32 relative">
              {blocks.map((block) => (
-                <EditorBlock key={block.id} type={block.type} content={block.content} isDark={isDark} />
+                <EditorBlock key={block.id} type={block.type} content={block.content} isDark={isDark} placeholder={""} />
              ))}
 
              {/* Add Block Bar */}
@@ -352,4 +352,3 @@ export default function NewsEditorPage() {
     </div>
   );
 };
-```
