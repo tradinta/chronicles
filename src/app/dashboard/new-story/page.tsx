@@ -53,10 +53,17 @@ const NewsEditorPage = () => {
   const [category, setCategory] = useState('');
   const [articleFormat, setArticleFormat] = useState('');
   const [author, setAuthor] = useState<string | null>(null);
+  const [authorError, setAuthorError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
-      setAuthor(user.displayName || 'Anonymous');
+      if (user.displayName) {
+        setAuthor(user.displayName);
+        setAuthorError(null);
+      } else {
+        setAuthor(null);
+        setAuthorError("Error: User display name is missing.");
+      }
     }
   }, [user]);
   
@@ -342,16 +349,16 @@ const NewsEditorPage = () => {
              <div className="flex items-center space-x-6 text-xs font-mono uppercase tracking-wide opacity-60 text-stone-500 dark:text-stone-500">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <button className="flex items-center space-x-2 hover:opacity-100 opacity-60">
-                           <span>Posting as: {author}</span>
+                        <button className="flex items-center space-x-2 hover:opacity-100 opacity-60 disabled:opacity-40 disabled:cursor-not-allowed" disabled={!!authorError}>
+                           <span>
+                             Posting as: {author || <span className="text-red-500 font-bold">{authorError || '...'}</span>}
+                           </span>
                            <ChevronDown size={14} />
                         </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        <DropdownMenuItem onClick={() => setAuthor(user?.displayName || 'Anonymous')}>
-                           {user?.displayName || 'Anonymous'}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setAuthor('Anonymous')}>
+                        {user?.displayName && <DropdownMenuItem onClick={() => setAuthor(user.displayName)}>{user.displayName}</DropdownMenuItem>}
+                        <DropdownMenuItem onClick={() => setAuthor('Anonymous')} disabled={!user?.displayName}>
                            Anonymous
                         </DropdownMenuItem>
                     </DropdownMenuContent>
