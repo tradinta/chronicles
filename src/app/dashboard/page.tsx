@@ -14,10 +14,10 @@ const SelectionCard = ({
   
   let path = '';
   if (type === 'news') path = '/dashboard/new-story';
+  if (type === 'opinion') path = '/dashboard/editorial';
   // TODO: Add paths for other dashboards
   // if (type === 'live') path = '/dashboard/live'; 
   // if (type === 'off-record') path = '/dashboard/off-record';
-  // if (type === 'opinion') path = '/dashboard/opinion';
 
 
   return (
@@ -43,7 +43,7 @@ const SelectionCard = ({
             isDark ? 'bg-stone-800 text-stone-300' : 'bg-secondary text-secondary-foreground'}`}>
           <Icon size={24} strokeWidth={1.5} />
         </div>
-        <h3 className={`font-serif text-3xl mb-2 transition-colors duration-300 group-hover:translate-x-1 ${isDark ? 'text-stone-100' : 'text-card-foreground'}`}>{title}</h3>
+        <h3 className={`font-serif text-3xl mb-2 transition-colors duration-300 group-hover:translate-x-1 ${isDark ? 'text-card-foreground' : 'text-card-foreground'}`}>{title}</h3>
         <p className={`text-sm font-medium tracking-widest uppercase opacity-60 mb-6 ${isDark ? 'text-stone-400' : 'text-muted-foreground'}`}>{subtitle}</p>
       </div>
       <div className="relative z-10 mt-auto">
