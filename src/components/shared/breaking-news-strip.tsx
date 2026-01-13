@@ -38,7 +38,7 @@ export default function BreakingNewsStrip() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -50, opacity: 0 }}
           transition={{ duration: 0.5, ease: 'easeInOut' }}
-          className="fixed top-20 left-0 right-0 z-30 h-11 bg-[#cc3333] text-white flex items-center justify-center shadow-md"
+          className="fixed top-20 left-0 right-0 z-30 h-11 bg-[#cc3333] text-white flex items-center justify-center shadow-md font-serif"
         >
           <div className="container mx-auto px-6 md:px-12 flex items-center justify-between h-full">
             <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -60,7 +60,7 @@ export default function BreakingNewsStrip() {
                     transition={{ duration: 0.5 }}
                     className="absolute inset-0 flex items-center"
                   >
-                    <p className="text-sm font-medium truncate">
+                    <p className="text-sm truncate">
                       <span className="font-bold mr-2">LIVE:</span>
                       {breakingNews[currentIndex].title}
                     </p>
