@@ -2,7 +2,7 @@
 import { v2 as cloudinary } from 'cloudinary';
 import { NextResponse } from 'next/server';
 
-// Configure Cloudinary with your credentials
+// Configure Cloudinary with your credentials from environment variables
 cloudinary.config({ 
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, 
   api_key: process.env.CLOUDINARY_API_KEY, 
@@ -12,22 +12,19 @@ cloudinary.config({
 
 export async function POST(request: Request) {
   try {
-    const timestamp = Math.round((new Date).getTime()/1000);
-    const public_id = `story_image_${timestamp}`;
+    const body = await request.json();
+    const { paramsToSign } = body;
+
+    if (!paramsToSign || typeof paramsToSign !== 'object') {
+        return NextResponse.json({ message: "Missing or invalid paramsToSign" }, { status: 400 });
+    }
     
-    // The `eager` parameter is sometimes added by client-side libraries.
-    // Including it in the signature ensures consistency.
-    const eager = "w_400,h_300,c_pad|w_260,h_200,c_crop";
+    const signature = cloudinary.utils.api_sign_request(paramsToSign, process.env.CLOUDINARY_API_SECRET!);
 
-    const signature = cloudinary.utils.api_sign_request({
-      timestamp: timestamp,
-      public_id: public_id,
-      eager: eager,
-    }, process.env.CLOUDINARY_API_SECRET!);
-
-    return NextResponse.json({ signature, timestamp, public_id, eager });
+    return NextResponse.json({ signature });
   } catch (error) {
     console.error('Error signing image upload:', error);
-    return NextResponse.json({ message: "Failed to sign upload" }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+    return NextResponse.json({ message: "Failed to sign upload", error: errorMessage }, { status: 500 });
   }
 }

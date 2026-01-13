@@ -33,22 +33,36 @@ export function PhotoUploader({
     setIsUploading(true);
     const formData = new FormData();
     formData.append('file', file);
-
+    
     try {
-      // 1. Get signature from our API
-      const signResponse = await fetch('/api/sign-image', { method: 'POST' });
+      const timestamp = Math.round(Date.now() / 1000);
+      const public_id = `story_image_${timestamp}`;
+      
+      const paramsToSign = {
+        timestamp: timestamp,
+        public_id: public_id,
+      };
+
+      // 1. Get signature from our API for the specific parameters
+      const signResponse = await fetch('/api/sign-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paramsToSign }),
+      });
+
       if (!signResponse.ok) {
         const errorText = await signResponse.text();
         throw new Error(`Failed to get upload signature. Server responded with: ${errorText}`);
       }
-      const signData = await signResponse.json();
+      const { signature } = await signResponse.json();
 
-      // 2. Upload to Cloudinary
+      // 2. Append all necessary data to the form for the final upload
       formData.append('api_key', process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY!);
-      formData.append('signature', signData.signature);
-      formData.append('timestamp', signData.timestamp);
-      formData.append('public_id', signData.public_id);
+      formData.append('timestamp', timestamp.toString());
+      formData.append('public_id', public_id);
+      formData.append('signature', signature);
       
+      // 3. Upload to Cloudinary
       const uploadResponse = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, {
         method: 'POST',
         body: formData,
@@ -136,5 +150,3 @@ export function PhotoUploader({
     </div>
   );
 }
-
-    
