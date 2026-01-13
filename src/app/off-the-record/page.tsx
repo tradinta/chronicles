@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { 
   Eye, 
@@ -18,8 +18,14 @@ import {
   Send,
   ChevronRight,
   TrendingUp,
+  Crown,
+  Video,
+  File,
+  Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Progress } from '@/components/ui/progress';
+import { useToast } from '@/hooks/use-toast';
 
 // --- Mock Data ---
 const MOCK_TIPS = [
@@ -31,23 +37,27 @@ const MOCK_TIPS = [
     author: "Insider #992",
     verified: true,
     nsfw: false,
+    userType: 'premium',
     likes: 342,
     comments: 45,
     content: "Sources close to the deal say the valuation gap is simply too wide. Expect a public statement withdrawing the offer by Friday.",
-    image: null
+    image: null,
+    videoUrl: null,
   },
   {
     id: 2,
-    title: "Leaked set photos from the upcoming 'Galactic' sequel.",
+    title: "Leaked set video from 'Galactic' sequel shows new ship design.",
     category: "Entertainment",
     timestamp: "4 hours ago",
     author: "SetRunner",
     verified: false,
-    nsfw: true, // Tagged sensitive to show blur effect
+    nsfw: true,
+    userType: 'premium',
     likes: 1205,
     comments: 890,
-    content: "They are definitely bringing back the original villain. Here is a blurry shot of the costume department.",
-    image: "https://images.unsplash.com/photo-1535016120720-40c6874c3b1c?auto=format&fit=crop&q=80&w=600"
+    content: "They are definitely bringing back the original villain. Here is a short clip of the new starship landing.",
+    image: null,
+    videoUrl: "https://file-examples.com/storage/fe52cb0c4862dc676a1b341/2017/04/file_example_MP4_480_1_5MG.mp4"
   },
   {
     id: 3,
@@ -57,10 +67,12 @@ const MOCK_TIPS = [
     author: "DeepThroat2.0",
     verified: true,
     nsfw: false,
+    userType: 'standard',
     likes: 89,
     comments: 12,
     content: "The whispers in the capital are getting louder. The budget cuts to infrastructure were the final straw.",
-    image: null
+    image: null,
+    videoUrl: null
   },
   {
     id: 4,
@@ -70,10 +82,12 @@ const MOCK_TIPS = [
     author: "LatteSpy",
     verified: false,
     nsfw: false,
+    userType: 'standard',
     likes: 567,
     comments: 201,
     content: "Voices were raised. Something about 'creative control' and 'contract breach'.",
-    image: "https://images.unsplash.com/photo-1514525253440-b393452e8d26?auto=format&fit=crop&q=80&w=600"
+    image: "https://images.unsplash.com/photo-1514525253440-b393452e8d26?auto=format&fit=crop&q=80&w=600",
+    videoUrl: null
   },
   {
     id: 5,
@@ -83,24 +97,13 @@ const MOCK_TIPS = [
     author: "BetaTester",
     verified: true,
     nsfw: false,
+    userType: 'premium',
     likes: 210,
     comments: 55,
     content: "Don't buy the first gen. Screen cracks at sub-zero temps.",
-    image: null
+    image: null,
+    videoUrl: null
   },
-  {
-    id: 6,
-    title: "Unverified: Aliens landed in a cornfield in Nebraska?",
-    category: "Viral",
-    timestamp: "1 day ago",
-    author: "FoxMulder",
-    verified: false,
-    nsfw: false,
-    likes: 12,
-    comments: 105,
-    content: "Grainy video attached. Probably a drone, but the lights were weird.",
-    image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=600"
-  }
 ];
 
 const TRENDING_TOPICS = ["#TechMerger", "#RoyalFamilyLeak", "#Election2026", "#CryptoCrash", "#SpaceX"];
@@ -112,6 +115,7 @@ const Badge = ({ children, variant = 'default', className = '' }) => {
     default: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
     warning: "bg-amber-500/10 text-amber-400 border-amber-500/20",
     danger: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+    premium: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
     outline: "border-slate-600 text-slate-400 bg-transparent hover:bg-slate-800"
   };
 
@@ -175,7 +179,7 @@ const TipCard = ({ tip, showNSFW }) => {
             <Badge variant="default">{tip.category}</Badge>
             {tip.verified && (
               <Badge variant="warning" className="flex items-center gap-1">
-                <ShieldAlert size={10} /> Verified Source
+                <ShieldAlert size={10} /> Verified
               </Badge>
             )}
             {tip.nsfw && <Badge variant="danger">NSFW</Badge>}
@@ -198,15 +202,19 @@ const TipCard = ({ tip, showNSFW }) => {
             {tip.content}
           </p>
 
-          {tip.image && (
-            <div className="relative w-full h-48 mb-4 rounded-lg overflow-hidden bg-slate-950">
-              <Image 
-                src={tip.image} 
-                alt="Evidence" 
-                width={600}
-                height={338}
-                className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity group-hover:scale-105 duration-700"
-              />
+          {(tip.image || tip.videoUrl) && (
+            <div className="relative w-full aspect-video mb-4 rounded-lg overflow-hidden bg-slate-950">
+              {tip.videoUrl ? (
+                <video src={tip.videoUrl} controls className="w-full h-full object-cover" />
+              ) : (
+                <Image 
+                  src={tip.image} 
+                  alt="Evidence" 
+                  width={600}
+                  height={338}
+                  className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity group-hover:scale-105 duration-700"
+                />
+              )}
             </div>
           )}
         </div>
@@ -221,6 +229,11 @@ const TipCard = ({ tip, showNSFW }) => {
 
         <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-2">
           <div className="flex items-center gap-2 text-xs text-slate-500">
+            {tip.userType === 'premium' && (
+              <Badge variant="premium" className="flex items-center gap-1">
+                <Crown size={10} /> Premium
+              </Badge>
+            )}
             <span className="bg-slate-800/50 px-2 py-1 rounded text-slate-400 font-mono">
               {tip.author}
             </span>
@@ -243,12 +256,92 @@ const TipCard = ({ tip, showNSFW }) => {
   );
 };
 
+const FileUploader = ({ onFileSelect }) => {
+  const [file, setFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const inputRef = React.useRef(null);
+  const { toast } = useToast();
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      if (selectedFile.size > 50 * 1024 * 1024) { // 50MB limit
+        toast({
+          variant: "destructive",
+          title: "File Too Large",
+          description: "Please select a file smaller than 50MB.",
+        });
+        return;
+      }
+      setFile(selectedFile);
+      onFileSelect(selectedFile);
+      // Simulate upload
+      setIsUploading(true);
+      setUploadProgress(0);
+      const interval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            setIsUploading(false);
+            return 100;
+          }
+          return prev + 10;
+        });
+      }, 200);
+    }
+  };
+
+  const clearFile = () => {
+    setFile(null);
+    onFileSelect(null);
+    setUploadProgress(0);
+    setIsUploading(false);
+    if(inputRef.current) {
+        (inputRef.current as HTMLInputElement).value = '';
+    }
+  };
+
+  return (
+    <div>
+      <label className="block text-xs font-medium text-slate-400 mb-1 uppercase">Evidence (Video/Image)</label>
+      <input type="file" ref={inputRef} onChange={handleFileChange} accept="video/*,image/*" className="hidden" />
+      
+      {!file ? (
+        <button type="button" onClick={() => inputRef.current?.click()} className="w-full border-2 border-dashed border-slate-700 rounded-lg p-6 text-slate-500 hover:text-white hover:border-slate-500 text-sm transition-all text-center">
+          + Click to upload or drag & drop
+          <span className="block text-xs mt-1">Max file size: 50MB</span>
+        </button>
+      ) : (
+        <div className="bg-slate-950 border border-slate-800 rounded-lg p-3 flex items-center gap-3">
+          {file.type.startsWith('video') ? <Video className="text-emerald-400" /> : <File className="text-emerald-400" />}
+          <div className="flex-1">
+            <p className="text-sm font-medium text-white truncate">{file.name}</p>
+            <p className="text-xs text-slate-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+          </div>
+          {isUploading && <Loader2 className="animate-spin text-slate-500" />}
+          {!isUploading && uploadProgress === 100 && <CheckCircle2 className="text-green-500" />}
+          <button type="button" onClick={clearFile} className="text-slate-500 hover:text-white"><X size={16} /></button>
+        </div>
+      )}
+      
+      {isUploading && (
+        <div className="mt-2">
+          <Progress value={uploadProgress} className="h-1 bg-slate-800" />
+        </div>
+      )}
+    </div>
+  );
+};
+
+
 export default function OffTheRecord() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [showNSFW, setShowNSFW] = useState(false);
   const [isSubmitOpen, setIsSubmitOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredTips, setFilteredTips] = useState(MOCK_TIPS);
+  const [fileToUpload, setFileToUpload] = useState(null);
 
   // Filtering Logic
   useEffect(() => {
@@ -301,7 +394,7 @@ export default function OffTheRecord() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 md:pb-0">
-              {["All", "Politics", "Business", "Celebrity", "Tech", "Viral"].map((cat) => (
+              {["All", "Politics", "Business", "Celebrity", "Tech", "Entertainment"].map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
@@ -471,24 +564,8 @@ export default function OffTheRecord() {
                 placeholder="What's the scoop?" 
               />
             </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1 uppercase">Category</label>
-                <select className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-emerald-500/50 outline-none appearance-none">
-                  <option>Select...</option>
-                  <option>Business</option>
-                  <option>Politics</option>
-                  <option>Celebrity</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1 uppercase">Evidence?</label>
-                <button className="w-full border border-dashed border-slate-700 rounded-lg p-3 text-slate-500 hover:text-white hover:border-slate-500 text-xs transition-all text-left">
-                  + Upload Image/Doc
-                </button>
-              </div>
-            </div>
+            
+            <FileUploader onFileSelect={setFileToUpload} />
 
             <div>
               <label className="block text-xs font-medium text-slate-400 mb-1 uppercase">Details</label>
@@ -510,7 +587,7 @@ export default function OffTheRecord() {
 
       <footer className="mt-20 border-t border-white/5 py-12 bg-black/40 text-center">
         <p className="text-slate-500 text-sm mb-4">
-          Off the Record is a subsidiary of The Daily News. 
+          Off the Record is a subsidiary of Kihumba. 
           <br />Content is largely unverified and should be treated as speculation until confirmed.
         </p>
         <div className="flex justify-center gap-6 text-xs text-slate-600 font-medium">
@@ -523,5 +600,3 @@ export default function OffTheRecord() {
     </div>
   );
 }
-
-    
