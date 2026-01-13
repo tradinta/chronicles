@@ -4,7 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import App from './App';
 
 export const metadata: Metadata = {
-  title: 'The Chronicle',
+  title: 'Kihumba',
   description: 'Intelligent journalism for the modern era.',
 };
 

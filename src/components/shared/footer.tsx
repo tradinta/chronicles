@@ -27,7 +27,7 @@ export default function Footer() {
     <footer className="py-20 px-6 md:px-12 bg-[#1a1a1a] text-stone-400">
       <div className="container mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
         <div className="col-span-1">
-          <h2 className="font-serif text-2xl text-stone-100 mb-6">The Chronicle.</h2>
+          <h2 className="font-serif text-2xl text-stone-100 mb-6">Kihumba.</h2>
           <p className="text-sm opacity-70">Intelligent journalism for the modern era.</p>
         </div>
         <div>

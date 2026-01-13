@@ -31,7 +31,7 @@ const CheckoutPage = () => {
       <header className={`py-4 px-6 md:px-12 border-b ${isDark ? 'border-stone-800' : 'border-stone-200'}`}>
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <h1 onClick={() => router.push('/')} className={`font-serif text-2xl tracking-tighter font-bold cursor-pointer ${isDark ? 'text-stone-100' : 'text-stone-900'}`}>
-            The Chronicle<span className="text-orange-600">.</span>
+            Kihumba<span className="text-orange-600">.</span>
           </h1>
           <div className={`flex items-center space-x-2 text-xs font-medium ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
             <Lock size={14} />

@@ -24,7 +24,7 @@ const TakedownRequestPage = () => {
                      <FileWarning size={40} className={`mx-auto mb-4 ${isDark ? 'text-primary' : 'text-primary'}`} />
                     <h1 className={`font-serif text-4xl md:text-5xl mb-4 ${isDark ? 'text-stone-100' : 'text-stone-900'}`}>Takedown Request</h1>
                     <p className={`text-md max-w-2xl mx-auto ${isDark ? 'text-stone-400' : 'text-stone-600'}`}>
-                        If you believe that content on The Chronicle infringes on your copyright or violates other laws, please use this form to submit a takedown request. All submissions are reviewed by our legal team.
+                        If you believe that content on Kihumba infringes on your copyright or violates other laws, please use this form to submit a takedown request. All submissions are reviewed by our legal team.
                     </p>
                 </div>
                 

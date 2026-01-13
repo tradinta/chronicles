@@ -58,7 +58,7 @@ const CareersPage = () => {
                     transition={{ duration: 0.7 }}
                     className="text-center mb-16"
                 >
-                    <h1 className={`font-serif text-5xl md:text-7xl mb-4 ${isDark ? 'text-stone-100' : 'text-stone-900'}`}>Join The Chronicle</h1>
+                    <h1 className={`font-serif text-5xl md:text-7xl mb-4 ${isDark ? 'text-stone-100' : 'text-stone-900'}`}>Join Kihumba</h1>
                     <p className={`text-lg max-w-2xl mx-auto ${isDark ? 'text-stone-400' : 'text-stone-600'}`}>
                         We are a team of passionate journalists, engineers, and creators dedicated to building the future of intelligent journalism. If you thrive on challenge and believe in our mission, we want to hear from you.
                     </p>

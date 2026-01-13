@@ -169,7 +169,7 @@ const AuthPage = () => {
          >
             <div className="text-center mb-10">
                <h2 className={`font-serif text-3xl md:text-4xl mb-2 ${isDark ? 'text-stone-100' : 'text-stone-900'}`}>
-                 {authMode === 'login' ? 'Welcome Back' : 'Join The Chronicle'}
+                 {authMode === 'login' ? 'Welcome Back' : 'Join Kihumba'}
                </h2>
                <p className={`text-sm ${isDark ? 'text-stone-500' : 'text-stone-500'}`}>
                  {authMode === 'login' ? 'Enter your credentials to access your account.' : 'Create an account to start your journey.'}

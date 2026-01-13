@@ -47,7 +47,7 @@ export default function Navbar({ isDark, toggleTheme, isFocusMode }: NavbarProps
       <nav className={navClasses}>
         <div className="flex-shrink-0 cursor-pointer" onClick={() => router.push('/')}>
           <h1 className={`font-serif text-2xl tracking-tighter font-bold text-foreground`}>
-            The Chronicle<span className="text-primary">.</span>
+            Kihumba<span className="text-primary">.</span>
           </h1>
         </div>
         <button onClick={toggleTheme} className={`text-muted-foreground hover:text-foreground`}>
@@ -76,7 +76,7 @@ export default function Navbar({ isDark, toggleTheme, isFocusMode }: NavbarProps
           )}
           <div className="flex-shrink-0 cursor-pointer group" onClick={() => router.push('/')}>
             <h1 className="font-serif text-2xl tracking-tighter font-bold text-foreground">
-              The Chronicle<span className="text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300">.</span>
+              Kihumba<span className="text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300">.</span>
             </h1>
           </div>
         </div>

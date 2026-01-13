@@ -32,7 +32,7 @@ const PrivacyPolicyPage = () => {
     return (
         <LegalPageLayout title="Privacy Policy" isDark={isDark}>
             <h2>1. Introduction</h2>
-            <p>Welcome to The Chronicle. We are committed to protecting your personal information and your right to privacy. If you have any questions or concerns about this privacy notice, or our practices with regards to your personal information, please contact us.</p>
+            <p>Welcome to Kihumba. We are committed to protecting your personal information and your right to privacy. If you have any questions or concerns about this privacy notice, or our practices with regards to your personal information, please contact us.</p>
             
             <h2>2. Information We Collect</h2>
             <p>We collect personal information that you voluntarily provide to us when you register on the website, express an interest in obtaining information about us or our products and Services, when you participate in activities on the website or otherwise when you contact us.</p>

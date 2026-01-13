@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 const author = {
   name: 'Sarah Jenkins',
   title: 'Senior Tech Correspondent',
-  bio: 'Sarah is the Senior Tech Correspondent for The Chronicle, covering the intersection of AI, ethics, and human psychology. She previously worked as a researcher at the Institute for Digital Future and is a three-time recipient of the Digital Journalism Award.',
+  bio: 'Sarah is the Senior Tech Correspondent for Kihumba, covering the intersection of AI, ethics, and human psychology. She previously worked as a researcher at the Institute for Digital Future and is a three-time recipient of the Digital Journalism Award.',
   avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah',
   stats: {
     articles: 27,
