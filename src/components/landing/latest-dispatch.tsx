@@ -21,7 +21,7 @@ export default function LatestDispatch() {
 
             <div className="space-y-6 mb-8">
                 {dispatchItems.map((item, i) => (
-                    <div key={i} className="group cursor-pointer">
+                    <div key={i} className="group cursor-pointer" onClick={() => router.push('/news')}>
                         <p className="text-xs text-muted-foreground mb-1">{item.time}</p>
                         <p className="text-foreground group-hover:underline">{item.title}</p>
                     </div>
@@ -33,7 +33,7 @@ export default function LatestDispatch() {
                     onClick={() => router.push('/news')}
                     className="w-full flex items-center justify-center gap-2 py-3 px-6 bg-foreground text-background rounded-md text-sm font-bold tracking-wider uppercase hover:bg-foreground/80 transition-colors"
                 >
-                    Enter Newsroom
+                    Explore All Stories
                     <ExternalLink size={16} />
                 </button>
             </div>
