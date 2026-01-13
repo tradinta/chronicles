@@ -14,18 +14,18 @@ import {
   Clock,
   Server,
   Laptop,
-  ChevronDown
+  ChevronDown,
+  Loader2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore } from '@/firebase';
-import { createArticle } from '@/firebase/firestore/articles';
-import { useRouter } from 'next/navigation';
+import { createArticle, getArticleById, updateArticle } from '@/firebase/firestore/articles';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 
 import EditorSidebar from '@/components/editor/EditorSidebar';
 import EditorBlock from '@/components/editor/EditorBlock';
 import { EntryModal } from '@/components/editor/EntryModal';
-import { generateHeadlines, improveWriting } from '@/ai/flows/editor-flow';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
@@ -39,10 +39,15 @@ const LOCAL_STORAGE_KEY = 'kihumba_editor_autosave';
 const NewsEditorPage = () => {
   const { toast } = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useUser();
   const firestore = useFirestore();
 
-  const [showEntryModal, setShowEntryModal] = useState(true);
+  const articleId = searchParams.get('edit');
+  const [isEditMode, setIsEditMode] = useState(!!articleId);
+  const [isLoadingArticle, setIsLoadingArticle] = useState(isEditMode);
+
+  const [showEntryModal, setShowEntryModal] = useState(!isEditMode);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [isBreaking, setIsBreaking] = useState(false);
@@ -79,12 +84,76 @@ const NewsEditorPage = () => {
     { id: Date.now(), type: 'paragraph', content: "" },
   ]);
 
+  const parseContentToBlocks = (htmlContent: string) => {
+    if (!htmlContent) return [{ id: Date.now(), type: 'paragraph', content: "" }];
+    
+    const el = document.createElement('div');
+    el.innerHTML = htmlContent;
+
+    const parsedBlocks = Array.from(el.children).map((node, index) => {
+      const id = Date.now() + index;
+      if (node.tagName === 'H2') {
+        return { id, type: 'h2', content: node.textContent || "" };
+      }
+      if (node.tagName === 'BLOCKQUOTE') {
+        return { 
+          id, 
+          type: 'quote', 
+          content: node.querySelector('p')?.textContent || "",
+          source: node.querySelector('footer')?.textContent || ""
+        };
+      }
+       if (node.tagName === 'FIGURE') {
+        return {
+            id,
+            type: 'image',
+            imageUrl: node.querySelector('img')?.src || '',
+            caption: node.querySelector('figcaption')?.textContent || '',
+            content: ''
+        };
+       }
+      return { id, type: 'paragraph', content: node.textContent || "" };
+    });
+    return parsedBlocks.length > 0 ? parsedBlocks : [{ id: Date.now(), type: 'paragraph', content: "" }];
+  }
+
+  useEffect(() => {
+    if (isEditMode && articleId && firestore) {
+      const fetchArticle = async () => {
+        setIsLoadingArticle(true);
+        try {
+          const article = await getArticleById(firestore, articleId);
+          if (article) {
+            setHeadline(article.title);
+            setSubheading(article.summary);
+            setSlug(article.slug);
+            setCoverImageUrl(article.imageUrl || '');
+            setCategory(article.category);
+            setTags(article.tags || []);
+            setBlocks(parseContentToBlocks(article.content));
+            // Assuming format and breaking status might be stored in the article doc in a real scenario
+            // setArticleFormat(article.format);
+            // setIsBreaking(article.isBreaking);
+          } else {
+            toast({ variant: 'destructive', title: 'Article not found' });
+            router.push('/dashboard/stories');
+          }
+        } catch (error) {
+          console.error("Error fetching article:", error);
+          toast({ variant: 'destructive', title: 'Failed to load article' });
+        } finally {
+          setIsLoadingArticle(false);
+        }
+      };
+      fetchArticle();
+    }
+  }, [isEditMode, articleId, firestore, router, toast]);
+
   const [isPublishing, setIsPublishing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [localDrafts, setLocalDrafts] = useState<any[]>([]);
 
   useEffect(() => {
-    // Load local drafts on mount
     const savedDrafts = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (savedDrafts) {
       setLocalDrafts(JSON.parse(savedDrafts));
@@ -105,13 +174,12 @@ const NewsEditorPage = () => {
     };
   }, [headline, subheading, slug, coverImageUrl, tags, category, articleFormat, blocks]);
 
-  // Autosave to localStorage
   useEffect(() => {
     const timer = setInterval(() => {
       if (headline || blocks.some(b => b.content)) {
         const currentState = getArticleState();
         setLocalDrafts(prev => {
-          const newDrafts = [currentState, ...prev].slice(0, 10); // Keep last 10
+          const newDrafts = [currentState, ...prev].slice(0, 10);
           localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newDrafts));
           return newDrafts;
         });
@@ -145,8 +213,6 @@ const NewsEditorPage = () => {
     setIsSaving(true);
     try {
       const draftData = getArticleState();
-      // In a real app, we'd associate this with an article ID.
-      // For now, we'll save to a top-level `drafts` collection for simplicity.
       await addDoc(collection(firestore, `users/${user.uid}/drafts`), {
         ...draftData,
         savedAt: serverTimestamp(),
@@ -213,12 +279,20 @@ const NewsEditorPage = () => {
     };
 
     try {
-      await createArticle(firestore, articleData);
-      toast({
-        title: "Article Published!",
-        description: `${headline} is now live.`
-      });
-      router.push('/news'); 
+      if (isEditMode && articleId) {
+        await updateArticle(firestore, articleId, articleData);
+        toast({
+          title: "Article Updated!",
+          description: `${headline} has been successfully updated.`
+        });
+      } else {
+        await createArticle(firestore, articleData);
+        toast({
+          title: "Article Published!",
+          description: `${headline} is now live.`
+        });
+      }
+      router.push('/dashboard/stories'); 
     } catch (error) {
       console.error("Publishing error:", error);
       toast({
@@ -235,6 +309,15 @@ const NewsEditorPage = () => {
   useEffect(() => {
     setIsDark(document.documentElement.classList.contains('dark'));
   }, []);
+
+  if (isLoadingArticle) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-stone-50 dark:bg-stone-900">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="ml-4 text-muted-foreground">Loading article...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-stone-50 dark:bg-stone-900">
@@ -350,7 +433,7 @@ const NewsEditorPage = () => {
                 <span>•</span>
                 <span>{new Date().toLocaleDateString()}</span>
                 <span>•</span>
-                <span>Draft</span>
+                <span>{isEditMode ? 'Editing' : 'Draft'}</span>
              </div>
           </motion.div>
 
@@ -481,7 +564,6 @@ const NewsEditorPage = () => {
                     <DialogDescription>Select a version to restore.</DialogDescription>
                  </DialogHeader>
                  <div className="max-h-[60vh] overflow-y-auto space-y-2">
-                    {/* In a real app, you would also fetch and display drafts from Firestore here */}
                     {localDrafts.map((draft, i) => (
                       <div key={i} onClick={() => restoreDraft(draft)} className="p-3 rounded-md border cursor-pointer border-stone-200 hover:bg-stone-50 dark:border-stone-800 dark:hover:bg-stone-800">
                         <div className="flex justify-between items-center">
@@ -506,7 +588,7 @@ const NewsEditorPage = () => {
               <span>{isSaving ? 'Saving...' : 'Save Draft'}</span>
             </button>
             <button onClick={handlePublish} disabled={isPublishing || !!authorError} className="px-6 py-2 rounded-md text-sm font-bold tracking-wide text-white shadow-lg bg-primary hover:bg-primary/90 transition-colors flex items-center space-x-2 disabled:bg-opacity-50 disabled:cursor-not-allowed">
-               {isPublishing ? 'Publishing...' : 'Publish'}
+               {isPublishing ? (isEditMode ? 'Updating...' : 'Publishing...') : (isEditMode ? 'Update' : 'Publish')}
                {!isPublishing && <Send size={14} />}
             </button>
          </div>
@@ -516,7 +598,3 @@ const NewsEditorPage = () => {
 };
 
 export default NewsEditorPage;
-
-    
-
-    
