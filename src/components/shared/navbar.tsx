@@ -35,7 +35,7 @@ export default function Navbar({ isDark, toggleTheme, isFocusMode }: NavbarProps
   const navClasses = cn(
     "fixed top-0 left-0 right-0 z-40 transition-all duration-500 ease-in-out px-6 md:px-12 h-20 flex items-center justify-between",
     isFocusMode ? 'opacity-0 hover:opacity-100' : 'opacity-100',
-    (isScrolled || pathname !== '/')
+    (isScrolled || pathname !== '/' || isFocusMode)
       ? 'bg-background/80 backdrop-blur-md border-b border-border' 
       : 'bg-transparent',
     isAuth ? 'bg-transparent' : ''
@@ -66,7 +66,7 @@ export default function Navbar({ isDark, toggleTheme, isFocusMode }: NavbarProps
         transition={{ duration: 0.6 }}
       >
         <div className="flex items-center space-x-4">
-          {(pathname !== '/') && (
+          {(pathname !== '/') && !isFocusMode && (
             <button 
               onClick={() => router.back()}
               className="p-2 rounded-full transition-colors text-muted-foreground hover:bg-secondary"
@@ -143,5 +143,3 @@ export default function Navbar({ isDark, toggleTheme, isFocusMode }: NavbarProps
     </>
   );
 }
-
-    

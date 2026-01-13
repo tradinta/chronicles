@@ -7,6 +7,8 @@ import { FirebaseClientProvider } from '@/firebase';
 import Navbar from '@/components/shared/navbar';
 import Footer from '@/components/shared/footer';
 import ScrollProgress from '@/components/shared/scroll-progress';
+import BreakingNewsStrip from '@/components/shared/breaking-news-strip';
+import { cn } from '@/lib/utils';
 
 export default function App({
   children,
@@ -47,18 +49,22 @@ export default function App({
   }
   
   const isFocusMode = pathname.startsWith('/article');
-  const showFooter = !pathname.startsWith('/dashboard') && !pathname.startsWith('/auth') && !pathname.startsWith('/checkout') && !pathname.startsWith('/subscribe');
+  const noHeaderFooterRoutes = ['/auth', '/dashboard', '/checkout', '/subscribe'];
+  const showHeader = !noHeaderFooterRoutes.some(p => pathname.startsWith(p));
+  const showFooter = showHeader && !pathname.startsWith('/article');
+  const showBreakingNews = showHeader;
 
   return (
     <FirebaseClientProvider>
       <div className="grain-overlay" />
       <ScrollProgress isFocusMode={isFocusMode} />
-      <Navbar
+      {showHeader && <Navbar
         isDark={isDark}
         toggleTheme={toggleTheme}
         isFocusMode={isFocusMode}
-      />
-      <main>
+      />}
+      {showBreakingNews && <BreakingNewsStrip />}
+      <main className={cn(showBreakingNews && 'pt-[44px]')}>
         {children}
       </main>
       {showFooter && <Footer />}

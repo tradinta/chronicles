@@ -40,7 +40,7 @@ export default function MainNewsPage() {
           
           <div className="lg:col-span-9">
             {(activeCategory === 'All' ? articles : filteredArticles).map((article) => (
-              <ArticleRow key={article.id} article={article} onViewChange={() => router.push('/article/1')} />
+              <ArticleRow key={article.id} article={article} onViewChange={() => router.push(`/article/${article.id}`)} />
             ))}
             <InfiniteLoader loadMore={loadMoreArticles} />
           </div>
@@ -54,4 +54,3 @@ export default function MainNewsPage() {
     </motion.div>
   );
 }
-

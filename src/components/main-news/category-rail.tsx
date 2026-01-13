@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Dispatch, SetStateAction } from 'react';
@@ -13,7 +14,7 @@ const categories = ['All', 'World', 'Politics', 'Business', 'Technology', 'Scien
 
 export default function CategoryRail({ activeCategory, setActiveCategory }: CategoryRailProps) {
   return (
-    <div className="sticky top-20 z-30 py-4 px-6 md:px-12 backdrop-blur-md transition-colors duration-300 border-b border-border bg-background/90">
+    <div className="sticky top-[124px] z-30 py-4 px-6 md:px-12 backdrop-blur-md transition-colors duration-300 border-b border-border bg-background/90">
       <div className="container mx-auto overflow-x-auto no-scrollbar">
         <div className="flex space-x-8 min-w-max">
           {categories.map((cat) => (

@@ -22,21 +22,6 @@ export default function LandingPage() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>
       <Hero />
       
-      <div className="w-full py-3 border-y border-border bg-primary/5 dark:bg-primary/10 text-muted-foreground overflow-hidden">
-        <div className="ticker-wrap cursor-pointer" onClick={() => router.push('/live')}>
-          <div className="ticker flex items-center">
-            {[...Array(4)].map((_, i) => (
-                breakingNews.map((item, index) => (
-                    <span key={`${i}-${index}`} className="inline-flex items-center px-8 text-xs font-medium tracking-wide uppercase">
-                      <Zap size={14} className="mr-3 text-primary/80" />
-                      {item.title}
-                    </span>
-                ))
-            ))}
-          </div>
-        </div>
-      </div>
-
       <section className="py-20 px-6 md:px-12 bg-background">
         <div className="container mx-auto grid grid-cols-1 md:grid-cols-12 gap-12">
           <div className="md:col-span-8">

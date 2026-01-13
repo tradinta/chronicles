@@ -33,7 +33,7 @@ export default function ArticlePage() {
     >
       <ActionRail isFocusMode={isFocusMode} setFocusMode={setFocusMode} />
       
-      <header className={`pt-32 pb-12 px-6 md:px-12 max-w-4xl mx-auto transition-opacity duration-500 ${isFocusMode ? 'opacity-40 hover:opacity-100' : 'opacity-100'}`}>
+      <header className={`pt-20 pb-12 px-6 md:px-12 max-w-4xl mx-auto transition-opacity duration-500 ${isFocusMode ? 'opacity-40 hover:opacity-100' : 'opacity-100'}`}>
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
           <div className="flex items-center space-x-3 mb-6">
             <span className="h-[1px] w-8 bg-muted-foreground/50"></span>

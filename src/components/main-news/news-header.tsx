@@ -1,3 +1,4 @@
+
 "use client";
 
 import { motion } from 'framer-motion';
@@ -11,7 +12,7 @@ export default function NewsHeader() {
   }, []);
 
   return (
-    <div className="pt-32 pb-8 px-6 md:px-12 border-b border-border">
+    <div className="pt-20 pb-8 px-6 md:px-12 border-b border-border">
       <div className="container mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
