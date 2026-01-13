@@ -1,0 +1,129 @@
+
+'use client';
+
+import React, { useState, useRef, useCallback } from 'react';
+import Image from 'next/image';
+import { Camera, Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+
+interface PhotoUploaderProps {
+  initialImage: string | null;
+  onUploadComplete: (url: string) => void;
+  className?: string;
+  imageClassName?: string;
+}
+
+export function PhotoUploader({ 
+  initialImage, 
+  onUploadComplete, 
+  className,
+  imageClassName,
+}: PhotoUploaderProps) {
+  const [imageUrl, setImageUrl] = useState(initialImage);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+
+  const handleImageUpload = useCallback(async (file: File) => {
+    if (!file) return;
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      // 1. Get signature from our API
+      const signResponse = await fetch('/api/sign-image', { method: 'POST' });
+      if (!signResponse.ok) {
+        throw new Error('Failed to get upload signature from server.');
+      }
+      const signData = await signResponse.json();
+
+      // 2. Upload to Cloudinary
+      formData.append('api_key', process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY!);
+      formData.append('signature', signData.signature);
+      formData.append('timestamp', signData.timestamp);
+      formData.append('public_id', signData.public_id);
+      
+      const uploadResponse = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (uploadResponse.ok) {
+        const imageData = await uploadResponse.json();
+        const uploadedUrl = imageData.secure_url;
+        setImageUrl(uploadedUrl);
+        onUploadComplete(uploadedUrl);
+        toast({ title: "Photo uploaded!" });
+      } else {
+        const errorData = await uploadResponse.json();
+        throw new Error(errorData.error.message || 'Cloudinary upload failed.');
+      }
+    } catch (error: any) {
+      console.error('Image upload error:', error);
+      toast({ 
+        variant: 'destructive', 
+        title: "Upload Failed", 
+        description: error.message || "Could not upload the photo. Please check your credentials or try again." 
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  }, [onUploadComplete, toast]);
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleImageUpload(file);
+  };
+  
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      handleImageUpload(file);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  return (
+    <div
+      onClick={() => fileInputRef.current?.click()}
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
+      className={cn(
+        "relative group cursor-pointer",
+        className
+      )}
+    >
+      <Image 
+        src={imageUrl || `https://api.dicebear.com/7.x/pixel-art/svg?seed=placeholder`} 
+        alt="Profile" 
+        width={80} 
+        height={80} 
+        className={cn("bg-muted border border-border", imageClassName)} 
+      />
+      <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
+        {isUploading ? (
+          <Loader2 size={24} className="animate-spin" />
+        ) : (
+          <Camera size={24} />
+        )}
+      </div>
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={handleImageSelect} 
+        accept="image/*" 
+        className="hidden"
+        disabled={isUploading}
+      />
+    </div>
+  );
+}

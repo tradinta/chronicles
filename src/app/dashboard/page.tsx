@@ -24,7 +24,6 @@ import {
   User as UserIcon,
   LogOut,
   Save,
-  Camera,
   Loader2
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -37,6 +36,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { updateProfile } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
+import { PhotoUploader } from '@/components/shared/photo-uploader';
 
 // --- Data Types ---
 interface ArticleStat {
@@ -431,7 +431,6 @@ function ProfileForm() {
   const [bio, setBio] = useState('');
   const [photoURL, setPhotoURL] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (user) {
@@ -443,43 +442,6 @@ function ProfileForm() {
       setBio((userProfile as any).bio || '');
     }
   }, [user, userProfile]);
-
-  const handleImageUpload = async (file: File) => {
-    if (!file) return;
-    const formData = new FormData();
-    formData.append('file', file);
-    
-    try {
-      const signResponse = await fetch('/api/sign-image', { method: 'POST' });
-      const signData = await signResponse.json();
-
-      formData.append('api_key', process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY || '631177719182385');
-      formData.append('signature', signData.signature);
-      formData.append('timestamp', signData.timestamp);
-      formData.append('public_id', signData.public_id);
-
-      const uploadResponse = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'doyg2puov'}/image/upload`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (uploadResponse.ok) {
-        const imageData = await uploadResponse.json();
-        setPhotoURL(imageData.secure_url);
-        toast({ title: "Profile photo uploaded!" });
-      } else {
-        throw new Error('Upload failed');
-      }
-    } catch (error) {
-      console.error('Image upload error:', error);
-      toast({ variant: 'destructive', title: "Upload Failed", description: "Could not upload profile photo." });
-    }
-  };
-
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) handleImageUpload(file);
-  };
 
   const handleSaveProfile = async () => {
     if (!user || !userDocRef) return;
@@ -529,13 +491,12 @@ function ProfileForm() {
         </div>
         <div className="p-6 space-y-6">
             <div className="flex items-center gap-6">
-                <div className="relative group">
-                    <Image src={photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid}`} alt="Profile" width={80} height={80} className="rounded-full bg-muted border border-border" />
-                    <button onClick={() => fileInputRef.current?.click()} className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Camera size={24} />
-                    </button>
-                    <input type="file" ref={fileInputRef} onChange={handleImageSelect} accept="image/*" className="hidden" />
-                </div>
+                <PhotoUploader
+                  initialImage={photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid}`}
+                  onUploadComplete={setPhotoURL}
+                  className="w-20 h-20 rounded-full"
+                  imageClassName="w-20 h-20 rounded-full"
+                />
                 <div className="grid gap-1.5 flex-1">
                   <Label htmlFor="fullName">Full Name</Label>
                   <Input id="fullName" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="e.g., Jane Doe" />
