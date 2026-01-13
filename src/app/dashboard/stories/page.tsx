@@ -1,7 +1,6 @@
-
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { 
   FileText,
@@ -9,8 +8,6 @@ import {
   MoreHorizontal,
   PenTool,
   Archive,
-  Trash,
-  ChevronDown
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -27,7 +24,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
-import AuthorDashboard from '../page';
+import { EmptyState } from '../page';
+
 
 const StatusBadge = ({ status }: { status: string }) => {
   const styles = {
@@ -62,94 +60,91 @@ const MyStoriesPage = () => {
     }
   }
 
+  if (isLoading) {
+    return (
+        <div className="flex justify-center items-center h-64">
+            <Loader2 className="animate-spin text-primary" />
+        </div>
+    );
+  }
+
+  if (!articles || articles.length === 0) {
+      return <EmptyState tab="stories" />
+  }
+
+
   return (
-    <AuthorDashboard>
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <div className="flex items-center justify-between mb-8">
-                <div>
-                    <h1 className="font-serif text-4xl font-bold">My Stories</h1>
-                    <p className="text-muted-foreground mt-1">Manage your published articles and drafts.</p>
-                </div>
-                <Button onClick={() => router.push('/dashboard/new-story')}>
-                    <PenTool className="mr-2" /> New Article
-                </Button>
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <div className="flex items-center justify-between mb-8">
+            <div>
+                <h1 className="font-serif text-4xl font-bold">My Stories</h1>
+                <p className="text-muted-foreground mt-1">Manage your published articles and drafts.</p>
             </div>
-            
-            <div className="bg-card border border-border rounded-lg shadow-sm">
-                <div className="p-4 border-b border-border">
-                    <p className="text-sm font-medium">
-                        {articles ? articles.length : 0} articles
-                    </p>
-                </div>
-                {isLoading && (
-                    <div className="flex justify-center items-center h-64">
-                        <Loader2 className="animate-spin text-primary" />
-                    </div>
-                )}
-                {!isLoading && articles && articles.length === 0 && (
-                    <div className="text-center p-12">
-                        <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
-                        <h3 className="mt-4 text-lg font-medium">No articles found</h3>
-                        <p className="mt-1 text-sm text-muted-foreground">You haven't written any articles yet.</p>
-                    </div>
-                )}
-                {!isLoading && articles && articles.length > 0 && (
-                    <div className="divide-y divide-border">
-                        {articles.map(article => (
-                            <div key={article.id} className="p-4 flex items-center justify-between hover:bg-muted/50">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-24 h-16 bg-muted rounded-md overflow-hidden shrink-0">
-                                        {article.imageUrl && (
-                                            <Image 
-                                                src={article.imageUrl} 
-                                                alt={article.title}
-                                                width={96}
-                                                height={64}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        )}
-                                    </div>
-                                    <div>
-                                        <Link href={`/article/${article.slug}`}>
-                                            <h3 className="font-semibold hover:underline">{article.title}</h3>
-                                        </Link>
-                                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                                            <span>{article.category}</span>
-                                            <span>•</span>
-                                            <span>{new Date(article.publishDate.toDate()).toLocaleDateString()}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                    <StatusBadge status={(article as any).status || 'published'} />
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon">
-                                                <MoreHorizontal />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onClick={() => router.push(`/dashboard/new-story?edit=${article.id}`)}>
-                                                <PenTool className="mr-2" /> Edit
-                                            </DropdownMenuItem>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem onClick={() => handleTakedown(article.id)} className="text-red-500 focus:text-red-500 focus:bg-red-500/10">
-                                                <Archive className="mr-2" /> Takedown
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
+            <Button onClick={() => router.push('/dashboard/new-story')}>
+                <PenTool className="mr-2" /> New Article
+            </Button>
+        </div>
+        
+        <div className="bg-card border border-border rounded-lg shadow-sm">
+            <div className="p-4 border-b border-border">
+                <p className="text-sm font-medium">
+                    {articles.length} articles
+                </p>
+            </div>
+            <div className="divide-y divide-border">
+                {articles.map(article => (
+                    <div key={article.id} className="p-4 flex items-center justify-between hover:bg-muted/50">
+                        <div className="flex items-center gap-4">
+                            <div className="w-24 h-16 bg-muted rounded-md overflow-hidden shrink-0">
+                                {article.imageUrl && (
+                                    <Image 
+                                        src={article.imageUrl} 
+                                        alt={article.title}
+                                        width={96}
+                                        height={64}
+                                        className="w-full h-full object-cover"
+                                    />
+                                )}
+                            </div>
+                            <div>
+                                <Link href={`/article/${article.slug}`}>
+                                    <h3 className="font-semibold hover:underline">{article.title}</h3>
+                                </Link>
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                                    <span>{article.category}</span>
+                                    <span>•</span>
+                                    <span>{new Date(article.publishDate.toDate()).toLocaleDateString()}</span>
                                 </div>
                             </div>
-                        ))}
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <StatusBadge status={(article as any).status || 'published'} />
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon">
+                                        <MoreHorizontal />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => router.push(`/dashboard/new-story?edit=${article.id}`)}>
+                                        <PenTool className="mr-2" /> Edit
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={() => handleTakedown(article.id)} className="text-red-500 focus:text-red-500 focus:bg-red-500/10">
+                                        <Archive className="mr-2" /> Takedown
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
                     </div>
-                )}
+                ))}
             </div>
-        </motion.div>
-    </AuthorDashboard>
+        </div>
+    </motion.div>
   );
 };
 
-// We wrap the page in the main dashboard layout
+
 export default function StoriesPageWrapper() {
     return <MyStoriesPage />
 }

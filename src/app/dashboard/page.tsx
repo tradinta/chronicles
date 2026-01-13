@@ -3,32 +3,25 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Layout, 
-  PenTool, 
-  BarChart2, 
-  Bell, 
-  Search, 
-  TrendingUp, 
-  Users, 
-  Clock, 
+import {
+  PenTool,
+  BarChart2,
+  TrendingUp,
+  Users,
+  Clock,
   FileText,
   MessageSquare,
   MoreHorizontal,
   ChevronRight,
   Wifi,
   Coffee,
-  Sun,
-  Moon,
   Plus,
   User as UserIcon,
-  LogOut,
   Save,
-  Loader2
+  Loader2,
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import Image from 'next/image';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -37,7 +30,6 @@ import { useToast } from '@/hooks/use-toast';
 import { updateProfile } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { PhotoUploader } from '@/components/shared/photo-uploader';
-import Link from 'next/link';
 
 // --- Data Types ---
 interface ArticleStat {
@@ -71,218 +63,68 @@ const notifications: Notification[] = [
   { id: 3, user: "System", action: "Daily analytics report ready", time: "3h ago", urgent: false },
 ];
 
-// --- Components ---
-
-const GrainOverlay = () => (
-  <div className="grain-overlay pointer-events-none fixed inset-0 z-50 opacity-30 mix-blend-overlay"></div>
-);
-
-export default function AuthorDashboard() {
+export default function AuthorDashboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const auth = useAuth();
-  const { user } = useUser();
-  const [activeTab, setActiveTab] = useState('overview');
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [dateStr, setDateStr] = useState('');
+  const [isProfileTab, setIsProfileTab] = useState(false);
 
   useEffect(() => {
-    const tab = searchParams.get('tab');
-    if (tab) {
-      setActiveTab(tab);
-    }
+    setIsProfileTab(searchParams.get('tab') === 'profile');
   }, [searchParams]);
 
-  useEffect(() => {
-    setIsDarkMode(document.documentElement.classList.contains('dark'));
-    const d = new Date();
-    setDateStr(d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }).toUpperCase());
-  }, []);
+  if (isProfileTab) {
+    return <ProfileForm />;
+  }
 
-  const toggleTheme = () => {
-    const newIsDark = !isDarkMode;
-    setIsDarkMode(newIsDark);
-    if (newIsDark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  };
-  
-  const handleLogout = async () => {
-    if (!auth) return;
-    await auth.signOut();
-    router.push('/auth');
-  };
-
-  return (
-    <div className={`min-h-screen transition-colors duration-500 ${isDarkMode ? 'dark bg-neutral-950' : 'bg-[#f4f1ea]'}`}>
-      <div className="bg-background text-foreground font-sans selection:bg-primary selection:text-primary-foreground relative overflow-hidden flex h-screen w-full">
-        <GrainOverlay />
-
-        {/* Sidebar Navigation */}
-        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isDarkMode={isDarkMode} toggleTheme={toggleTheme} onLogout={handleLogout} />
-
-        {/* Main Content Area */}
-        <main className="flex-1 h-screen overflow-y-auto relative z-10 flex flex-col bg-background/50 dark:bg-background/80 backdrop-blur-[2px]">
-          
-          {/* Glass Header */}
-          <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border px-6 py-4 flex items-center justify-between transition-colors duration-500">
-            <div className="flex flex-col">
-              <motion.div 
-                 initial={{ opacity: 0, x: -10 }} 
-                 animate={{ opacity: 1, x: 0 }}
-                 className="flex items-center gap-2 mb-1"
-              >
-                 <span className="relative flex h-2 w-2">
-                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                   <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                 </span>
-                 <span className="text-[10px] uppercase tracking-[0.2em] font-medium text-muted-foreground">Newsroom Connected</span>
-              </motion.div>
-              <h1 className="font-serif text-2xl font-bold text-foreground">Good Morning, {user?.displayName?.split(' ')[0] || 'Editor'}.</h1>
-            </div>
-            
-            <div className="flex items-center gap-6">
-              <div className="hidden md:flex flex-col items-end border-r border-border pr-6">
-                 <span className="font-serif italic text-lg leading-none">{dateStr}</span>
-                 <span className="text-[10px] uppercase tracking-widest text-primary font-bold">Vol. CDXX</span>
-              </div>
-              <div className="flex items-center gap-4">
-                 <button className="p-2 hover:bg-foreground/5 rounded-full transition-colors relative group">
-                    <Bell className="w-5 h-5 text-foreground group-hover:text-primary transition-colors" />
-                    <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border-2 border-background"></span>
-                 </button>
-                 <div className="h-10 w-10 rounded-full bg-foreground text-background flex items-center justify-center font-serif font-bold text-lg border-2 border-transparent hover:border-primary hover:scale-105 cursor-pointer transition-all shadow-lg overflow-hidden">
-                    {user?.photoURL ? <Image src={user.photoURL} alt={user.displayName || 'User'} width={40} height={40} /> : (user?.displayName?.charAt(0) || 'E')}
-                 </div>
-              </div>
-            </div>
-          </header>
-
-          {/* Dashboard Content */}
-          <div className="p-6 md:p-8 max-w-[1800px] w-full mx-auto space-y-6 pb-20">
-            
-            {activeTab === 'overview' ? (
-                <>
-                {/* Create New Action Bar */}
-                <motion.div 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    onClick={() => router.push('/dashboard/new')}
-                    className="flex justify-between items-center bg-card border border-border p-4 rounded-lg shadow-sm cursor-pointer hover:shadow-lg transition-shadow"
-                >
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-primary/10 rounded-full">
-                            <PenTool className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-sm">Create New Assignment</h3>
-                            <p className="text-xs text-muted-foreground">Start a new draft, report, or editorial.</p>
-                        </div>
-                    </div>
-                    <button className="group flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-5 py-2.5 rounded-md text-sm font-medium transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                        <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
-                        <span>Create Piece</span>
-                    </button>
-                </motion.div>
-
-                <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard label="Total Reads" value="128.4k" trend="+12%" icon={TrendingUp} delay={0.1}/>
-                    <StatCard label="Avg. Read Time" value="4m 12s" trend="+0.8%" icon={Clock} delay={0.2}/>
-                    <StatCard label="Subscribers" value="8,942" trend="+45" icon={Users} delay={0.3}/>
-                    <StatCard label="Coffee Consumed" value="4 Cups" trend="Critical" icon={Coffee} delay={0.4} isAlert/>
-                </section>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
-                    <div className="lg:col-span-2 space-y-6">
-                        <ChartWidget />
-                        <AssignmentsWidget />
-                    </div>
-                    <div className="space-y-6">
-                        <NotificationsWidget />
-                        <QuoteWidget />
-                    </div>
-                </div>
-                </>
-            ) : activeTab === 'profile' ? (
-              <ProfileForm />
-            ) : (
-                <EmptyState tab={activeTab} />
-            )}
-
-          </div>
-        </main>
-      </div>
-    </div>
-  );
+  return <Overview />;
 }
 
 // --- Dashboard Sub-Components ---
 
-function Sidebar({ activeTab, setActiveTab, isDarkMode, toggleTheme, onLogout }: any) {
-  const router = useRouter();
-  const navItems = [
-    { id: 'overview', icon: Layout, label: 'Overview', href: '/dashboard' },
-    { id: 'stories', icon: FileText, label: 'My Stories', href: '/dashboard/stories' },
-    { id: 'analytics', icon: BarChart2, label: 'Analytics' },
-    { id: 'messages', icon: MessageSquare, label: 'Comms' },
-    { id: 'research', icon: Search, label: 'Research' },
-  ];
+function Overview() {
+    const router = useRouter();
+    return (
+        <>
+            <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                onClick={() => router.push('/dashboard/new')}
+                className="flex justify-between items-center bg-card border border-border p-4 rounded-lg shadow-sm cursor-pointer hover:shadow-lg transition-shadow"
+            >
+                <div className="flex items-center gap-4">
+                    <div className="p-3 bg-primary/10 rounded-full">
+                        <PenTool className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-sm">Create New Assignment</h3>
+                        <p className="text-xs text-muted-foreground">Start a new draft, report, or editorial.</p>
+                    </div>
+                </div>
+                <button className="group flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-5 py-2.5 rounded-md text-sm font-medium transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                    <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
+                    <span>Create Piece</span>
+                </button>
+            </motion.div>
 
-  const handleNavigation = (item) => {
-    if (item.href) {
-      router.push(item.href);
-    } else {
-      setActiveTab(item.id);
-    }
-  };
+            <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <StatCard label="Total Reads" value="128.4k" trend="+12%" icon={TrendingUp} delay={0.1}/>
+                <StatCard label="Avg. Read Time" value="4m 12s" trend="+0.8%" icon={Clock} delay={0.2}/>
+                <StatCard label="Subscribers" value="8,942" trend="+45" icon={Users} delay={0.3}/>
+                <StatCard label="Coffee Consumed" value="4 Cups" trend="Critical" icon={Coffee} delay={0.4} isAlert/>
+            </section>
 
-  return (
-    <aside className="w-[80px] md:w-64 bg-background/95 dark:bg-background/80 backdrop-blur-md border-r border-border flex flex-col sticky top-0 h-screen z-30 transition-all duration-300">
-      <div className="p-6 flex items-center justify-center md:justify-start gap-3 border-b border-border h-[80px]">
-        <Link href="/dashboard" className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-primary text-primary-foreground flex items-center justify-center font-serif font-black text-xl rounded shadow-sm shrink-0">
-            K
-          </div>
-          <span className="font-serif font-bold text-xl tracking-tight hidden md:block">Kihumba.</span>
-        </Link>
-      </div>
-
-      <nav className="flex-1 py-6 px-3 space-y-1">
-        {navItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => handleNavigation(item)}
-            className={`w-full flex items-center gap-3 px-3 py-3 rounded-md transition-all duration-200 group relative overflow-hidden ${activeTab === item.id ? 'bg-foreground text-background shadow-md' : 'text-muted-foreground hover:bg-foreground/5 hover:text-foreground'}`}
-          >
-            <item.icon className={`w-5 h-5 relative z-10 ${activeTab === item.id ? 'text-primary' : ''}`} />
-            <span className={`font-medium text-sm hidden md:block relative z-10 ${activeTab === item.id ? 'font-bold' : ''}`}>
-              {item.label}
-            </span>
-            {activeTab === item.id && (
-                <motion.div layoutId="active-bg" className="absolute inset-0 bg-foreground" initial={false} transition={{ type: "spring", stiffness: 500, damping: 30 }}/>
-            )}
-          </button>
-        ))}
-      </nav>
-
-      <div className="p-4 border-t border-border space-y-2">
-        <button onClick={toggleTheme} className="w-full flex items-center gap-3 px-3 py-2 text-muted-foreground hover:text-foreground hover:bg-foreground/5 rounded-md transition-colors">
-            {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            <span className="font-medium text-sm hidden md:block">{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
-        </button>
-        <button onClick={() => router.push('/dashboard?tab=profile')} className={`w-full flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${activeTab === 'profile' ? 'bg-foreground/5 text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5'}`}>
-            <UserIcon className="w-5 h-5" />
-            <span className="font-medium text-sm hidden md:block">Profile</span>
-        </button>
-        <button onClick={onLogout} className="w-full flex items-center gap-3 px-3 py-2 text-red-500 hover:bg-red-500/10 rounded-md transition-colors">
-            <LogOut className="w-5 h-5" />
-            <span className="font-medium text-sm hidden md:block">Sign Out</span>
-        </button>
-      </div>
-    </aside>
-  );
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+                <div className="lg:col-span-2 space-y-6">
+                    <ChartWidget />
+                    <AssignmentsWidget />
+                </div>
+                <div className="space-y-6">
+                    <NotificationsWidget />
+                    <QuoteWidget />
+                </div>
+            </div>
+        </>
+    );
 }
 
 function StatCard({ label, value, trend, icon: Icon, delay, isAlert }: any) {
@@ -409,14 +251,14 @@ function StatusBadge({ status }: { status: string }) {
   return (<span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest border ${styles[status as keyof typeof styles] || styles.draft}`}>{status}</span>)
 }
 
-function EmptyState({ tab }: { tab: string }) {
+export function EmptyState({ tab }: { tab: string }) {
     return (
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center justify-center h-[60vh] text-center border-2 border-dashed border-border rounded-xl bg-card/50">
             <div className="p-6 bg-background rounded-full mb-6 shadow-sm">
                 {tab === 'stories' && <FileText className="w-12 h-12 text-muted-foreground" />}
                 {tab === 'analytics' && <BarChart2 className="w-12 h-12 text-muted-foreground" />}
                 {tab === 'messages' && <MessageSquare className="w-12 h-12 text-muted-foreground" />}
-                {tab === 'research' && <Search className="w-12 h-12 text-muted-foreground" />}
+                {tab === 'research' && <UserIcon className="w-12 h-12 text-muted-foreground" />}
             </div>
             <h2 className="font-serif text-3xl font-bold mb-2 capitalize">{tab}</h2>
             <p className="text-muted-foreground max-w-md mx-auto mb-8">This section is currently empty. Start writing or wait for data to populate.</p>
