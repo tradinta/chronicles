@@ -2,7 +2,7 @@
 'use client';
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, AlignLeft, CheckCircle2, Bot, Book, Globe, X, Wand2, BrainCircuit } from 'lucide-react';
+import { ChevronRight, AlignLeft, CheckCircle2, Bot, Book, Globe, X, Wand2 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { generateHeadlines, improveWriting } from '@/ai/flows/editor-flow';
 
@@ -20,15 +20,15 @@ const SidebarTab = ({ id, icon: Icon, label, activeTab, setActiveTab }) => (
 );
   
 const ArticleOutline = ({ blocks }) => {
-    const headings = blocks.filter(b => b.type === 'h2');
+    const headings = blocks.filter(b => b.type === 'h2' && b.content.trim() !== '');
     if (headings.length === 0) {
-        return <div className="text-center text-xs text-stone-500 py-8">Add H2 blocks to see an outline.</div>;
+        return <div className="text-center text-xs text-muted-foreground py-8">Add H2 headings to see an outline.</div>;
     }
     return (
         <ul className="space-y-2">
             {headings.map(h => (
-                <li key={h.id} className="text-sm text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 transition-colors cursor-pointer truncate">
-                    {h.content || 'Untitled Heading'}
+                <li key={h.id} className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer truncate">
+                    {h.content}
                 </li>
             ))}
         </ul>
@@ -50,9 +50,9 @@ const PreFlightChecklist = ({ checklistItems, isDark }) => (
         {checklistItems.map((item, i) => (
             <div key={i} className="flex items-center space-x-3 text-sm group cursor-pointer">
                 <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${item.done ? 'bg-green-500 border-green-500' : (isDark ? 'border-stone-700 group-hover:border-stone-500' : 'border-stone-300 group-hover:border-stone-400')}`}>
-                    {item.done && <CheckCircle2 size={10} className="text-white dark:text-stone-900" />}
+                    {item.done && <CheckCircle2 size={10} className="text-white dark:text-black" />}
                 </div>
-                <span className={`transition-colors ${item.done ? 'text-stone-500 line-through' : (isDark ? 'text-stone-300' : 'text-stone-700')}`}>{item.label}</span>
+                <span className={`transition-colors ${item.done ? 'text-muted-foreground line-through' : (isDark ? 'text-stone-300' : 'text-stone-700')}`}>{item.label}</span>
             </div>
         ))}
     </div>
@@ -69,7 +69,7 @@ const EditorSidebar = ({ isOpen, setIsOpen, isFocusMode, isDark, headline, subhe
         { label: "Add a lead image", done: !!coverImageUrl },
         { label: "Add at least 3 tags", done: tags.length >= 3 },
         { label: "Write more than 300 words", done: blocks.reduce((acc, b) => acc + b.content.split(' ').length, 0) > 300 },
-        { label: "Check for passive voice", done: false },
+        { label: "Check for passive voice (AI)", done: false },
     ], [headline, coverImageUrl, tags.length, blocks]);
 
     const progress = useMemo(() => {
@@ -127,13 +127,14 @@ const EditorSidebar = ({ isOpen, setIsOpen, isFocusMode, isDark, headline, subhe
         flex flex-col h-full
         ${isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-200'}
       `}>
-        <div className={`h-16 border-b flex items-center px-4 ${isDark ? 'border-stone-800' : 'border-stone-200'}`}>
+        <div className={`h-16 border-b flex items-center justify-between px-4 ${isDark ? 'border-stone-800' : 'border-stone-200'}`}>
            <h3 className="font-serif text-lg font-semibold">Studio</h3>
+           <button onClick={() => setIsOpen(false)} className="md:hidden p-2 -mr-2 text-muted-foreground"><X size={18}/></button>
         </div>
 
         <div className={`h-16 border-b flex items-center px-2 ${isDark ? 'border-stone-800' : 'border-stone-200'}`}>
             <SidebarTab id="checklist" icon={CheckCircle2} label="Checklist" activeTab={activeTab} setActiveTab={setActiveTab} />
-            <SidebarTab id="ai" icon={BrainCircuit} label="Co-pilot" activeTab={activeTab} setActiveTab={setActiveTab} />
+            <SidebarTab id="ai" icon={Bot} label="Co-pilot" activeTab={activeTab} setActiveTab={setActiveTab} />
         </div>
         
         <div className="flex-1 overflow-y-auto p-6">
@@ -143,21 +144,21 @@ const EditorSidebar = ({ isOpen, setIsOpen, isFocusMode, isDark, headline, subhe
                <div className="space-y-8">
                  <div>
                     <div className="flex justify-between items-end mb-4">
-                       <h4 className="text-xs font-bold tracking-widest uppercase text-stone-500 dark:text-stone-400">Progress</h4>
+                       <h4 className="text-xs font-bold tracking-widest uppercase text-muted-foreground">Progress</h4>
                        <span className="text-xs font-mono text-primary">{Math.round(progress)}%</span>
                     </div>
                     <Progress value={progress} className="h-2" />
                  </div>
                  <div>
-                    <h4 className="text-xs font-bold tracking-widest uppercase mb-4 text-stone-500 dark:text-stone-400">Pre-Flight</h4>
+                    <h4 className="text-xs font-bold tracking-widest uppercase mb-4 text-muted-foreground">Pre-Flight</h4>
                     <PreFlightChecklist checklistItems={checklistItems} isDark={isDark}/>
                  </div>
                  <div>
-                    <h4 className="text-xs font-bold tracking-widest uppercase mb-4 text-stone-500 dark:text-stone-400">Article Outline</h4>
+                    <h4 className="text-xs font-bold tracking-widest uppercase mb-4 text-muted-foreground">Article Outline</h4>
                     <ArticleOutline blocks={blocks} />
                  </div>
                  <div>
-                    <h4 className="text-xs font-bold tracking-widest uppercase mb-4 text-stone-500 dark:text-stone-400">Tags</h4>
+                    <h4 className="text-xs font-bold tracking-widest uppercase mb-4 text-muted-foreground">Tags</h4>
                     <div className={`flex flex-wrap gap-2 p-2 rounded-lg border min-h-[40px] ${isDark ? 'bg-stone-800/50 border-stone-700' : 'bg-white border-stone-200'}`}>
                         {tags.map(tag => (
                             <div key={tag} className={`flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full ${isDark ? 'bg-stone-700 text-stone-300' : 'bg-stone-200 text-stone-700'}`}>
@@ -169,7 +170,7 @@ const EditorSidebar = ({ isOpen, setIsOpen, isFocusMode, isDark, headline, subhe
                     </div>
                  </div>
                  <div>
-                    <h4 className="text-xs font-bold tracking-widest uppercase mb-4 text-stone-500 dark:text-stone-400">Search Preview</h4>
+                    <h4 className="text-xs font-bold tracking-widest uppercase mb-4 text-muted-foreground">Search Preview</h4>
                     <SEOPreview headline={headline} subheading={subheading} isDark={isDark} />
                  </div>
                </div>
@@ -191,10 +192,10 @@ const EditorSidebar = ({ isOpen, setIsOpen, isFocusMode, isDark, headline, subhe
                    </div>
                    {aiSuggestions.length > 0 && (
                       <div>
-                          <h4 className="text-xs font-bold tracking-widest uppercase mb-3 text-stone-500 dark:text-stone-400">Suggestions</h4>
+                          <h4 className="text-xs font-bold tracking-widest uppercase mb-3 text-muted-foreground">Suggestions</h4>
                           <div className="space-y-2">
                               {aiSuggestions.map((s, i) => (
-                                  <p key={i} className="text-sm p-3 bg-stone-800 rounded border border-stone-700 text-stone-300 cursor-pointer hover:bg-stone-700">{s}</p>
+                                  <p key={i} className="text-sm p-3 bg-secondary rounded border border-border text-foreground cursor-pointer hover:bg-muted">{s}</p>
                               ))}
                           </div>
                       </div>
@@ -209,3 +210,5 @@ const EditorSidebar = ({ isOpen, setIsOpen, isFocusMode, isDark, headline, subhe
 };
 
 export default EditorSidebar;
+
+    

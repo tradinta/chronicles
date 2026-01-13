@@ -1,14 +1,19 @@
 
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Send, Type, Quote, Heading2, AlertCircle, Zap,
   ImagePlus,
   Layout, Book, Check, BrainCircuit, AlignLeft,
   Minimize2,
-  Sparkles
+  Sparkles,
+  History,
+  Save,
+  Clock,
+  Server,
+  Laptop
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore } from '@/firebase';
@@ -20,6 +25,11 @@ import EditorSidebar from '@/components/editor/EditorSidebar';
 import EditorBlock from '@/components/editor/EditorBlock';
 import { EntryModal } from '@/components/editor/EntryModal';
 import { generateHeadlines, improveWriting } from '@/ai/flows/editor-flow';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+
+const AUTOSAVE_INTERVAL = 10000; // 10 seconds
+const LOCAL_STORAGE_KEY = 'kihumba_editor_autosave';
 
 const NewsEditorPage = () => {
   const { toast } = useToast();
@@ -35,29 +45,53 @@ const NewsEditorPage = () => {
   const [headline, setHeadline] = useState('');
   const [subheading, setSubheading] = useState('');
   const [coverImageUrl, setCoverImageUrl] = useState('');
-  const [tags, setTags] = useState<string[]>(['Election 2024']);
-  const [category, setCategory] = useState('Politics');
+  const [tags, setTags] = useState<string[]>([]);
+  const [category, setCategory] = useState('');
   
   const [blocks, setBlocks] = useState([
-    { id: 1, type: 'paragraph', content: "The global summit concluded today with a historic agreement..." },
-    { id: 2, type: 'quote', content: "This is a turning point for international diplomacy.", source: "Ambassador J. Smith" },
+    { id: Date.now(), type: 'paragraph', content: "" },
   ]);
 
   const [isPublishing, setIsPublishing] = useState(false);
-  
-  const [isDark, setIsDark] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [localDrafts, setLocalDrafts] = useState<any[]>([]);
+
   useEffect(() => {
-    const isDarkPrefered = document.documentElement.classList.contains('dark');
-    setIsDark(isDarkPrefered);
-    
-    const handleThemeChange = () => {
-      setIsDark(document.documentElement.classList.contains('dark'));
-    };
-    
-    // Assuming you have a custom event for theme changes
-    window.addEventListener('theme-changed', handleThemeChange);
-    return () => window.removeEventListener('theme-changed', handleThemeChange);
+    // Load local drafts on mount
+    const savedDrafts = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (savedDrafts) {
+      setLocalDrafts(JSON.parse(savedDrafts));
+    }
   }, []);
+
+  const getArticleState = useCallback(() => {
+    return {
+      headline,
+      subheading,
+      coverImageUrl,
+      tags,
+      category,
+      blocks,
+      timestamp: new Date().toISOString(),
+    };
+  }, [headline, subheading, coverImageUrl, tags, category, blocks]);
+
+  // Autosave to localStorage
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (headline || blocks.some(b => b.content)) {
+        const currentState = getArticleState();
+        setLocalDrafts(prev => {
+          const newDrafts = [currentState, ...prev].slice(0, 10); // Keep last 10
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newDrafts));
+          return newDrafts;
+        });
+      }
+    }, AUTOSAVE_INTERVAL);
+
+    return () => clearInterval(timer);
+  }, [getArticleState, headline, blocks]);
+
 
   const addBlock = (type: string) => {
     setBlocks([...blocks, { id: Date.now(), type, content: '' }]);
@@ -67,6 +101,44 @@ const NewsEditorPage = () => {
     setBlocks(blocks.map(block => block.id === id ? { ...block, content: newContent } : block));
   };
   
+  const handleSaveDraft = async () => {
+    if (!firestore || !user) {
+      toast({ variant: 'destructive', title: 'Cannot Save Draft', description: 'You must be signed in.' });
+      return;
+    }
+    if (!headline) {
+      toast({ variant: 'destructive', title: 'Headline Required', description: 'Please add a headline before saving.' });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const draftData = getArticleState();
+      // In a real app, we'd associate this with an article ID.
+      // For now, we'll save to a top-level `drafts` collection for simplicity.
+      await addDoc(collection(firestore, `users/${user.uid}/drafts`), {
+        ...draftData,
+        savedAt: serverTimestamp(),
+      });
+      toast({ title: 'Draft Saved!', description: 'Your draft has been saved to the cloud.' });
+    } catch (error) {
+      console.error("Draft saving error:", error);
+      toast({ variant: 'destructive', title: 'Save Failed', description: 'Could not save draft.' });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const restoreDraft = (draft: any) => {
+    setHeadline(draft.headline || '');
+    setSubheading(draft.subheading || '');
+    setCoverImageUrl(draft.coverImageUrl || '');
+    setTags(draft.tags || []);
+    setCategory(draft.category || '');
+    setBlocks(draft.blocks || [{ id: Date.now(), type: 'paragraph', content: "" }]);
+    toast({ title: 'Draft Restored', description: `Loaded version from ${new Date(draft.timestamp).toLocaleTimeString()}`});
+  };
+
   const handlePublish = async () => {
     if (!headline) {
       toast({ variant: 'destructive', title: 'Headline is required' });
@@ -105,7 +177,7 @@ const NewsEditorPage = () => {
         title: "Article Published!",
         description: `${headline} is now live.`
       });
-      router.push('/news'); // Redirect after successful publish
+      router.push('/news'); 
     } catch (error) {
       console.error("Publishing error:", error);
       toast({
@@ -164,8 +236,13 @@ const NewsEditorPage = () => {
     e.stopPropagation();
   };
 
+  const [isDark, setIsDark] = useState(false);
+  useEffect(() => {
+    setIsDark(document.documentElement.classList.contains('dark'));
+  }, []);
+
   return (
-    <div className={`min-h-screen pt-16 flex transition-colors duration-500 ${isDark ? 'bg-stone-900' : 'bg-stone-50'}`}>
+    <div className={`min-h-screen pt-16 flex flex-1 transition-colors duration-500 ${isDark ? 'bg-stone-900' : 'bg-stone-50'}`}>
       <EntryModal show={showEntryModal} setShow={setShowEntryModal} isDark={isDark} setCategory={setCategory} />
       
       {/* Main Content Area */}
@@ -192,7 +269,7 @@ const NewsEditorPage = () => {
              
              <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center space-x-3">
-                   <span className={`text-xs font-bold uppercase tracking-widest ${isDark ? 'text-primary' : 'text-primary'}`}>{category}</span>
+                   {category && <span className={`text-xs font-bold uppercase tracking-widest ${isDark ? 'text-primary' : 'text-primary'}`}>{category}</span>}
                 </div>
                 <div className="flex items-center space-x-4">
                    <button 
@@ -255,9 +332,10 @@ const NewsEditorPage = () => {
         </div>
       </main>
       
+      {/* Sidebar Section */}
       <AnimatePresence>
         {isSidebarOpen && !isFocusMode && (
-          <motion.div 
+          <motion.aside 
             className="hidden md:block relative border-l z-20"
             initial={{ width: 0 }}
             animate={{ width: '360px' }}
@@ -276,7 +354,7 @@ const NewsEditorPage = () => {
               setTags={setTags}
               coverImageUrl={coverImageUrl}
             />
-          </motion.div>
+          </motion.aside>
         )}
       </AnimatePresence>
 
@@ -292,7 +370,7 @@ const NewsEditorPage = () => {
               onClick={() => setIsSidebarOpen(false)}
             />
             <motion.div 
-              className="fixed top-0 right-0 bottom-0 w-[85%] max-w-sm border-l z-40 bg-background"
+              className={`fixed top-0 right-0 bottom-0 w-[85%] max-w-sm border-l z-40 ${isDark ? 'bg-stone-900' : 'bg-white'}`}
               initial={{ x: '100%'}}
               animate={{ x: 0 }}
               exit={{ x: '100%'}}
@@ -315,10 +393,10 @@ const NewsEditorPage = () => {
         )}
       </AnimatePresence>
 
-
+      {/* Footer Actions */}
       <motion.div 
         animate={{ y: isFocusMode ? 100 : 0 }} 
-        className={`fixed bottom-0 left-0 right-0 h-16 border-t px-6 flex items-center justify-end z-20 transition-transform duration-500 
+        className={`fixed bottom-0 left-0 right-0 h-16 border-t px-6 flex items-center justify-between z-20 transition-transform duration-500 
           ${isDark ? 'bg-stone-900/80 backdrop-blur-md border-stone-800' : 'bg-white/80 backdrop-blur-md border-stone-200'}
           `}
       >
@@ -330,7 +408,63 @@ const NewsEditorPage = () => {
               <AlignLeft size={12} />
               <span>Tools</span>
             </button>
-            <button className={`px-4 py-2 rounded-md text-sm font-semibold transition-colors ${isDark ? 'text-stone-400 hover:bg-stone-800' : 'text-stone-600 hover:bg-stone-200'}`}>Save</button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <button className={`flex items-center space-x-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors border ${isDark ? 'border-stone-700 text-stone-400' : 'border-stone-300 text-stone-500'}`}>
+                  <Layout size={12} />
+                  <span>Preview</span>
+                </button>
+              </DialogTrigger>
+              <DialogContent className={`max-w-4xl h-[80vh] ${isDark ? 'bg-stone-900 border-stone-700' : 'bg-white'}`}>
+                <DialogHeader>
+                  <DialogTitle>Article Preview</DialogTitle>
+                </DialogHeader>
+                <div className="prose prose-sm dark:prose-invert overflow-y-auto h-full p-4">
+                  <h1>{headline}</h1>
+                  <p className="lead">{subheading}</p>
+                  {coverImageUrl && <img src={coverImageUrl} alt="Cover" />}
+                  <div dangerouslySetInnerHTML={{ __html: blocks.map(b => b.content).join('') }} />
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog>
+              <DialogTrigger asChild>
+                 <button className={`flex items-center space-x-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors border ${isDark ? 'border-stone-700 text-stone-400' : 'border-stone-300 text-stone-500'}`}>
+                   <History size={12} />
+                   <span>History & Drafts</span>
+                 </button>
+              </DialogTrigger>
+              <DialogContent className={`max-w-2xl ${isDark ? 'bg-stone-900 border-stone-700' : 'bg-white'}`}>
+                 <DialogHeader>
+                    <DialogTitle>History & Drafts</DialogTitle>
+                    <DialogDescription>Select a version to restore.</DialogDescription>
+                 </DialogHeader>
+                 <div className="max-h-[60vh] overflow-y-auto space-y-2">
+                    {/* In a real app, you would also fetch and display drafts from Firestore here */}
+                    {localDrafts.map((draft, i) => (
+                      <div key={i} onClick={() => restoreDraft(draft)} className={`p-3 rounded-md border cursor-pointer ${isDark ? 'border-stone-800 hover:bg-stone-800' : 'border-stone-200 hover:bg-stone-50'}`}>
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center space-x-3">
+                            <Laptop size={14} className="text-muted-foreground" />
+                            <div>
+                              <p className="font-semibold text-sm">{draft.headline || 'Untitled Draft'}</p>
+                              <p className="text-xs text-muted-foreground">Autosaved to this device</p>
+                            </div>
+                          </div>
+                          <span className="text-xs text-muted-foreground">{new Date(draft.timestamp).toLocaleTimeString()}</span>
+                        </div>
+                      </div>
+                    ))}
+                 </div>
+              </DialogContent>
+            </Dialog>
+         </div>
+         <div className="flex items-center space-x-4">
+            <button onClick={handleSaveDraft} disabled={isSaving} className={`px-4 py-2 rounded-md text-sm font-semibold transition-colors flex items-center space-x-2 ${isDark ? 'text-stone-400 hover:bg-stone-800' : 'text-stone-600 hover:bg-stone-200'}`}>
+              <Save size={14} />
+              <span>{isSaving ? 'Saving...' : 'Save Draft'}</span>
+            </button>
             <button onClick={handlePublish} disabled={isPublishing} className="px-6 py-2 rounded-md text-sm font-bold tracking-wide text-white shadow-lg bg-primary hover:bg-primary/90 transition-colors flex items-center space-x-2 disabled:bg-opacity-50 disabled:cursor-not-allowed">
                {isPublishing ? 'Publishing...' : 'Publish'}
                {!isPublishing && <Send size={14} />}
@@ -342,3 +476,5 @@ const NewsEditorPage = () => {
 };
 
 export default NewsEditorPage;
+
+    
