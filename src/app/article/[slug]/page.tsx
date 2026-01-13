@@ -4,12 +4,11 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import ActionRail from '@/components/article/action-rail';
-import ArticleParagraph from '@/components/article/article-paragraph';
 import ArticleFooter from '@/components/article/article-footer';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where, DocumentData } from 'firebase/firestore';
+import { collection, query, where, DocumentData, getDocs } from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -21,36 +20,41 @@ const ArticlePage = () => {
 
   const [article, setArticle] = useState<DocumentData | null>(null);
   const [author, setAuthor] = useState<DocumentData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   
-  const articlesQuery = useMemoFirebase(() => {
-    if (!firestore || !slug) return null;
-    return query(collection(firestore, 'articles'), where('slug', '==', slug));
+  useEffect(() => {
+    const fetchArticle = async () => {
+      if (!firestore || !slug) return;
+      setIsLoading(true);
+      
+      const articlesRef = collection(firestore, 'articles');
+      const q = query(articlesRef, where('slug', '==', slug));
+      const querySnapshot = await getDocs(q);
+      
+      if (!querySnapshot.empty) {
+        const articleDoc = querySnapshot.docs[0];
+        const articleData = { id: articleDoc.id, ...articleDoc.data() };
+        setArticle(articleData);
+
+        if (articleData.authorId) {
+            const authorsRef = collection(firestore, 'authors');
+            const authorQ = query(authorsRef, where("id", "==", articleData.authorId));
+            const authorSnapshot = await getDocs(authorQ);
+            if (!authorSnapshot.empty) {
+                setAuthor({ id: authorSnapshot.docs[0].id, ...authorSnapshot.docs[0].data() });
+            }
+        }
+      }
+      setIsLoading(false);
+    };
+
+    fetchArticle();
   }, [firestore, slug]);
-  
-  const { data: articlesData, isLoading: isLoadingArticle } = useCollection(articlesQuery);
 
-  useEffect(() => {
-    if (articlesData && articlesData.length > 0) {
-      setArticle(articlesData[0]);
-    }
-  }, [articlesData]);
-  
-  const authorQuery = useMemoFirebase(() => {
-    if (!firestore || !article?.authorId) return null;
-    return query(collection(firestore, 'authors'), where('id', '==', article.authorId));
-  }, [firestore, article]);
-
-  const { data: authorData } = useCollection(authorQuery);
-
-  useEffect(() => {
-    if(authorData && authorData.length > 0) {
-      setAuthor(authorData[0]);
-    }
-  }, [authorData]);
 
   const [isFocusMode, setFocusMode] = useState(false);
   
-  if (isLoadingArticle) {
+  if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="animate-spin text-primary mr-4" />

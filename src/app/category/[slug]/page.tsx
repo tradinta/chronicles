@@ -28,7 +28,9 @@ export default function CategoryPage() {
 
   useEffect(() => {
     if (slug) {
-      const formattedSlug = slug.charAt(0).toUpperCase() + slug.slice(1);
+      const formattedSlug = Array.isArray(slug) 
+        ? slug[0].charAt(0).toUpperCase() + slug[0].slice(1)
+        : slug.charAt(0).toUpperCase() + slug.slice(1);
       setCategoryName(formattedSlug);
     }
   }, [slug]);
@@ -61,7 +63,7 @@ export default function CategoryPage() {
           )}
           {!isLoading && articles && articles.length > 0 ? (
             articles.map((article) => (
-              <ArticleRow key={article.id} article={article as any} onViewChange={() => router.push(`/article/${article.slug || article.id}`)} />
+              <ArticleRow key={article.id} article={article as any} onViewChange={() => router.push(`/article/${article.slug}`)} />
             ))
           ) : !isLoading && (
             <div className="text-center py-20 border-2 border-dashed border-border rounded-lg">
