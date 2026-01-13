@@ -72,9 +72,12 @@ export type Article = {
   time?: string;
   readTime?: string;
   image?: ImagePlaceholder;
+  imageUrl?: string;
   content?: string;
   author?: string;
   isBreaking?: boolean;
+  publishDate?: any;
+  slug?: string;
 };
 
 export const breakingNews: Article[] = [
@@ -227,9 +230,9 @@ export const featuredStories = [
 ];
 
 export const dispatchItems = [
-    { time: "12m ago", title: "Global markets react positively to new inflation data" },
-    { time: "45m ago", title: "Analysis: Is the tech sector poised for a Q4 rebound?" },
-    { time: "1h ago", title: "Central Bank hints at holding interest rates steady" },
+    { time: "2h ago", text: "Central Bank holds interest rates steady, citing 'cautious optimism'" },
+    { time: "5h ago", text: "Analysis: Are tech stocks overvalued in the current climate?" },
+    { time: "8h ago", text: "New agricultural fund launches to support small-scale farmers" },
 ];
 
 export const trendingItems = [

@@ -8,6 +8,7 @@ import type { Article } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { formatDistanceToNow } from 'date-fns';
 
 type ArticleRowProps = {
   article: Article;
@@ -38,6 +39,10 @@ export default function ArticleRow({ article, onViewChange }: ArticleRowProps) {
       </motion.div>
     );
   }
+  
+  const publishDate = article.publishDate?.toDate ? article.publishDate.toDate() : new Date(article.publishDate);
+  const timeAgo = article.publishDate ? formatDistanceToNow(publishDate, { addSuffix: true }) : article.time;
+
 
   return (
     <motion.div 
@@ -48,11 +53,11 @@ export default function ArticleRow({ article, onViewChange }: ArticleRowProps) {
     >
       <div className="container mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
         <div className="md:col-span-3 lg:col-span-2 overflow-hidden rounded-sm bg-muted aspect-[4/3] relative">
-           {article.image && <Image 
-             src={article.image.imageUrl} 
+           {(article.image?.imageUrl || article.imageUrl) && <Image 
+             src={article.image?.imageUrl || article.imageUrl} 
              alt={article.title || 'Article image'}
              fill
-             data-ai-hint={article.image.imageHint}
+             data-ai-hint={article.image?.imageHint}
              className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 filter grayscale-[20%] group-hover:grayscale-0" 
            />}
         </div>
@@ -72,11 +77,11 @@ export default function ArticleRow({ article, onViewChange }: ArticleRowProps) {
             )}
             <span className="text-[10px] text-muted-foreground/50">•</span>
             <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
-              {article.time} ago
+              {timeAgo}
             </span>
           </div>
 
-          <Link href={`/article/${article.id}`}>
+          <Link href={`/article/${article.slug || article.id}`}>
             <h3 className={cn("font-serif text-2xl md:text-3xl leading-tight mb-3 group-hover:text-muted-foreground transition-colors cursor-pointer", "text-foreground")}>
               {article.title}
             </h3>
