@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Send, Type, Quote, Heading2, AlertCircle, Zap,
   ImagePlus,
@@ -54,6 +54,7 @@ const NewsEditorPage = () => {
       setIsDark(document.documentElement.classList.contains('dark'));
     };
     
+    // Assuming you have a custom event for theme changes
     window.addEventListener('theme-changed', handleThemeChange);
     return () => window.removeEventListener('theme-changed', handleThemeChange);
   }, []);
@@ -168,7 +169,7 @@ const NewsEditorPage = () => {
       <EntryModal show={showEntryModal} setShow={setShowEntryModal} isDark={isDark} setCategory={setCategory} />
       
       {/* Main Content Area */}
-      <main className={`flex-1 transition-all duration-300 ease-in-out`}>
+      <main className="flex-1 transition-all duration-300 ease-in-out overflow-y-auto">
         <div className="max-w-3xl mx-auto px-6 md:px-12 py-12">
           
           <motion.div 
@@ -253,28 +254,71 @@ const NewsEditorPage = () => {
           </div>
         </div>
       </main>
-      <motion.div 
-        className="fixed top-16 right-0 bottom-16 border-l z-20"
-        animate={{ width: isSidebarOpen && !isFocusMode ? '360px' : '0px' }}
-        transition={{ duration: 0.3, ease: 'easeInOut' }}
-      >
-        <EditorSidebar
-          isOpen={isSidebarOpen}
-          setIsOpen={setIsSidebarOpen}
-          isFocusMode={isFocusMode}
-          isDark={isDark}
-          headline={headline}
-          subheading={subheading}
-          blocks={blocks}
-          tags={tags}
-          setTags={setTags}
-          coverImageUrl={coverImageUrl}
-        />
-      </motion.div>
+      
+      <AnimatePresence>
+        {isSidebarOpen && !isFocusMode && (
+          <motion.div 
+            className="hidden md:block relative border-l z-20"
+            initial={{ width: 0 }}
+            animate={{ width: '360px' }}
+            exit={{ width: 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+          >
+            <EditorSidebar
+              isOpen={isSidebarOpen}
+              setIsOpen={setIsSidebarOpen}
+              isFocusMode={isFocusMode}
+              isDark={isDark}
+              headline={headline}
+              subheading={subheading}
+              blocks={blocks}
+              tags={tags}
+              setTags={setTags}
+              coverImageUrl={coverImageUrl}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Mobile Sidebar (Drawer) */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <div className="md:hidden">
+            <motion.div 
+              className="fixed inset-0 bg-black/50 z-30" 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsSidebarOpen(false)}
+            />
+            <motion.div 
+              className="fixed top-0 right-0 bottom-0 w-[85%] max-w-sm border-l z-40 bg-background"
+              initial={{ x: '100%'}}
+              animate={{ x: 0 }}
+              exit={{ x: '100%'}}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+            >
+              <EditorSidebar
+                isOpen={isSidebarOpen}
+                setIsOpen={setIsSidebarOpen}
+                isFocusMode={isFocusMode}
+                isDark={isDark}
+                headline={headline}
+                subheading={subheading}
+                blocks={blocks}
+                tags={tags}
+                setTags={setTags}
+                coverImageUrl={coverImageUrl}
+              />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
 
       <motion.div 
         animate={{ y: isFocusMode ? 100 : 0 }} 
-        className={`fixed bottom-0 left-0 right-0 h-16 border-t px-6 flex items-center justify-end z-30 transition-transform duration-500 
+        className={`fixed bottom-0 left-0 right-0 h-16 border-t px-6 flex items-center justify-end z-20 transition-transform duration-500 
           ${isDark ? 'bg-stone-900/80 backdrop-blur-md border-stone-800' : 'bg-white/80 backdrop-blur-md border-stone-200'}
           `}
       >
