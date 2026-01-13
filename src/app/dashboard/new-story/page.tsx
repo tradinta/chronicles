@@ -7,7 +7,7 @@ import {
   Bot, CheckCircle2, Layout, AlignLeft, ChevronRight, Sparkles, ImageIcon,
   Send, Type, Quote, Heading2, AlertCircle
 } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore } from '@/firebase';
 import { createArticle } from '@/firebase/firestore/articles';
 import { useRouter } from 'next/navigation';
