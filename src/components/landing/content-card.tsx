@@ -2,7 +2,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ExternalLink, LucideIcon } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
+import type { ElementType } from 'react';
 import { Button } from '../ui/button';
 
 type Item = {
@@ -12,7 +13,7 @@ type Item = {
 
 type ContentCardProps = {
     title: string;
-    icon?: Lucide-react.JSX.Element | LucideIcon;
+    icon?: ElementType;
     items: Item[];
     buttonText?: string;
     onButtonClick?: () => void;
