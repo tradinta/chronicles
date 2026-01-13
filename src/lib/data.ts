@@ -146,3 +146,58 @@ export const newArticles: Article[] = [
     image: placeholderImages.find(p => p.id === 'gdp-alternative')
   }
 ];
+
+export type LiveUpdate = {
+  id: number;
+  type: 'New' | 'Confirmed' | 'Correction';
+  time: string;
+  headline: string;
+  body: string;
+  source: string;
+  imageUrl?: string;
+}
+
+export const liveUpdates: LiveUpdate[] = [
+  {
+    id: 301,
+    type: 'Confirmed',
+    time: '11:15 AM',
+    headline: 'Wave Arrival Times Confirmed',
+    body: 'The National Tsunami Warning Center has confirmed initial wave arrivals for major coastal cities. The first waves are smaller than anticipated but a larger second wave is expected.',
+    source: 'National Tsunami Warning Center',
+  },
+  {
+    id: 302,
+    type: 'New',
+    time: '11:05 AM',
+    headline: 'International Aid Mobilized',
+    body: 'Neighboring countries have begun mobilizing aid and response teams as the scale of the potential disaster becomes clear.',
+    source: 'International Red Cross',
+    imageUrl: 'https://picsum.photos/seed/aid/1200/675'
+  },
+  {
+    id: 303,
+    type: 'New',
+    time: '10:52 AM',
+    headline: 'Evacuation Routes Experiencing Heavy Traffic',
+    body: 'State transportation officials report significant congestion on all major evacuation routes. Residents are advised to stay calm and follow directions from law enforcement.',
+    source: 'State Department of Transportation',
+  }
+];
+
+export const newLiveUpdates: Omit<LiveUpdate, 'id'>[] = [
+    {
+    type: 'Correction',
+    time: '11:25 AM',
+    headline: 'Correction: Initial Magnitude Downgraded to 8.1',
+    body: 'The USGS has issued a correction, downgrading the initial earthquake magnitude from 8.2 to 8.1. The tsunami warning remains in full effect.',
+    source: 'USGS',
+  },
+  {
+    type: 'Confirmed',
+    time: '11:30 AM',
+    headline: 'First Wave Makes Landfall',
+    body: 'Minor waves of approximately 1-2 meters have made landfall in northern coastal towns. No major damage has been reported from this initial surge. The larger, more dangerous wave is still expected.',
+    source: 'Local Media Reports',
+  }
+];

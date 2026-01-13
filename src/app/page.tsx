@@ -9,8 +9,9 @@ import ScrollProgress from '@/components/shared/scroll-progress';
 import LandingPage from '@/components/landing/landing-page';
 import MainNewsPage from '@/components/main-news/main-news-page';
 import ArticlePage from '@/components/article/article-page';
+import LiveCoveragePage from '@/components/live-coverage/live-coverage-page';
 
-export type View = 'landing' | 'main' | 'article';
+export type View = 'landing' | 'main' | 'article' | 'live';
 
 export default function Home() {
   const [isDark, setIsDark] = useState(false);
@@ -57,6 +58,26 @@ export default function Home() {
   
   const isArticleInFocus = currentView === 'article' && isFocusMode;
 
+  const renderContent = () => {
+    switch(currentView) {
+      case 'landing':
+        return <LandingPage key="landing" onViewChange={handleViewChange} />;
+      case 'main':
+        return <MainNewsPage key="main" onViewChange={handleViewChange} />;
+      case 'article':
+        return <ArticlePage 
+            key="article" 
+            onViewChange={handleViewChange} 
+            isFocusMode={isFocusMode}
+            setFocusMode={setFocusMode}
+          />;
+      case 'live':
+        return <LiveCoveragePage key="live" onViewChange={handleViewChange} />;
+      default:
+        return <LandingPage key="landing" onViewChange={handleViewChange} />;
+    }
+  }
+
   return (
     <main>
       <ScrollProgress isFocusMode={isArticleInFocus} />
@@ -69,21 +90,10 @@ export default function Home() {
       />
       
       <AnimatePresence mode="wait">
-        {currentView === 'landing' ? (
-          <LandingPage key="landing" onViewChange={handleViewChange} />
-        ) : currentView === 'main' ? (
-          <MainNewsPage key="main" onViewChange={handleViewChange} />
-        ) : (
-          <ArticlePage 
-            key="article" 
-            onViewChange={handleViewChange} 
-            isFocusMode={isFocusMode}
-            setFocusMode={setFocusMode}
-          />
-        )}
+        {renderContent()}
       </AnimatePresence>
       
-      {currentView !== 'article' && <Footer />}
+      {currentView !== 'article' && currentView !== 'live' && <Footer />}
     </main>
   );
 }

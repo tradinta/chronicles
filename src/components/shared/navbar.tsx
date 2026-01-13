@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Sun, Moon, ArrowLeft, X } from 'lucide-react';
+import { Search, Sun, Moon, ArrowLeft, X, Radio } from 'lucide-react';
 import type { View } from '@/app/page';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -31,7 +31,7 @@ export default function Navbar({ isDark, toggleTheme, onViewChange, currentView,
   const navClasses = cn(
     "fixed top-0 left-0 right-0 z-40 transition-all duration-500 ease-in-out px-6 md:px-12 h-20 flex items-center justify-between",
     isFocusMode ? 'opacity-0 hover:opacity-100' : 'opacity-100',
-    (isScrolled || currentView === 'main' || currentView === 'article')
+    (isScrolled || currentView !== 'landing')
       ? 'bg-background/80 backdrop-blur-md border-b border-border' 
       : 'bg-transparent'
   );
@@ -45,7 +45,7 @@ export default function Navbar({ isDark, toggleTheme, onViewChange, currentView,
         transition={{ duration: 0.6 }}
       >
         <div className="flex items-center space-x-4">
-          {currentView === 'article' && (
+          {(currentView === 'article' || currentView === 'live') && (
             <button 
               onClick={() => onViewChange('main')}
               className="p-2 rounded-full transition-colors text-muted-foreground hover:bg-secondary"
@@ -62,7 +62,7 @@ export default function Navbar({ isDark, toggleTheme, onViewChange, currentView,
 
         <div className={cn(
           "hidden md:flex items-center space-x-8 transition-opacity duration-300",
-          currentView === 'article' ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          (currentView === 'article' || currentView === 'live') ? 'opacity-0 pointer-events-none' : 'opacity-100'
         )}>
           {navLinks.map((link) => (
             <div key={link} onClick={() => onViewChange('main')} className="relative group cursor-pointer h-full flex items-center">
@@ -72,6 +72,12 @@ export default function Navbar({ isDark, toggleTheme, onViewChange, currentView,
               <span className="absolute bottom-5 left-0 w-0 h-[1px] bg-foreground transition-all duration-300 group-hover:w-full" />
             </div>
           ))}
+           <div onClick={() => onViewChange('live')} className="relative group cursor-pointer h-full flex items-center">
+              <span className="flex items-center text-sm font-medium tracking-wide text-primary group-hover:text-foreground transition-colors duration-300">
+                <Radio size={14} className="mr-2 animate-pulse" />
+                Live
+              </span>
+            </div>
         </div>
 
         <div className="flex items-center space-x-6">
