@@ -46,7 +46,7 @@ export default function MainNewsPage() {
           </div>
 
           <div className="lg:col-span-3">
-             <Sidebar onViewChange={() => router.push('/article/1')} />
+             <Sidebar onViewChange={(id) => router.push(`/article/${id}`)} />
           </div>
 
         </div>

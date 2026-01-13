@@ -7,6 +7,7 @@ import { Clock, Share2, Zap } from 'lucide-react';
 import type { Article } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 type ArticleRowProps = {
   article: Article;
@@ -43,14 +44,13 @@ export default function ArticleRow({ article, onViewChange }: ArticleRowProps) {
       initial={{ opacity: 0, y: 10 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-20px" }}
-      onClick={() => onViewChange(`/article/${article.id}`)}
-      className="group py-8 border-b border-border cursor-pointer"
+      className="group py-8 border-b border-border"
     >
       <div className="container mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
         <div className="md:col-span-3 lg:col-span-2 overflow-hidden rounded-sm bg-muted aspect-[4/3] relative">
            {article.image && <Image 
              src={article.image.imageUrl} 
-             alt={article.title} 
+             alt={article.title || 'Article image'}
              fill
              data-ai-hint={article.image.imageHint}
              className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 filter grayscale-[20%] group-hover:grayscale-0" 
@@ -65,18 +65,22 @@ export default function ArticleRow({ article, onViewChange }: ArticleRowProps) {
                     Breaking
                 </span>
             )}
-            <span className="text-[10px] font-bold tracking-widest uppercase text-primary">
-              {article.category}
-            </span>
+            {article.category && (
+              <Link href={`/category/${article.category.toLowerCase()}`} className="text-[10px] font-bold tracking-widest uppercase text-primary hover:underline">
+                {article.category}
+              </Link>
+            )}
             <span className="text-[10px] text-muted-foreground/50">•</span>
             <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
               {article.time} ago
             </span>
           </div>
 
-          <h3 className={cn("font-serif text-2xl md:text-3xl leading-tight mb-3 group-hover:text-muted-foreground transition-colors", "text-foreground")}>
-            {article.title}
-          </h3>
+          <Link href={`/article/${article.id}`}>
+            <h3 className={cn("font-serif text-2xl md:text-3xl leading-tight mb-3 group-hover:text-muted-foreground transition-colors cursor-pointer", "text-foreground")}>
+              {article.title}
+            </h3>
+          </Link>
 
           <p className="text-sm md:text-base leading-relaxed max-w-2xl transition-all duration-300 text-muted-foreground">
             {article.summary}
@@ -86,9 +90,9 @@ export default function ArticleRow({ article, onViewChange }: ArticleRowProps) {
              <span className="text-xs font-medium flex items-center text-muted-foreground">
                <Clock size={12} className="mr-1" /> {article.readTime}
              </span>
-             <span className="text-xs font-medium flex items-center text-muted-foreground">
+             <button className="text-xs font-medium flex items-center text-muted-foreground">
                <Share2 size={12} className="mr-1" /> Share
-             </span>
+             </button>
           </div>
         </div>
       </div>

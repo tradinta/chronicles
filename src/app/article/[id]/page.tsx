@@ -37,12 +37,12 @@ export default function ArticlePage() {
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
           <div className="flex items-center space-x-3 mb-6">
             <span className="h-[1px] w-8 bg-muted-foreground/50"></span>
-            <button 
-              onClick={() => router.push('/news')}
+            <Link 
+              href="/category/technology"
               className="text-xs font-bold tracking-[0.2em] uppercase cursor-pointer hover:underline text-primary"
             >
               Technology
-            </button>
+            </Link>
           </div>
           
           <h1 className="font-serif text-5xl md:text-7xl leading-[1.1] mb-8 text-foreground">
