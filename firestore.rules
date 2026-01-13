@@ -113,7 +113,7 @@ service cloud.firestore {
      */
     match /articles/{articleId} {
       allow get: if true;
-      allow list: if isSignedIn() && request.query.where[0][2] == request.auth.uid;
+      allow list: if request.auth.uid == request.query.get('where')[0][2];
       allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
       allow update: if isSignedIn() && resource.data.authorId == request.auth.uid;
       allow delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
