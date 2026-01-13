@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from 'next/image';
@@ -46,13 +47,13 @@ export default function ArticleRow({ article, onViewChange }: ArticleRowProps) {
     >
       <div className="container mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
         <div className="md:col-span-3 lg:col-span-2 overflow-hidden rounded-sm bg-muted aspect-[4/3] relative">
-           <Image 
+           {article.image && <Image 
              src={article.image.imageUrl} 
              alt={article.title} 
              fill
              data-ai-hint={article.image.imageHint}
              className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 filter grayscale-[20%] group-hover:grayscale-0" 
-           />
+           />}
         </div>
 
         <div className="md:col-span-9 lg:col-span-7 flex flex-col justify-center h-full pt-1">
