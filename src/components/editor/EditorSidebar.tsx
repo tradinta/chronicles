@@ -2,7 +2,7 @@
 'use client';
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, AlignLeft, CheckCircle2, Bot, LayoutGrid, Book, Globe, X } from 'lucide-react';
+import { ChevronRight, AlignLeft, CheckCircle2, Bot, LayoutGrid, Book, Globe, X, Wand2, BrainCircuit } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { generateHeadlines } from '@/ai/flows/editor-flow';
 
