@@ -50,7 +50,7 @@ const PreFlightChecklist = ({ checklistItems, isDark }) => (
         {checklistItems.map((item, i) => (
             <div key={i} className="flex items-center space-x-3 text-sm group cursor-pointer">
                 <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${item.done ? 'bg-green-500 border-green-500' : (isDark ? 'border-stone-700 group-hover:border-stone-500' : 'border-stone-300 group-hover:border-stone-400')}`}>
-                    {item.done && <Check size={10} className="text-white dark:text-stone-900" />}
+                    {item.done && <CheckCircle2 size={10} className="text-white dark:text-stone-900" />}
                 </div>
                 <span className={`transition-colors ${item.done ? 'text-stone-500 line-through' : (isDark ? 'text-stone-300' : 'text-stone-700')}`}>{item.label}</span>
             </div>
@@ -137,7 +137,7 @@ const EditorSidebar = ({ isOpen, setIsOpen, isFocusMode, isDark, headline, subhe
              )}
              {activeTab === 'ai' && (
                 <div className="space-y-6">
-                   <div className={`p-4 rounded-lg border flex flex-col text-center space-y-3 ${isDark ? 'bg-indigo-900/20 border-indigo-500/30' : 'bg-indigo-50 border-indigo-200'}`}>
+                   <div className={`p-4 rounded-lg border flex flex-col text-center space-y-3 ${isDark ? 'bg-indigo-900/10 border-indigo-500/30' : 'bg-indigo-50 border-indigo-200'}`}>
                       <Wand2 size={24} className="text-indigo-500 mx-auto" />
                       <div>
                          <h4 className={`text-sm font-bold ${isDark ? 'text-indigo-200' : 'text-indigo-900'}`}>Headline Assistant</h4>

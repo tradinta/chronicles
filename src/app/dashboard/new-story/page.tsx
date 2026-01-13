@@ -7,7 +7,7 @@ import {
   Send, Type, Quote, Heading2, AlertCircle, Zap, Minimize2,
   ImagePlus,
   Bot, Sparkles, Wand2,
-  LayoutGrid, Book, Check, BrainCircuit, AlignLeft
+  Layout, Book, Check, BrainCircuit, AlignLeft
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore } from '@/firebase';
@@ -26,7 +26,7 @@ const NewsEditorPage = () => {
   const firestore = useFirestore();
 
   const [showEntryModal, setShowEntryModal] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [isBreaking, setIsBreaking] = useState(false);
   
@@ -156,12 +156,12 @@ const NewsEditorPage = () => {
       <EntryModal show={showEntryModal} setShow={setShowEntryModal} isDark={isDark} />
       
       {/* Main Content Area */}
-      <main className={`flex-1 transition-all duration-300 ease-in-out ${isSidebarOpen && !isFocusMode ? 'lg:mr-[24rem]' : ''}`}>
+      <main className={`flex-1 transition-all duration-300 ease-in-out lg:mr-0 ${isSidebarOpen && !isFocusMode ? 'lg:mr-[24rem]' : ''}`}>
         <div className="max-w-3xl mx-auto px-6 md:px-12 py-12">
           
           <motion.div 
             animate={{ opacity: isFocusMode ? 0.3 : 1, y: isFocusMode ? -20 : 0 }}
-            className={`mb-12 border-b pb-8 transition-colors ${isDark ? 'border-stone-800' : 'border-stone-700'}`}
+            className={`mb-12 border-b pb-8 transition-colors ${isDark ? 'border-stone-800' : 'border-stone-200'}`}
           >
              <div 
                onDrop={handleDrop}
@@ -259,7 +259,7 @@ const NewsEditorPage = () => {
          <div className="flex items-center space-x-4">
             <button 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
-              className={`lg:hidden flex items-center space-x-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors border ${isDark ? 'border-stone-700 text-stone-400' : 'border-stone-300 text-stone-500'}`}
+              className={`flex items-center space-x-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors border ${isDark ? 'border-stone-700 text-stone-400' : 'border-stone-300 text-stone-500'}`}
             >
               <AlignLeft size={12} />
               <span>Tools</span>
