@@ -2,6 +2,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { 
   Newspaper, 
   Radio, 
@@ -86,6 +87,7 @@ const Ticker = () => (
 );
 
 export default function AssignmentChooser() {
+  const router = useRouter();
   const [selected, setSelected] = useState<AssignmentType | null>(null);
   const [hovered, setHovered] = useState<AssignmentType | null>(null);
   const [dateStr, setDateStr] = useState('');
@@ -94,6 +96,23 @@ export default function AssignmentChooser() {
     const d = new Date();
     setDateStr(d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase());
   }, []);
+
+  const handleConfirm = () => {
+    if (!selected) return;
+
+    const paths: Record<AssignmentType, string> = {
+      standard: '/dashboard/new-story',
+      live: '/live',
+      secret: '/off-the-record',
+      editorial: '/dashboard/editorial/new',
+    };
+
+    const path = paths[selected];
+    if (path) {
+      router.push(path);
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-primary-foreground relative overflow-hidden flex flex-col">
@@ -255,7 +274,7 @@ export default function AssignmentChooser() {
                         </div>
                         <button 
                             className="bg-primary hover:bg-accent text-white h-12 w-12 rounded-full flex items-center justify-center transition-colors group"
-                            onClick={() => alert(`Starting assignment: ${options.find(o => o.id === selected)?.title}`)}
+                            onClick={handleConfirm}
                         >
                             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                         </button>
