@@ -1,7 +1,7 @@
 
 "use client";
 
-import { TrendingUp, Bookmark, EyeOff } from 'lucide-react';
+import { TrendingUp, Bookmark } from 'lucide-react';
 import type { View } from '@/app/page';
 
 const trendingItems = [
@@ -35,17 +35,6 @@ export default function Sidebar({ onViewChange }: SidebarProps) {
               </li>
             ))}
           </ul>
-        </div>
-
-        <div 
-          onClick={() => onViewChange('off-the-record')}
-          className="p-6 rounded-lg bg-gradient-to-br from-purple-900/10 via-black/10 to-orange-900/10 dark:from-purple-900/20 dark:via-black/20 dark:to-orange-900/20 border border-border hover:border-primary/50 transition-all cursor-pointer group"
-        >
-           <div className="flex items-center justify-between mb-4">
-              <h4 className="text-xs font-bold tracking-widest uppercase text-muted-foreground group-hover:text-foreground">Off The Record</h4>
-              <EyeOff size={14} className="text-muted-foreground group-hover:text-primary" />
-           </div>
-           <p className="text-sm text-muted-foreground">Unofficial reporting, rumors, and cultural commentary. Enter at your own risk.</p>
         </div>
 
         <div className="p-6 rounded-lg bg-secondary/30 dark:bg-secondary/20">

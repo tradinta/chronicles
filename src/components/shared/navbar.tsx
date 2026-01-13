@@ -1,9 +1,10 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Sun, Moon, ArrowLeft, X, Radio } from 'lucide-react';
+import { Search, Sun, Moon, ArrowLeft, X, Radio, EyeOff } from 'lucide-react';
 import type { View } from '@/app/page';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -15,8 +16,6 @@ type NavbarProps = {
   currentView: View;
   isFocusMode: boolean;
 };
-
-const navLinks = ['World', 'Technology', 'Business', 'Culture', 'Science'];
 
 export default function Navbar({ isDark, toggleTheme, onViewChange, currentView, isFocusMode }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -45,7 +44,7 @@ export default function Navbar({ isDark, toggleTheme, onViewChange, currentView,
         transition={{ duration: 0.6 }}
       >
         <div className="flex items-center space-x-4">
-          {(currentView === 'article' || currentView === 'live') && (
+          {(currentView === 'article' || currentView === 'live' || currentView === 'off-the-record') && (
             <button 
               onClick={() => onViewChange('main')}
               className="p-2 rounded-full transition-colors text-muted-foreground hover:bg-secondary"
@@ -62,22 +61,20 @@ export default function Navbar({ isDark, toggleTheme, onViewChange, currentView,
 
         <div className={cn(
           "hidden md:flex items-center space-x-8 transition-opacity duration-300",
-          (currentView === 'article' || currentView === 'live') ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          (currentView === 'article') ? 'opacity-0 pointer-events-none' : 'opacity-100'
         )}>
-          {navLinks.map((link) => (
-            <div key={link} onClick={() => onViewChange('main')} className="relative group cursor-pointer h-full flex items-center">
-              <span className="text-sm font-medium tracking-wide text-muted-foreground group-hover:text-foreground transition-colors duration-300">
-                {link}
-              </span>
-              <span className="absolute bottom-5 left-0 w-0 h-[1px] bg-foreground transition-all duration-300 group-hover:w-full" />
-            </div>
-          ))}
-           <div onClick={() => onViewChange('live')} className="relative group cursor-pointer h-full flex items-center">
-              <span className="flex items-center text-sm font-medium tracking-wide text-primary group-hover:text-foreground transition-colors duration-300">
-                <Radio size={14} className="mr-2 animate-pulse" />
-                Live
-              </span>
-            </div>
+          <div onClick={() => onViewChange('live')} className="relative group cursor-pointer h-full flex items-center">
+            <span className="flex items-center text-sm font-medium tracking-wide text-primary group-hover:text-foreground transition-colors duration-300">
+              <Radio size={14} className="mr-2 animate-pulse" />
+              Live
+            </span>
+          </div>
+          <div onClick={() => onViewChange('off-the-record')} className="relative group cursor-pointer h-full flex items-center">
+            <span className="flex items-center text-sm font-medium tracking-wide text-purple-500/80 dark:text-purple-400/80 group-hover:text-foreground transition-colors duration-300">
+              <EyeOff size={14} className="mr-2" />
+              Off the Record
+            </span>
+          </div>
         </div>
 
         <div className="flex items-center space-x-6">
