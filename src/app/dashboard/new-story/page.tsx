@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Send, Type, Quote, Heading2, AlertCircle, Zap,
@@ -38,6 +38,8 @@ const NewsEditorPage = () => {
   const router = useRouter();
   const { user } = useUser();
   const firestore = useFirestore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
 
   const [showEntryModal, setShowEntryModal] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -248,6 +250,14 @@ const NewsEditorPage = () => {
     e.stopPropagation();
   };
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleImageUpload(file);
+    }
+  };
+  const triggerFileSelect = () => fileInputRef.current?.click();
+
   const [isDark, setIsDark] = useState(false);
   useEffect(() => {
     setIsDark(document.documentElement.classList.contains('dark'));
@@ -271,10 +281,12 @@ const NewsEditorPage = () => {
             animate={{ opacity: isFocusMode ? 0.3 : 1, y: isFocusMode ? -20 : 0 }}
             className="mb-12 border-b pb-8 transition-colors border-stone-200 dark:border-stone-800"
           >
+             <input type="file" ref={fileInputRef} onChange={handleImageSelect} accept="image/*" className="hidden" />
              <div 
                onDrop={handleDrop}
                onDragOver={handleDragOver}
-               className="group w-full aspect-video rounded-xl mb-8 flex items-center justify-center border-2 border-dashed transition-colors relative overflow-hidden border-stone-300 bg-stone-100 hover:border-stone-400 dark:border-stone-800 dark:bg-stone-900/50 dark:hover:border-stone-700">
+               onClick={triggerFileSelect}
+               className="group w-full aspect-video rounded-xl mb-8 flex items-center justify-center border-2 border-dashed transition-colors relative overflow-hidden cursor-pointer border-stone-300 bg-stone-100 hover:border-stone-400 dark:border-stone-800 dark:bg-stone-900/50 dark:hover:border-stone-700">
                 {coverImageUrl ? (
                    <Image src={coverImageUrl} alt="Cover image" fill objectFit="cover" />
                 ) : (
@@ -337,7 +349,7 @@ const NewsEditorPage = () => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                         <DropdownMenuItem onClick={() => setAuthor(user?.displayName || 'Anonymous')}>
-                           {user?.displayName || 'Registered Name'}
+                           {user?.displayName || 'Anonymous'}
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setAuthor('Anonymous')}>
                            Anonymous
@@ -512,6 +524,8 @@ const NewsEditorPage = () => {
 };
 
 export default NewsEditorPage;
+
+    
 
     
 
