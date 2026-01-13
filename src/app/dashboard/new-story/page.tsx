@@ -39,7 +39,7 @@ const NewsEditorPage = () => {
   const { user } = useUser();
   const firestore = useFirestore();
 
-  const [showEntryModal, setShowEntryModal] = useState(true);
+  const [showEntryModal, setShowEntryModal] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [isBreaking, setIsBreaking] = useState(false);
@@ -382,7 +382,7 @@ const NewsEditorPage = () => {
           >
             <EditorSidebar
               isOpen={isSidebarOpen}
-              setIsOpen={setIsOpen}
+              setIsOpen={setIsSidebarOpen}
               isFocusMode={isFocusMode}
               isDark={isDark}
               headline={headline}
@@ -416,7 +416,7 @@ const NewsEditorPage = () => {
             >
               <EditorSidebar
                 isOpen={isSidebarOpen}
-                setIsOpen={setIsOpen}
+                setIsOpen={setIsSidebarOpen}
                 isFocusMode={isFocusMode}
                 isDark={isDark}
                 headline={headline}
@@ -512,5 +512,7 @@ const NewsEditorPage = () => {
 };
 
 export default NewsEditorPage;
+
+    
 
     
