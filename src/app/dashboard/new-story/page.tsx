@@ -47,6 +47,7 @@ const NewsEditorPage = () => {
   const [coverImageUrl, setCoverImageUrl] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [category, setCategory] = useState('');
+  const [articleFormat, setArticleFormat] = useState('');
   
   const [blocks, setBlocks] = useState([
     { id: Date.now(), type: 'paragraph', content: "" },
@@ -71,10 +72,11 @@ const NewsEditorPage = () => {
       coverImageUrl,
       tags,
       category,
+      articleFormat,
       blocks,
       timestamp: new Date().toISOString(),
     };
-  }, [headline, subheading, coverImageUrl, tags, category, blocks]);
+  }, [headline, subheading, coverImageUrl, tags, category, articleFormat, blocks]);
 
   // Autosave to localStorage
   useEffect(() => {
@@ -135,6 +137,7 @@ const NewsEditorPage = () => {
     setCoverImageUrl(draft.coverImageUrl || '');
     setTags(draft.tags || []);
     setCategory(draft.category || '');
+    setArticleFormat(draft.articleFormat || '');
     setBlocks(draft.blocks || [{ id: Date.now(), type: 'paragraph', content: "" }]);
     toast({ title: 'Draft Restored', description: `Loaded version from ${new Date(draft.timestamp).toLocaleTimeString()}`});
   };
@@ -242,39 +245,49 @@ const NewsEditorPage = () => {
   }, []);
 
   return (
-    <div className={`min-h-screen pt-16 flex flex-1 transition-colors duration-500 ${isDark ? 'bg-stone-900' : 'bg-stone-50'}`}>
-      <EntryModal show={showEntryModal} setShow={setShowEntryModal} isDark={isDark} setCategory={setCategory} />
+    <div className="flex h-screen bg-stone-50 dark:bg-stone-900">
+      <EntryModal 
+        show={showEntryModal} 
+        setShow={setShowEntryModal} 
+        isDark={isDark} 
+        setCategory={setCategory}
+        setArticleFormat={setArticleFormat}
+      />
       
       {/* Main Content Area */}
-      <main className="flex-1 transition-all duration-300 ease-in-out overflow-y-auto">
+      <main className="flex-1 transition-all duration-300 ease-in-out overflow-y-auto pt-16">
         <div className="max-w-3xl mx-auto px-6 md:px-12 py-12">
           
           <motion.div 
             animate={{ opacity: isFocusMode ? 0.3 : 1, y: isFocusMode ? -20 : 0 }}
-            className={`mb-12 border-b pb-8 transition-colors ${isDark ? 'border-stone-800' : 'border-stone-200'}`}
+            className="mb-12 border-b pb-8 transition-colors border-stone-200 dark:border-stone-800"
           >
              <div 
                onDrop={handleDrop}
                onDragOver={handleDragOver}
-               className={`group w-full aspect-video rounded-xl mb-8 flex items-center justify-center border-2 border-dashed transition-colors relative overflow-hidden ${isDark ? 'border-stone-800 bg-stone-900/50 hover:border-stone-700' : 'border-stone-300 bg-stone-100 hover:border-stone-400'}`}>
+               className="group w-full aspect-video rounded-xl mb-8 flex items-center justify-center border-2 border-dashed transition-colors relative overflow-hidden border-stone-300 bg-stone-100 hover:border-stone-400 dark:border-stone-800 dark:bg-stone-900/50 dark:hover:border-stone-700">
                 {coverImageUrl ? (
                    <Image src={coverImageUrl} alt="Cover image" fill objectFit="cover" />
                 ) : (
                    <div className="text-center p-4">
-                      <ImagePlus size={32} className={`mx-auto mb-2 transition-colors ${isDark ? 'text-stone-600 group-hover:text-stone-500' : 'text-stone-400 group-hover:text-stone-500'}`} />
-                      <span className={`text-xs font-bold uppercase tracking-wider transition-colors ${isDark ? 'text-stone-500 group-hover:text-stone-400' : 'text-stone-500 group-hover:text-stone-600'}`}>Add Cover Image</span>
+                      <ImagePlus size={32} className="mx-auto mb-2 transition-colors text-stone-400 group-hover:text-stone-500 dark:text-stone-600 dark:group-hover:text-stone-500" />
+                      <span className="text-xs font-bold uppercase tracking-wider transition-colors text-stone-500 group-hover:text-stone-600 dark:text-stone-500 dark:group-hover:text-stone-400">Add Cover Image</span>
                    </div>
                 )}
              </div>
              
              <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center space-x-3">
-                   {category && <span className={`text-xs font-bold uppercase tracking-widest ${isDark ? 'text-primary' : 'text-primary'}`}>{category}</span>}
+                   {category && <span className="text-xs font-bold uppercase tracking-widest text-primary">{category}</span>}
+                   {articleFormat && <>
+                     <span className="text-xs text-muted-foreground">/</span>
+                     <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{articleFormat}</span>
+                   </>}
                 </div>
                 <div className="flex items-center space-x-4">
                    <button 
                       onClick={() => setIsFocusMode(!isFocusMode)}
-                      className={`flex items-center space-x-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors border ${isFocusMode ? 'bg-primary text-primary-foreground border-primary' : (isDark ? 'border-stone-700 text-stone-400' : 'border-stone-300 text-stone-500')}`}
+                      className={`flex items-center space-x-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors border ${isFocusMode ? 'bg-primary text-primary-foreground border-primary' : 'border-stone-300 text-stone-500 dark:border-stone-700 dark:text-stone-400'}`}
                    >
                       <Minimize2 size={12} />
                       <span>{isFocusMode ? 'Exit Zen' : 'Zen Mode'}</span>
@@ -295,17 +308,17 @@ const NewsEditorPage = () => {
                value={headline}
                onChange={(e) => setHeadline(e.target.value)}
                autoFocus
-               className={`w-full bg-transparent outline-none font-serif text-4xl md:text-5xl font-bold leading-tight mb-6 placeholder-opacity-30 ${isDark ? 'text-stone-100 placeholder-stone-700' : 'text-stone-900 placeholder-stone-400'}`}
+               className="w-full bg-transparent outline-none font-serif text-4xl md:text-5xl font-bold leading-tight mb-6 placeholder-opacity-30 text-stone-900 placeholder-stone-400 dark:text-stone-100 dark:placeholder-stone-700"
              />
              <input 
                type="text"
                value={subheading}
                onChange={(e) => setSubheading(e.target.value)}
                placeholder="Subheading or summary (optional)" 
-               className={`w-full bg-transparent outline-none text-lg font-light mb-8 placeholder-opacity-50 ${isDark ? 'text-stone-400 placeholder-stone-600' : 'text-stone-600 placeholder-stone-400'}`}
+               className="w-full bg-transparent outline-none text-lg font-light mb-8 placeholder-opacity-50 text-stone-600 placeholder-stone-400 dark:text-stone-400 dark:placeholder-stone-600"
              />
 
-             <div className={`flex items-center space-x-6 text-xs font-mono uppercase tracking-wide opacity-60 ${isDark ? 'text-stone-500' : 'text-stone-500'}`}>
+             <div className="flex items-center space-x-6 text-xs font-mono uppercase tracking-wide opacity-60 text-stone-500 dark:text-stone-500">
                 <span>{user?.displayName || 'Loading...'}</span>
                 <span>•</span>
                 <span>{new Date().toLocaleDateString()}</span>
@@ -319,10 +332,10 @@ const NewsEditorPage = () => {
                 <EditorBlock key={block.id} block={block} updateContent={updateBlockContent} isDark={isDark} />
              ))}
              <div className="my-12 flex justify-center group relative">
-                <div className={`absolute top-1/2 left-0 right-0 h-px transition-colors ${isDark ? 'bg-stone-800 group-hover:bg-stone-700' : 'bg-stone-200 group-hover:bg-stone-300'}`}></div>
-                <div className={`relative z-10 p-1.5 rounded-full border flex space-x-1 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0 ${isDark ? 'bg-stone-900 border-stone-700 shadow-2xl shadow-black' : 'bg-white border-stone-200 shadow-lg'}`}>
+                <div className="absolute top-1/2 left-0 right-0 h-px transition-colors bg-stone-200 group-hover:bg-stone-300 dark:bg-stone-800 dark:group-hover:bg-stone-700"></div>
+                <div className="relative z-10 p-1.5 rounded-full border flex space-x-1 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0 bg-white border-stone-200 shadow-lg dark:bg-stone-900 dark:border-stone-700 dark:shadow-2xl dark:shadow-black">
                    {[ { icon: Type, type: 'paragraph', tooltip: 'Text' }, { icon: Quote, type: 'quote', tooltip: 'Quote' }, { icon: Heading2, type: 'h2', tooltip: 'Heading' }, { icon: ImagePlus, type: 'image', tooltip: 'Image' }, { icon: Sparkles, type: 'infobox', tooltip: 'AI Box' }, ].map((tool) => (
-                      <button key={tool.type} onClick={() => addBlock(tool.type)} className={`p-2 rounded-full hover:scale-110 transition-transform ${isDark ? 'text-stone-400 hover:text-white' : 'text-stone-500 hover:text-black'}`} title={tool.tooltip}>
+                      <button key={tool.type} onClick={() => addBlock(tool.type)} className="p-2 rounded-full hover:scale-110 transition-transform text-stone-500 hover:text-black dark:text-stone-400 dark:hover:text-white" title={tool.tooltip}>
                          <tool.icon size={16} />
                       </button>
                    ))}
@@ -336,7 +349,7 @@ const NewsEditorPage = () => {
       <AnimatePresence>
         {isSidebarOpen && !isFocusMode && (
           <motion.aside 
-            className="hidden md:block relative border-l z-20"
+            className="hidden md:block relative border-l z-20 pt-16"
             initial={{ width: 0 }}
             animate={{ width: '360px' }}
             exit={{ width: 0 }}
@@ -363,14 +376,14 @@ const NewsEditorPage = () => {
         {isSidebarOpen && (
           <div className="md:hidden">
             <motion.div 
-              className="fixed inset-0 bg-black/50 z-30" 
+              className="fixed inset-0 bg-black/50 z-30 pt-16" 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsSidebarOpen(false)}
             />
             <motion.div 
-              className={`fixed top-0 right-0 bottom-0 w-[85%] max-w-sm border-l z-40 ${isDark ? 'bg-stone-900' : 'bg-white'}`}
+              className="fixed top-0 right-0 bottom-0 w-[85%] max-w-sm border-l z-40 bg-white dark:bg-stone-900 pt-16"
               initial={{ x: '100%'}}
               animate={{ x: 0 }}
               exit={{ x: '100%'}}
@@ -396,26 +409,24 @@ const NewsEditorPage = () => {
       {/* Footer Actions */}
       <motion.div 
         animate={{ y: isFocusMode ? 100 : 0 }} 
-        className={`fixed bottom-0 left-0 right-0 h-16 border-t px-6 flex items-center justify-between z-20 transition-transform duration-500 
-          ${isDark ? 'bg-stone-900/80 backdrop-blur-md border-stone-800' : 'bg-white/80 backdrop-blur-md border-stone-200'}
-          `}
+        className="fixed bottom-0 left-0 right-0 h-16 border-t px-6 flex items-center justify-between z-20 transition-transform duration-500 bg-white/80 backdrop-blur-md border-stone-200 dark:bg-stone-900/80 dark:border-stone-800"
       >
          <div className="flex items-center space-x-4">
             <button 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
-              className={`flex items-center space-x-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors border ${isDark ? 'border-stone-700 text-stone-400' : 'border-stone-300 text-stone-500'}`}
+              className="flex items-center space-x-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors border border-stone-300 text-stone-500 dark:border-stone-700 dark:text-stone-400"
             >
               <AlignLeft size={12} />
               <span>Tools</span>
             </button>
             <Dialog>
               <DialogTrigger asChild>
-                <button className={`flex items-center space-x-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors border ${isDark ? 'border-stone-700 text-stone-400' : 'border-stone-300 text-stone-500'}`}>
+                <button className="flex items-center space-x-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors border border-stone-300 text-stone-500 dark:border-stone-700 dark:text-stone-400">
                   <Layout size={12} />
                   <span>Preview</span>
                 </button>
               </DialogTrigger>
-              <DialogContent className={`max-w-4xl h-[80vh] ${isDark ? 'bg-stone-900 border-stone-700' : 'bg-white'}`}>
+              <DialogContent className="max-w-4xl h-[80vh] bg-white dark:bg-stone-900 dark:border-stone-700">
                 <DialogHeader>
                   <DialogTitle>Article Preview</DialogTitle>
                 </DialogHeader>
@@ -430,12 +441,12 @@ const NewsEditorPage = () => {
 
             <Dialog>
               <DialogTrigger asChild>
-                 <button className={`flex items-center space-x-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors border ${isDark ? 'border-stone-700 text-stone-400' : 'border-stone-300 text-stone-500'}`}>
+                 <button className="flex items-center space-x-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors border border-stone-300 text-stone-500 dark:border-stone-700 dark:text-stone-400">
                    <History size={12} />
                    <span>History & Drafts</span>
                  </button>
               </DialogTrigger>
-              <DialogContent className={`max-w-2xl ${isDark ? 'bg-stone-900 border-stone-700' : 'bg-white'}`}>
+              <DialogContent className="max-w-2xl bg-white dark:bg-stone-900 dark:border-stone-700">
                  <DialogHeader>
                     <DialogTitle>History & Drafts</DialogTitle>
                     <DialogDescription>Select a version to restore.</DialogDescription>
@@ -443,7 +454,7 @@ const NewsEditorPage = () => {
                  <div className="max-h-[60vh] overflow-y-auto space-y-2">
                     {/* In a real app, you would also fetch and display drafts from Firestore here */}
                     {localDrafts.map((draft, i) => (
-                      <div key={i} onClick={() => restoreDraft(draft)} className={`p-3 rounded-md border cursor-pointer ${isDark ? 'border-stone-800 hover:bg-stone-800' : 'border-stone-200 hover:bg-stone-50'}`}>
+                      <div key={i} onClick={() => restoreDraft(draft)} className="p-3 rounded-md border cursor-pointer border-stone-200 hover:bg-stone-50 dark:border-stone-800 dark:hover:bg-stone-800">
                         <div className="flex justify-between items-center">
                           <div className="flex items-center space-x-3">
                             <Laptop size={14} className="text-muted-foreground" />
@@ -461,7 +472,7 @@ const NewsEditorPage = () => {
             </Dialog>
          </div>
          <div className="flex items-center space-x-4">
-            <button onClick={handleSaveDraft} disabled={isSaving} className={`px-4 py-2 rounded-md text-sm font-semibold transition-colors flex items-center space-x-2 ${isDark ? 'text-stone-400 hover:bg-stone-800' : 'text-stone-600 hover:bg-stone-200'}`}>
+            <button onClick={handleSaveDraft} disabled={isSaving} className="px-4 py-2 rounded-md text-sm font-semibold transition-colors flex items-center space-x-2 text-stone-600 hover:bg-stone-200 dark:text-stone-400 dark:hover:bg-stone-800">
               <Save size={14} />
               <span>{isSaving ? 'Saving...' : 'Save Draft'}</span>
             </button>
@@ -476,5 +487,3 @@ const NewsEditorPage = () => {
 };
 
 export default NewsEditorPage;
-
-    
