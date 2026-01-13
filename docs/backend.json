@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "User": {
@@ -28,6 +29,10 @@
           "type": "string",
           "description": "Date and time when the user joined the application.",
           "format": "date-time"
+        },
+        "bio": {
+          "type": "string",
+          "description": "A short biography of the user."
         }
       },
       "required": [

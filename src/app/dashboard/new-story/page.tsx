@@ -26,7 +26,7 @@ import EditorSidebar from '@/components/editor/EditorSidebar';
 import EditorBlock from '@/components/editor/EditorBlock';
 import { EntryModal } from '@/components/editor/EntryModal';
 import { generateHeadlines, improveWriting } from '@/ai/flows/editor-flow';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -295,7 +295,7 @@ const NewsEditorPage = () => {
           <DialogHeader>
             <DialogTitle>Update Your Profile</DialogTitle>
             <DialogDescription>
-              {authorError} To continue, you must set a display name for your author profile.
+              {authorError} To publish articles, you must set a display name for your author profile.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -304,7 +304,7 @@ const NewsEditorPage = () => {
                 Close
               </Button>
             </DialogClose>
-            <Button onClick={() => router.push('/dashboard?tab=profile')}>Go to Dashboard</Button>
+            <Button onClick={() => router.push('/dashboard?tab=profile')}>Go to Profile</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
