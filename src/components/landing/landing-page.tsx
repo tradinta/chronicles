@@ -4,6 +4,7 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Hero from './hero';
+import BreakingNews from './breaking-news';
 import { placeholderImages } from '@/lib/data';
 import { useRouter } from 'next/navigation';
 
@@ -20,6 +21,7 @@ export default function LandingPage() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>
       <Hero />
+      <BreakingNews />
       
       <div className="w-full py-3 border-y border-border bg-secondary/30 dark:bg-secondary/20 text-muted-foreground overflow-hidden">
         <div className="ticker-wrap cursor-default">

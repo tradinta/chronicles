@@ -76,6 +76,22 @@ export type Article = {
   author?: string;
 };
 
+export const breakingNews: Article[] = [
+    {
+      id: 401,
+      type: 'article',
+      title: "Central Bank unexpectedly raises interest rates by 50 basis points.",
+      time: "2m ago"
+    },
+    {
+      id: 402,
+      type: 'article',
+      title: "Major undersea cable connecting East Africa to Europe has been severed; widespread internet outages reported.",
+      time: "15m ago"
+    },
+];
+
+
 export const articles: Article[] = [
     {
       id: 101,
