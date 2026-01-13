@@ -113,9 +113,7 @@ service cloud.firestore {
      */
     match /articles/{articleId} {
       allow get: if true;
-      // Allow a user to list articles they have authored.
-      // Or allow a general list if no authorId filter is applied.
-      allow list: if (request.query.authorId == request.auth.uid) || (get(/databases/$(database)/documents/articles/$(articleId)).data.authorId == request.auth.uid);
+      allow list: if isSignedIn() && request.query.where[0][2] == request.auth.uid;
       allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
       allow update: if isSignedIn() && resource.data.authorId == request.auth.uid;
       allow delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
