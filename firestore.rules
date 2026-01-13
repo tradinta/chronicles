@@ -1,0 +1,149 @@
+/**
+ * @file firestore.rules
+ * @description Firestore Security Rules for a news application.
+ *
+ * @version 1.0
+ *
+ * @philosophy
+ * This ruleset implements a robust security model balancing user privacy with public content accessibility.
+ * The core philosophy is based on strict user ownership for personal data and a clear separation between private
+ * user-generated content and publicly available application content.
+ *
+ * @structure
+ * - /users/{userId}: Contains user profile data. Each user can only access their own document.
+ * - /users/{userId}/bookmarks/{bookmarkId}: A private subcollection for a user's bookmarked articles. Access is restricted to the owner.
+ * - /articles/{articleId}: A public collection of news articles. Anyone can read, but only authors can write.
+ * - /authors/{authorId}: A public collection of author profiles. Currently read-only.
+ * - /tags/{tagId}: A public collection of tags. Currently read-only.
+ *
+ * @decisions
+ * - User Privacy: A user's profile and bookmarks are strictly confined to their own access. Listing all users is explicitly disallowed to protect privacy.
+ * - Public Content: Articles, Authors, and Tags are in top-level collections, making them publicly readable and queryable by anyone, including unauthenticated users.
+ * - Content Ownership: Write access to public content like articles is controlled. The `authorId` field on an article document is used to enforce that only the original author can modify or delete their work.
+ * - Secure Defaults: For collections like `authors` and `tags`, write access is currently disabled because the data model lacks a clear ownership field (e.g., `creatorId`). This prevents unauthorized content creation and serves as a secure placeholder until the schema is updated.
+ *
+ * @denormalization
+ * The `Article` entity includes a denormalized `authorId` field. This is critical for security, as it allows rules to efficiently and securely verify ownership for write operations without needing to perform costly `get()` calls to other collections.
+ *
+ * @segregation
+ * Private user data (bookmarks) is structurally segregated into a subcollection under the user's document (`/users/{userId}/bookmarks`). This is a more secure and performant pattern than storing private and public data in the same collection with a flag, as it prevents accidental data leakage in list queries.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // -------------------------------------------------------------------------
+    // Helper Functions
+    // -------------------------------------------------------------------------
+
+    /**
+     * isSignedIn
+     * Checks if the user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * isOwner
+     * Checks if the authenticated user's UID matches the provided userId.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * isExistingOwner
+     * Checks if a document exists and if the authenticated user is the owner.
+     * CRITICAL for safe update and delete operations.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    // -------------------------------------------------------------------------
+    // User Data Rules
+    // -------------------------------------------------------------------------
+
+    /**
+     * @description Controls access to user profile documents.
+     * @path /users/{userId}
+     * @allow (create) An authenticated user creating their own profile document for the first time.
+     * @deny (get) An authenticated user trying to read another user's profile.
+     * @principle Restricts access to a user's own data tree and prevents user enumeration.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
+
+      /**
+       * @description Controls access to a user's private bookmarks subcollection.
+       * @path /users/{userId}/bookmarks/{bookmarkId}
+       * @allow (create) An authenticated user creating a bookmark for themselves.
+       * @deny (list) An authenticated user trying to list another user's bookmarks.
+       * @principle Enforces strict ownership for all operations on a user's private subcollection.
+       */
+      match /bookmarks/{bookmarkId} {
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && request.resource.data.userId == userId;
+        allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+        allow delete: if isExistingOwner(userId);
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // Public Content Rules
+    // -------------------------------------------------------------------------
+
+    /**
+     * @description Controls access to news articles. Data is public to read, but writes are restricted to authors.
+     * @path /articles/{articleId}
+     * @allow (get) Any user, authenticated or not, reading a specific article.
+     * @deny (update) An authenticated user trying to update an article they did not author.
+     * @principle Implements a "Public Read, Owner-Only Write" pattern using the 'authorId' field for authorization.
+     */
+    match /articles/{articleId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
+      allow update: if isExistingOwner(resource.data.authorId) && request.resource.data.authorId == resource.data.authorId;
+      allow delete: if isExistingOwner(resource.data.authorId);
+    }
+
+    /**
+     * @description Controls access to author profiles. Data is public to read.
+     * @path /authors/{authorId}
+     * @allow (list) Any user, authenticated or not, listing all authors.
+     * @deny (create) Any user attempting to create a new author profile.
+     * @principle Provides public read access but disables writes as a secure default.
+     */
+    match /authors/{authorId} {
+      allow get: if true;
+      allow list: if true;
+      // CRITICAL: Cannot implement owner-only writes. The 'Author' entity is missing an 'ownerId' or 'creatorId' field.
+      allow create: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+    }
+
+    /**
+     * @description Controls access to article tags. Data is public to read.
+     * @path /tags/{tagId}
+     * @allow (get) Any user, authenticated or not, reading a specific tag.
+     * @deny (create) Any user attempting to create a new tag.
+     * @principle Provides public read access but disables writes as a secure default.
+     */
+    match /tags/{tagId} {
+      allow get: if true;
+      allow list: if true;
+      // CRITICAL: Cannot implement owner-only writes. The 'Tag' entity is missing an 'ownerId' or 'creatorId' field.
+      allow create: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+    }
+  }
+}

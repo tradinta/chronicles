@@ -1,0 +1,275 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the news application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "username": {
+          "type": "string",
+          "description": "The user's username."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address.",
+          "format": "email"
+        },
+        "profileImageUrl": {
+          "type": "string",
+          "description": "URL of the user's profile image.",
+          "format": "uri"
+        },
+        "joinDate": {
+          "type": "string",
+          "description": "Date and time when the user joined the application.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "username",
+        "email",
+        "joinDate"
+      ]
+    },
+    "Article": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Article",
+      "type": "object",
+      "description": "Represents a news article.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Article entity."
+        },
+        "authorId": {
+          "type": "string",
+          "description": "Reference to Author. (Relationship: Author 1:N Article)"
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the article."
+        },
+        "content": {
+          "type": "string",
+          "description": "The main content of the article (e.g., HTML or Markdown)."
+        },
+        "summary": {
+          "type": "string",
+          "description": "A brief summary or excerpt of the article."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL of the article's main image.",
+          "format": "uri"
+        },
+        "publishDate": {
+          "type": "string",
+          "description": "Date and time when the article was published.",
+          "format": "date-time"
+        },
+        "category": {
+          "type": "string",
+          "description": "The category of the article (e.g., World, Technology)."
+        },
+        "tagIds": {
+          "type": "array",
+          "description": "References to Tags. (Relationship: Tag N:N Article)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "authorId",
+        "title",
+        "content",
+        "summary",
+        "imageUrl",
+        "publishDate",
+        "category"
+      ]
+    },
+    "Author": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Author",
+      "type": "object",
+      "description": "Represents the author of a news article.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Author entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the author."
+        },
+        "bio": {
+          "type": "string",
+          "description": "A brief biography of the author."
+        },
+        "profileImageUrl": {
+          "type": "string",
+          "description": "URL of the author's profile image.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "Tag": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Tag",
+      "type": "object",
+      "description": "Represents a tag associated with news articles.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Tag entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the tag (e.g., 'AI', 'Climate Change')."
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "Bookmark": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Bookmark",
+      "type": "object",
+      "description": "Represents a user's saved article.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Bookmark entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Bookmark)"
+        },
+        "articleId": {
+          "type": "string",
+          "description": "Reference to Article. (Relationship: Article 1:N Bookmark)"
+        },
+        "savedDate": {
+          "type": "string",
+          "description": "Date and time when the article was bookmarked.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "articleId",
+        "savedDate"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Collection to store user profiles. Only the user can read/write their own profile. The userId is the Firebase auth uid.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user, corresponding to the Firebase auth UID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/bookmarks/{bookmarkId}",
+        "definition": {
+          "entityName": "Bookmark",
+          "schema": {
+            "$ref": "#/backend/entities/Bookmark"
+          },
+          "description": "Subcollection to store bookmarks for a specific user. Only the user can read/write their own bookmarks.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user, corresponding to the Firebase auth UID."
+            },
+            {
+              "name": "bookmarkId",
+              "description": "The unique identifier for the bookmark."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/articles/{articleId}",
+        "definition": {
+          "entityName": "Article",
+          "schema": {
+            "$ref": "#/backend/entities/Article"
+          },
+          "description": "Collection to store news articles.  No access restrictions.",
+          "params": [
+            {
+              "name": "articleId",
+              "description": "The unique identifier for the article."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/authors/{authorId}",
+        "definition": {
+          "entityName": "Author",
+          "schema": {
+            "$ref": "#/backend/entities/Author"
+          },
+          "description": "Collection to store author profiles. No access restrictions.",
+          "params": [
+            {
+              "name": "authorId",
+              "description": "The unique identifier for the author."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/tags/{tagId}",
+        "definition": {
+          "entityName": "Tag",
+          "schema": {
+            "$ref": "#/backend/entities/Tag"
+          },
+          "description": "Collection to store tags. No access restrictions.",
+          "params": [
+            {
+              "name": "tagId",
+              "description": "The unique identifier for the tag."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to support a news application with users, articles, authors, tags, and bookmarks. The primary goal is to ensure secure, scalable, and debuggable access control.  Authorization Independence is achieved through path-based ownership for private user data and denormalization where collaborative access is required. Structural Segregation is used to ensure that collections contain documents with similar security requirements.  \n\nPrivate data (Bookmarks) are stored under `/users/{userId}` to ensure only the user has access. Articles and Authors are stored in root collections with no access restrictions (QAPs).  Tags also reside in a root collection and can be read by anyone, but write access can be restricted (although it has not been in the user request).\n\n"
+  }
+}
