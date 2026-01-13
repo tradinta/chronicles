@@ -4,9 +4,9 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Hero from './hero';
-import BreakingNews from './breaking-news';
-import { placeholderImages } from '@/lib/data';
+import { placeholderImages, breakingNews } from '@/lib/data';
 import { useRouter } from 'next/navigation';
+import { Zap } from 'lucide-react';
 
 const featuredStories = [
   { title: "Tokyo's Hidden Jazz Bars", cat: "Culture", href: "/article/1" },
@@ -21,14 +21,16 @@ export default function LandingPage() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>
       <Hero />
-      <BreakingNews />
       
-      <div className="w-full py-3 border-y border-border bg-secondary/30 dark:bg-secondary/20 text-muted-foreground overflow-hidden">
-        <div className="ticker-wrap cursor-default">
-          <div className="ticker">
-            {[...Array(2)].map((_, i) => (
-                ["Global markets stabilize", "SpaceX Mars Mission Update", "Climate Summit Agreement", "MoMA Digital Realism Exhibit"].map((item, index) => (
-                    <span key={`${i}-${index}`} className="inline-block px-8 text-xs font-medium tracking-wide uppercase"><span className="mr-2 opacity-50">•</span> {item}</span>
+      <div className="w-full py-3 border-y border-border bg-primary/5 dark:bg-primary/10 text-muted-foreground overflow-hidden">
+        <div className="ticker-wrap cursor-pointer" onClick={() => router.push('/live')}>
+          <div className="ticker flex items-center">
+            {[...Array(4)].map((_, i) => (
+                breakingNews.map((item, index) => (
+                    <span key={`${i}-${index}`} className="inline-flex items-center px-8 text-xs font-medium tracking-wide uppercase">
+                      <Zap size={14} className="mr-3 text-primary/80" />
+                      {item.title}
+                    </span>
                 ))
             ))}
           </div>
