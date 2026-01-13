@@ -1,0 +1,105 @@
+"use client";
+
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, Sun, Moon, ArrowLeft, X } from 'lucide-react';
+import type { View } from '@/app/page';
+import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
+
+type NavbarProps = {
+  isDark: boolean;
+  toggleTheme: () => void;
+  onViewChange: (view: View) => void;
+  currentView: View;
+  isFocusMode: boolean;
+};
+
+const navLinks = ['World', 'Technology', 'Business', 'Culture', 'Science'];
+
+export default function Navbar({ isDark, toggleTheme, onViewChange, currentView, isFocusMode }: NavbarProps) {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const navClasses = cn(
+    "fixed top-0 left-0 right-0 z-40 transition-all duration-500 ease-in-out px-6 md:px-12 h-20 flex items-center justify-between",
+    isFocusMode ? 'opacity-0 hover:opacity-100' : 'opacity-100',
+    (isScrolled || currentView === 'main' || currentView === 'article')
+      ? 'bg-background/80 backdrop-blur-md border-b border-border' 
+      : 'bg-transparent'
+  );
+
+  return (
+    <>
+      <motion.nav
+        className={navClasses}
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="flex items-center space-x-4">
+          {currentView === 'article' && (
+            <button 
+              onClick={() => onViewChange('main')}
+              className="p-2 rounded-full transition-colors text-muted-foreground hover:bg-secondary"
+            >
+              <ArrowLeft size={20} />
+            </button>
+          )}
+          <div className="flex-shrink-0 cursor-pointer group" onClick={() => onViewChange('landing')}>
+            <h1 className="font-serif text-2xl tracking-tighter font-bold text-foreground">
+              The Chronicle<span className="text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300">.</span>
+            </h1>
+          </div>
+        </div>
+
+        <div className={cn(
+          "hidden md:flex items-center space-x-8 transition-opacity duration-300",
+          currentView === 'article' ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        )}>
+          {navLinks.map((link) => (
+            <div key={link} onClick={() => onViewChange('main')} className="relative group cursor-pointer h-full flex items-center">
+              <span className="text-sm font-medium tracking-wide text-muted-foreground group-hover:text-foreground transition-colors duration-300">
+                {link}
+              </span>
+              <span className="absolute bottom-5 left-0 w-0 h-[1px] bg-foreground transition-all duration-300 group-hover:w-full" />
+            </div>
+          ))}
+        </div>
+
+        <div className="flex items-center space-x-6">
+          <button onClick={() => setIsSearchOpen(true)} className="text-muted-foreground hover:text-foreground">
+            <Search strokeWidth={1.5} size={20} />
+          </button>
+          <button onClick={toggleTheme} className="text-muted-foreground hover:text-foreground">
+            {isDark ? <Sun strokeWidth={1.5} size={20} /> : <Moon strokeWidth={1.5} size={20} />}
+          </button>
+          <div className="hidden md:block w-8 h-8 rounded-full overflow-hidden border border-border">
+             <Image src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Profile" width={32} height={32} className="w-full h-full object-cover" />
+          </div>
+        </div>
+      </motion.nav>
+
+      <AnimatePresence>
+        {isSearchOpen && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xl flex items-center justify-center p-4"
+          >
+            <div className="w-full max-w-2xl relative">
+               <Input autoFocus type="text" placeholder="Search..." className="w-full bg-transparent border-b-2 border-white/20 text-4xl font-serif text-white h-auto pb-4 focus:outline-none focus:border-white focus-visible:ring-0 focus-visible:ring-offset-0" />
+               <button onClick={() => setIsSearchOpen(false)} className="absolute right-0 top-1/2 -translate-y-1/2 text-white/60 hover:text-white"><X size={32} /></button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
