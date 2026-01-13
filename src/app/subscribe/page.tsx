@@ -9,6 +9,7 @@ import {
   Lock, Zap, EyeOff, RefreshCw, Shield, Quote,
 } from 'lucide-react';
 import Navbar from '@/components/shared/navbar';
+import type { View } from '@/app/page';
 
 // Reusable FAQ Accordion Item
 const FAQItem = ({ question, answer }) => {
@@ -73,9 +74,21 @@ const FeatureItem = ({ icon: Icon, title, desc, isDark }) => (
   </motion.div>
 );
 
+type PricingCardProps = {
+  title: string;
+  price: string;
+  period: string;
+  description: string;
+  features: string[];
+  planType: 'explorer' | 'insider' | 'vip';
+  isDark: boolean;
+  icon: React.ElementType;
+  onViewChange: (view: View) => void;
+};
+
 const PricingCard = ({ 
-  title, price, period, description, features, planType, isDark, icon: Icon 
-}) => {
+  title, price, period, description, features, planType, isDark, icon: Icon, onViewChange
+}: PricingCardProps) => {
   const getStyles = () => {
     switch (planType) {
       case 'explorer':
@@ -143,7 +156,7 @@ const PricingCard = ({
         ))}
       </div>
 
-      <button className={`w-full py-3 rounded-lg text-xs font-bold tracking-widest uppercase transition-all duration-300 ${styles.btn}`}>
+      <button onClick={() => onViewChange('checkout')} className={`w-full py-3 rounded-lg text-xs font-bold tracking-widest uppercase transition-all duration-300 ${styles.btn}`}>
         {planType === 'explorer' ? 'Start Exploring' : planType === 'insider' ? 'Become an Insider' : 'Unlock VIP'}
       </button>
       
@@ -152,9 +165,12 @@ const PricingCard = ({
   );
 };
 
-export default function SubscribePage() {
+type SubscribePageProps = {
+  onViewChange: (view: View) => void;
+};
+
+export default function SubscribePage({ onViewChange }: SubscribePageProps) {
     const [isDark, setIsDark] = useState(false);
-    const [currentView, setCurrentView] = useState('subscribe');
     const [billingCycle, setBillingCycle] = useState('monthly'); 
 
     useEffect(() => {
@@ -167,15 +183,6 @@ export default function SubscribePage() {
         }
     }, []);
 
-    const toggleTheme = () => {
-        const newTheme = !isDark;
-        setIsDark(newTheme);
-        localStorage.setItem('theme', newTheme ? 'dark' : 'light');
-        if(document) {
-            document.documentElement.classList.toggle('dark', newTheme);
-        }
-    }
-
     const prices = {
       explorer: billingCycle === 'monthly' ? "650" : "550",
       insider: billingCycle === 'monthly' ? "1,500" : "1,275",
@@ -186,14 +193,6 @@ export default function SubscribePage() {
 
   return (
     <div className={`min-h-screen pt-20 ${isDark ? 'bg-[#121212]' : 'bg-[#FDFBF7]'}`}>
-       <Navbar 
-          isDark={isDark} 
-          toggleTheme={toggleTheme}
-          onViewChange={() => {}}
-          currentView={'subscribe'}
-          isFocusMode={false}
-      />
-      
       {/* 1. HERO SECTION */}
       <section className="relative px-6 md:px-12 py-20 overflow-hidden">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -295,6 +294,7 @@ export default function SubscribePage() {
                 features={["Standard news articles", "Weekly Newsletter", "5 Off-Record stories/mo", "Comment access"]}
                 icon={Coffee}
                 isDark={isDark}
+                onViewChange={onViewChange}
               />
 
               <PricingCard 
@@ -306,6 +306,7 @@ export default function SubscribePage() {
                 features={["Unlimited News Access", "Full Off-Record Access", "Daily Newsletter", "Ad-Free Experience", "Offline Reading"]}
                 icon={Star}
                 isDark={isDark}
+                onViewChange={onViewChange}
               />
 
               <PricingCard 
@@ -317,6 +318,7 @@ export default function SubscribePage() {
                 features={["Everything in Insider", "Priority Tip Submission", "Direct Editor Access", "Exclusive Events", "Family Account (4)"]}
                 icon={Crown}
                 isDark={isDark}
+                onViewChange={onViewChange}
               />
 
            </div>
