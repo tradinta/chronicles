@@ -76,6 +76,9 @@ export default function Navbar({ isDark, toggleTheme, onViewChange, currentView,
               Off the Record
             </span>
           </div>
+           <Link href="/subscribe" className="text-sm font-medium tracking-wide text-muted-foreground hover:text-foreground transition-colors">
+            Subscribe
+          </Link>
         </div>
 
         <div className="flex items-center space-x-6">
