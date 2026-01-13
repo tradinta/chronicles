@@ -152,11 +152,11 @@ const NewsEditorPage = () => {
   };
 
   return (
-    <div className={`min-h-screen pt-16 relative flex transition-colors duration-500 ${isDark ? 'bg-stone-900' : 'bg-stone-50'}`}>
+    <div className={`min-h-screen pt-16 flex transition-colors duration-500 ${isDark ? 'bg-stone-900' : 'bg-stone-50'}`}>
       <EntryModal show={showEntryModal} setShow={setShowEntryModal} isDark={isDark} />
       
       {/* Main Content Area */}
-      <main className={`flex-1 transition-all duration-300 ease-in-out lg:mr-0 ${isSidebarOpen && !isFocusMode ? 'lg:mr-[24rem]' : ''}`}>
+      <main className={`flex-1 transition-all duration-300 ease-in-out`}>
         <div className="max-w-3xl mx-auto px-6 md:px-12 py-12">
           
           <motion.div 
@@ -276,5 +276,3 @@ const NewsEditorPage = () => {
 };
 
 export default NewsEditorPage;
-
-    

@@ -93,10 +93,12 @@ const EditorSidebar = ({ isOpen, setIsOpen, isFocusMode, isDark, headline, subhe
     };
   
     return (
-      <div className={`fixed right-0 top-0 bottom-0 w-full md:w-96 border-l-2 transform transition-transform duration-300 z-30 flex flex-col
-        ${isOpen && !isFocusMode ? 'translate-x-0' : 'translate-x-full'} 
-        ${isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-200'}`}
-      >
+      <div className={`
+        fixed top-0 bottom-0 right-0 w-96 border-l-2 transition-transform duration-300 z-30 flex flex-col
+        lg:relative lg:top-auto lg:bottom-auto lg:h-auto lg:border-l-0
+        ${isOpen ? 'translate-x-0' : 'translate-x-full'}
+        ${isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-200'}
+      `}>
         <button onClick={() => setIsOpen(false)} className="absolute top-4 right-4 p-2 rounded-full hover:bg-stone-800 transition-colors text-stone-500 lg:hidden">
             <X size={18} />
         </button>
@@ -105,8 +107,8 @@ const EditorSidebar = ({ isOpen, setIsOpen, isFocusMode, isDark, headline, subhe
         </div>
 
         <div className={`h-16 border-b flex items-center px-2 ${isDark ? 'border-stone-800' : 'border-stone-200'}`}>
-           <SidebarTab id="checklist" icon={CheckCircle2} label="Checklist" activeTab={activeTab} setActiveTab={setActiveTab} />
-           <SidebarTab id="ai" icon={BrainCircuit} label="Co-pilot" activeTab={activeTab} setActiveTab={setActiveTab} />
+            <SidebarTab id="checklist" icon={CheckCircle2} label="Checklist" activeTab={activeTab} setActiveTab={setActiveTab} />
+            <SidebarTab id="ai" icon={BrainCircuit} label="Co-pilot" activeTab={activeTab} setActiveTab={setActiveTab} />
         </div>
         
         <div className="flex-1 overflow-y-auto p-6">
@@ -167,5 +169,3 @@ const EditorSidebar = ({ isOpen, setIsOpen, isFocusMode, isDark, headline, subhe
 };
 
 export default EditorSidebar;
-
-    
