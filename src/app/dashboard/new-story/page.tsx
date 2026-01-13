@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Bot, CheckCircle2, Layout, AlignLeft, ChevronRight, Sparkles, ImageIcon,
-  Send, Type, Quote, Heading2, AlertCircle, Zap, Minimize2, History
+  Send, Type, Quote, Heading2, AlertCircle, Zap, Minimize2, History, Plus, ImagePlus
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore } from '@/firebase';
@@ -251,6 +251,29 @@ export default function NewsEditorPage() {
                   isDark={isDark}
                 />
              ))}
+              <div className="mt-12 flex items-center justify-center">
+                 <div className={`flex items-center gap-1 p-1.5 rounded-full border shadow-lg ${isDark ? 'bg-stone-800 border-stone-700' : 'bg-white border-stone-200'}`}>
+                    {[
+                      { id: 'paragraph', icon: Type, tooltip: 'Text' },
+                      { id: 'quote', icon: Quote, tooltip: 'Quote' },
+                      { id: 'h2', icon: Heading2, tooltip: 'Heading' },
+                      { id: 'image', icon: ImagePlus, tooltip: 'Image' },
+                    ].map(tool => (
+                       <button 
+                         key={tool.id}
+                         onClick={() => addBlock(tool.id)}
+                         className={`p-2.5 rounded-full transition-all hover:scale-110 ${isDark ? 'hover:bg-stone-700 text-stone-400 hover:text-stone-200' : 'hover:bg-stone-100 text-stone-500 hover:text-stone-800'}`}
+                         title={tool.tooltip}
+                       >
+                          <tool.icon size={18} />
+                       </button>
+                    ))}
+                    <div className={`w-px h-6 mx-1 ${isDark ? 'bg-stone-700' : 'bg-stone-200'}`} />
+                    <button className={`p-2.5 rounded-full transition-all hover:scale-110 ${isDark ? 'hover:bg-purple-900/30 text-purple-400' : 'hover:bg-purple-50 text-purple-600'}`} title="AI Actions">
+                       <Sparkles size={18} />
+                    </button>
+                 </div>
+              </div>
           </div>
         </div>
       </div>
@@ -348,4 +371,5 @@ export default function NewsEditorPage() {
   );
 }
 
+    
     
