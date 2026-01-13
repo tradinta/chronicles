@@ -227,9 +227,9 @@ export const featuredStories = [
 ];
 
 export const dispatchItems = [
-    { time: "12m ago", title: "Global markets react to new trade sanctions" },
-    { time: "45m ago", title: "Tech giant announces surprise CEO departure" },
-    { time: "1h ago", title: "Climate summit reaches tentative agreement" },
+    { time: "12m ago", title: "Global markets react positively to new inflation data" },
+    { time: "45m ago", title: "Analysis: Is the tech sector poised for a Q4 rebound?" },
+    { time: "1h ago", title: "Central Bank hints at holding interest rates steady" },
 ];
 
 export const trendingItems = [
