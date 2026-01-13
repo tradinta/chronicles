@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useCollection } from '@/firebase';
-import { collection, query, where, orderBy, limit } from 'firebase/firestore';
+import { collection, query, where, limit } from 'firebase/firestore';
 
 const StatCard = ({ icon: Icon, value, label, isDark }) => (
   <div className={`p-6 rounded-xl border transition-all ${isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-200'}`}>
@@ -34,7 +34,7 @@ const ArticleListItem = ({ article, isDraft = false, isDark, onEdit }) => (
       <span className={`text-[10px] uppercase font-bold tracking-wider ${isDraft ? 'text-yellow-500' : 'text-green-500'}`}>{isDraft ? 'Draft' : 'Published'}</span>
       <p className={`font-serif ${isDark ? 'text-stone-300' : 'text-stone-800'}`}>{article.headline || article.title}</p>
       <p className={`text-xs text-stone-500`}>
-        {isDraft ? `Saved ${new Date(article.timestamp).toLocaleDateString()}` : `Published on ${new Date(article.publishDate?.toDate()).toLocaleDateString()}`}
+        {isDraft ? `Saved ${new Date(article.timestamp).toLocaleDateString()}` : (article.publishDate ? `Published on ${new Date(article.publishDate?.toDate()).toLocaleDateString()}`: 'Date not available')}
       </p>
     </div>
     <button onClick={() => onEdit(article.id)} className={`p-2 rounded-full transition-colors ${isDark ? 'text-stone-500 hover:text-stone-200 hover:bg-stone-800' : 'text-stone-400 hover:text-stone-800 hover:bg-stone-200'}`}>
@@ -53,10 +53,10 @@ export default function AuthorDashboardPage() {
 
   const articlesQuery = useMemo(() => {
     if (!firestore || !user) return null;
+    // Removed orderBy from the query to prevent needing a composite index
     return query(
         collection(firestore, 'articles'), 
         where('authorId', '==', user.uid), 
-        orderBy('publishDate', 'desc'),
         limit(5)
     );
   }, [firestore, user]);
@@ -70,8 +70,18 @@ export default function AuthorDashboardPage() {
     );
   }, [firestore, user]);
   
-  const { data: articles, isLoading: articlesLoading } = useCollection(articlesQuery);
+  const { data: rawArticles, isLoading: articlesLoading } = useCollection(articlesQuery);
   const { data: drafts, isLoading: draftsLoading } = useCollection(draftsQuery);
+  
+  // Sort articles on the client-side
+  const articles = useMemo(() => {
+    if (!rawArticles) return [];
+    return [...rawArticles].sort((a, b) => {
+      const dateA = a.publishDate?.toDate() || 0;
+      const dateB = b.publishDate?.toDate() || 0;
+      return dateB - dateA;
+    });
+  }, [rawArticles]);
 
 
   if (isUserLoading) {
