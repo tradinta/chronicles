@@ -182,7 +182,7 @@ export default function SubscribePage({ onViewChange }: SubscribePageProps) {
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme) {
             setIsDark(savedTheme === 'dark');
-        } else {
+        } else if (typeof window !== 'undefined') {
             const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
             setIsDark(prefersDark);
         }
