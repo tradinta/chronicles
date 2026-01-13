@@ -14,7 +14,8 @@ import {
   Twitter,
   Check
 } from 'lucide-react';
-import { useAuth, useUser } from '@/firebase';
+import { useAuth } from '@/firebase';
+import { useUser } from '@/firebase/provider';
 import { initiateEmailSignUp, initiateEmailSignIn } from '@/firebase/non-blocking-login';
 import { useToast } from '@/hooks/use-toast';
 
@@ -96,10 +97,19 @@ const AuthPage = () => {
       }
     } catch (error: any) {
       setLoading(false);
+      let description = "An unexpected error occurred. Please try again.";
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+        description = "Invalid email or password. Please check your credentials and try again.";
+      } else if (error.code === 'auth/email-already-in-use') {
+        description = "An account with this email address already exists.";
+      } else if (error.code === 'auth/weak-password') {
+        description = "The password is too weak. Please choose a stronger password.";
+      }
+
       toast({
         variant: "destructive",
         title: "Authentication Failed",
-        description: error.message || "An unexpected error occurred.",
+        description: description,
       });
     }
   };
