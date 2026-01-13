@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Coffee, Star, Crown, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import Navbar from '@/components/shared/navbar';
 
 const tiers = [
   {
@@ -19,6 +20,7 @@ const tiers = [
       'Mobile app support',
     ],
     isPopular: false,
+    cta: 'Start Observing',
   },
   {
     name: 'The Member',
@@ -33,6 +35,7 @@ const tiers = [
       'Offline reading mode',
     ],
     isPopular: true,
+    cta: 'Become a Member',
   },
   {
     name: 'The Patron',
@@ -47,24 +50,26 @@ const tiers = [
       'Family account (up to 4)',
     ],
     isPopular: false,
+    cta: 'Become a Patron',
   },
 ];
 
 const PricingCard = ({ tier, isDark }) => {
   return (
-    <div
+    <motion.div
+      whileHover={{ y: -5, scale: 1.02 }}
       className={cn(
-        'relative rounded-xl border p-8 h-full flex flex-col',
+        'relative rounded-xl border p-8 h-full flex flex-col shadow-sm hover:shadow-xl transition-all duration-300',
         isDark ? 'bg-stone-900' : 'bg-white',
         tier.isPopular
-          ? 'border-orange-500/50'
+          ? 'border-primary/50'
           : isDark
           ? 'border-stone-800'
           : 'border-stone-200'
       )}
     >
       {tier.isPopular && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full">
           Most Popular
         </div>
       )}
@@ -73,14 +78,14 @@ const PricingCard = ({ tier, isDark }) => {
           className={cn(
             'w-12 h-12 rounded-full flex items-center justify-center mb-6',
             isDark ? 'bg-stone-800' : 'bg-stone-100',
-            tier.isPopular && 'bg-orange-500/10'
+            tier.isPopular && 'bg-primary/10'
           )}
         >
           <tier.icon
             size={24}
             className={cn(
               isDark ? 'text-stone-400' : 'text-stone-500',
-              tier.isPopular && 'text-orange-500'
+              tier.isPopular && 'text-primary'
             )}
           />
         </div>
@@ -105,7 +110,7 @@ const PricingCard = ({ tier, isDark }) => {
           >
             {tier.price}
           </span>
-          <span className="text-sm text-stone-500">KES /mo</span>
+          <span className="text-sm text-stone-500"> KES /mo</span>
         </div>
 
         <ul className="space-y-4">
@@ -114,7 +119,7 @@ const PricingCard = ({ tier, isDark }) => {
               <Check
                 size={16}
                 className={
-                  tier.isPopular ? 'text-orange-500' : 'text-green-500'
+                  tier.isPopular ? 'text-primary' : 'text-green-500'
                 }
               />
               <span className={cn('text-sm', isDark ? 'text-stone-300' : 'text-stone-700')}>{feature}</span>
@@ -127,25 +132,51 @@ const PricingCard = ({ tier, isDark }) => {
           className={cn(
             'w-full py-3 rounded-lg text-sm font-bold uppercase tracking-wider transition-colors',
             tier.isPopular
-              ? 'bg-orange-500 text-white hover:bg-orange-600'
+              ? 'bg-primary text-primary-foreground hover:bg-primary/90'
               : isDark
               ? 'bg-stone-700 text-stone-200 hover:bg-stone-600'
               : 'bg-stone-200 text-stone-700 hover:bg-stone-300'
           )}
         >
-          Select Plan
+          {tier.cta}
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
 export default function SubscribePage() {
-    const [isDark, setIsDark] = useState(false); // Simplified for standalone page
+    const [isDark, setIsDark] = useState(false);
+    const [currentView, setCurrentView] = useState('main');
+
+    useEffect(() => {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+        setIsDark(savedTheme === 'dark');
+        } else {
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        setIsDark(prefersDark);
+        }
+    }, []);
+
+    const toggleTheme = () => {
+        const newTheme = !isDark;
+        setIsDark(newTheme);
+        localStorage.setItem('theme', newTheme ? 'dark' : 'light');
+        document.documentElement.classList.toggle('dark', newTheme);
+    }
+
 
   return (
     <div className={cn("min-h-screen", isDark ? 'bg-black' : 'bg-stone-50')}>
-      <div className="container mx-auto px-6 py-24">
+      <Navbar 
+          isDark={isDark} 
+          toggleTheme={toggleTheme}
+          onViewChange={setCurrentView}
+          currentView={currentView}
+          isFocusMode={false}
+      />
+      <div className="container mx-auto px-6 py-24 pt-32">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
