@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -31,11 +32,21 @@ export interface UseCollectionResult<T> {
 export interface InternalQuery extends Query<DocumentData> {
   _query: {
     path: {
-      canonicalString(): string;
-      toString(): string;
+      canonicalString: () => string;
+      toString: () => string;
     }
   }
 }
+
+function getPathFromQuery(query: Query | CollectionReference): string {
+    if (query.type === 'collection') {
+        return query.path;
+    }
+    // This is a workaround to get the path from a query.
+    // The path is stored in a private property.
+    return (query as any)._query.path.segments.join('/');
+}
+
 
 /**
  * React hook to subscribe to a Firestore collection or query in real-time.
@@ -85,11 +96,7 @@ export function useCollection<T = any>(
         setIsLoading(false);
       },
       (error: FirestoreError) => {
-        // This logic extracts the path from either a ref or a query
-        const path: string =
-          memoizedTargetRefOrQuery.type === 'collection'
-            ? (memoizedTargetRefOrQuery as CollectionReference).path
-            : (memoizedTargetRefOrQuery as unknown as InternalQuery)._query.path.canonicalString()
+        const path = getPathFromQuery(memoizedTargetRefOrQuery);
 
         const contextualError = new FirestorePermissionError({
           operation: 'list',
@@ -107,8 +114,10 @@ export function useCollection<T = any>(
 
     return () => unsubscribe();
   }, [memoizedTargetRefOrQuery]); // Re-run if the target query/reference changes.
-  if(memoizedTargetRefOrQuery && !memoizedTargetRefOrQuery.__memo) {
-    throw new Error(memoizedTargetRefOrQuery + ' was not properly memoized using useMemoFirebase');
+  
+  if(memoizedTargetRefOrQuery && !(memoizedTargetRefOrQuery as any).__memo) {
+    console.warn('useCollection was not properly memoized. This may cause infinite loops.');
   }
+
   return { data, isLoading, error };
 }

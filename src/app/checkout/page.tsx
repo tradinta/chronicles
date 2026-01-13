@@ -12,10 +12,13 @@ import {
   Mail,
   CheckCircle2,
 } from 'lucide-react';
+import { useUser } from '@/firebase';
+import Link from 'next/link';
 
 const CheckoutPage = () => {
   const router = useRouter();
   const [isDark, setIsDark] = useState(false);
+  const { user, isUserLoading } = useUser();
   
   // This effect ensures the component re-renders with the correct theme class.
   useEffect(() => {
@@ -106,10 +109,13 @@ const CheckoutPage = () => {
               <div>
                 <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>Account Information</label>
                 <div className={`p-4 rounded-lg flex items-center space-x-4 border ${isDark ? 'bg-black/20 border-stone-800' : 'bg-white border-stone-200'}`}>
-                  <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Profile" className="w-10 h-10 rounded-full" />
+                  <img src={user?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid}`} alt="Profile" className="w-10 h-10 rounded-full" />
                   <div>
-                    <p className={`font-semibold ${isDark ? 'text-stone-200' : 'text-stone-800'}`}>Felix A. <span className="text-xs opacity-50">(Not you?)</span></p>
-                    <p className={`text-sm ${isDark ? 'text-stone-400' : 'text-stone-600'}`}>felix.a@example.com</p>
+                    <p className={`font-semibold ${isDark ? 'text-stone-200' : 'text-stone-800'}`}>
+                      {user?.displayName || 'Anonymous User'} 
+                      <Link href="/profile"><span className="text-xs opacity-50 hover:underline ml-2">(Not you?)</span></Link>
+                    </p>
+                    <p className={`text-sm ${isDark ? 'text-stone-400' : 'text-stone-600'}`}>{user?.email}</p>
                   </div>
                 </div>
               </div>

@@ -9,6 +9,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
+import { useUser } from '@/firebase';
 
 type NavbarProps = {
   isDark: boolean;
@@ -21,6 +22,7 @@ export default function Navbar({ isDark, toggleTheme, isFocusMode }: NavbarProps
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  const { user, isUserLoading } = useUser();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -81,7 +83,7 @@ export default function Navbar({ isDark, toggleTheme, isFocusMode }: NavbarProps
 
         <div className={cn(
           "hidden md:flex items-center space-x-8 transition-opacity duration-300",
-          (pathname.startsWith('/article') || pathname.startsWith('/subscribe') || pathname.startsWith('/checkout') || pathname.startsWith('/dashboard')) ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          (pathname.startsWith('/article') || pathname.startsWith('/subscribe') || pathname.startsWith('/checkout') || pathname.startsWith('/dashboard') || pathname.startsWith('/profile')) ? 'opacity-0 pointer-events-none' : 'opacity-100'
         )}>
           <Link href="/live" className="relative group cursor-pointer h-full flex items-center">
             <span className="flex items-center text-sm font-medium tracking-wide text-primary group-hover:text-foreground transition-colors duration-300">
@@ -101,11 +103,11 @@ export default function Navbar({ isDark, toggleTheme, isFocusMode }: NavbarProps
         </div>
 
         <div className="flex items-center space-x-6">
-          <Link href="/auth"
+          {!user && !isUserLoading && <Link href="/auth"
              className={`hidden md:block text-xs font-bold tracking-wider uppercase transition-colors text-muted-foreground hover:text-foreground`}
            >
              Sign In
-           </Link>
+           </Link>}
           <Link href="/dashboard"
             className="flex items-center space-x-2 px-3 py-1.5 rounded-full transition-all duration-300 bg-secondary text-secondary-foreground hover:bg-secondary/80">
              <PenTool size={16} />
@@ -117,9 +119,11 @@ export default function Navbar({ isDark, toggleTheme, isFocusMode }: NavbarProps
           <button onClick={toggleTheme} className="text-muted-foreground hover:text-foreground">
             {isDark ? <Sun strokeWidth={1.5} size={20} /> : <Moon strokeWidth={1.5} size={20} />}
           </button>
-          <div className="hidden md:block w-8 h-8 rounded-full overflow-hidden border border-border cursor-pointer">
-             <Image src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Profile" width={32} height={32} className="w-full h-full object-cover" />
-          </div>
+          {user && <div className="hidden md:block w-8 h-8 rounded-full overflow-hidden border border-border cursor-pointer">
+             <Link href="/profile">
+               <Image src={user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`} alt="Profile" width={32} height={32} className="w-full h-full object-cover" />
+             </Link>
+          </div>}
         </div>
       </motion.nav>
 
