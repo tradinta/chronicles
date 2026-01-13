@@ -1,84 +1,154 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Radio, EyeOff, Feather, ShieldAlert, ArrowRight } from 'lucide-react';
+import { 
+  FileText, 
+  Feather, 
+  ArrowRight, 
+  PenTool, 
+  BarChart, 
+  Clock, 
+  Edit,
+  Loader,
+  BookOpen
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useUser, useFirestore, useCollection } from '@/firebase';
+import { collection, query, where, orderBy, limit } from 'firebase/firestore';
 
-const SelectionCard = ({ 
-  title, subtitle, icon: Icon, type, onHoverStart, onHoverEnd, href
-}) => {
-  const isDark = false; // Simplified for component
-  const isClickable = href;
+const StatCard = ({ icon: Icon, value, label, isDark }) => (
+  <div className={`p-6 rounded-xl border transition-all ${isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-200'}`}>
+    <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-4 ${isDark ? 'bg-stone-800 text-stone-300' : 'bg-stone-100 text-stone-600'}`}>
+      <Icon size={20} />
+    </div>
+    <p className={`text-3xl font-serif font-bold ${isDark ? 'text-stone-100' : 'text-stone-900'}`}>{value}</p>
+    <p className={`text-xs uppercase tracking-widest mt-1 ${isDark ? 'text-stone-500' : 'text-stone-500'}`}>{label}</p>
+  </div>
+);
+
+const ArticleListItem = ({ article, isDraft = false, isDark, onEdit }) => (
+  <div className={`p-4 rounded-lg flex items-center justify-between transition-colors ${isDark ? 'hover:bg-stone-800/50' : 'hover:bg-stone-100'}`}>
+    <div>
+      <span className={`text-[10px] uppercase font-bold tracking-wider ${isDraft ? 'text-yellow-500' : 'text-green-500'}`}>{isDraft ? 'Draft' : 'Published'}</span>
+      <p className={`font-serif ${isDark ? 'text-stone-300' : 'text-stone-800'}`}>{article.headline || article.title}</p>
+      <p className={`text-xs text-stone-500`}>
+        {isDraft ? `Saved ${new Date(article.timestamp).toLocaleDateString()}` : `Published on ${new Date(article.publishDate?.toDate()).toLocaleDateString()}`}
+      </p>
+    </div>
+    <button onClick={() => onEdit(article.id)} className={`p-2 rounded-full transition-colors ${isDark ? 'text-stone-500 hover:text-stone-200 hover:bg-stone-800' : 'text-stone-400 hover:text-stone-800 hover:bg-stone-200'}`}>
+      <Edit size={16} />
+    </button>
+  </div>
+);
+
+
+export default function AuthorDashboardPage() {
   const router = useRouter();
+  const [isDark, setIsDark] = useState(false);
   
-  return (
-    <motion.div 
-      onClick={() => isClickable && href && router.push(href)}
-      className={`relative group overflow-hidden rounded-xl border flex flex-col justify-between p-8 min-h-[320px] transition-all duration-500
-        ${isClickable ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'}
-        ${isDark 
-          ? 'bg-stone-900 border-stone-800 hover:border-stone-600' 
-          : 'bg-card border-border hover:border-primary/50 hover:shadow-lg'}`}
-      onHoverStart={onHoverStart}
-      onHoverEnd={onHoverEnd}
-      whileHover={{ y: isClickable ? -5 : 0 }}
-    >
-      <div className={`absolute -right-12 -bottom-12 opacity-5 group-hover:opacity-10 transition-opacity duration-500 transform group-hover:scale-110 ${isDark ? 'text-white' : 'text-foreground'}`}>
-        <Icon size={200} strokeWidth={0.5} />
-      </div>
-      <div className="relative z-10">
-        <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-6 transition-colors duration-300 
-          ${type === 'live' ? 'bg-red-500/10 text-red-500' : 
-            type === 'off-record' ? 'bg-purple-500/10 text-purple-500' : 
-            type === 'opinion' ? 'bg-indigo-500/10 text-indigo-500' :
-            isDark ? 'bg-stone-800 text-stone-300' : 'bg-secondary text-secondary-foreground'}`}>
-          <Icon size={24} strokeWidth={1.5} />
-        </div>
-        <h3 className={`font-serif text-3xl mb-2 transition-colors duration-300 group-hover:translate-x-1 ${isDark ? 'text-card-foreground' : 'text-card-foreground'}`}>{title}</h3>
-        <p className={`text-sm font-medium tracking-widest uppercase opacity-60 mb-6 ${isDark ? 'text-stone-400' : 'text-muted-foreground'}`}>{subtitle}</p>
-      </div>
-      <div className="relative z-10 mt-auto">
-        <div className={`h-[1px] w-full mb-4 origin-left transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ${isDark ? 'bg-stone-700' : 'bg-border'}`}></div>
-        <div className="flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
-           <span className={`text-xs font-mono ${isDark ? 'text-stone-500' : 'text-muted-foreground'}`}>
-            {
-              type === 'news' ? 'OPEN EDITOR' :
-              type === 'live' ? 'INITIATING STREAM...' : 
-              type === 'off-record' ? 'ENCRYPTING CHANNEL...' : 
-              type === 'opinion' ? 'LOADING DESK...' : 
-              'COMING SOON'
-            }
-           </span>
-           <ArrowRight size={16} className={isDark ? 'text-stone-300' : 'text-foreground'} />
-        </div>
-      </div>
-       {type === 'live' && <div className="absolute top-8 right-8 flex items-center space-x-2"><span className="block w-2 h-2 rounded-full bg-red-500 animate-pulse"></span><span className="text-[10px] font-bold tracking-widest text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">ON AIR</span></div>}
-      {type === 'off-record' && <div className="absolute top-8 right-8 flex items-center space-x-2"><span className="block w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span><span className="text-[10px] font-bold tracking-widest text-purple-500 opacity-0 group-hover:opacity-100 transition-opacity">ENCRYPTED</span></div>}
-    </motion.div>
-  );
-};
+  const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
+
+  const articlesQuery = useMemo(() => {
+    if (!firestore || !user) return null;
+    return query(
+        collection(firestore, 'articles'), 
+        where('authorId', '==', user.uid), 
+        orderBy('publishDate', 'desc'),
+        limit(5)
+    );
+  }, [firestore, user]);
+
+  const draftsQuery = useMemo(() => {
+    if (!firestore || !user) return null;
+    return query(
+        collection(firestore, 'users', user.uid, 'drafts'),
+        orderBy('savedAt', 'desc'),
+        limit(5)
+    );
+  }, [firestore, user]);
+  
+  const { data: articles, isLoading: articlesLoading } = useCollection(articlesQuery);
+  const { data: drafts, isLoading: draftsLoading } = useCollection(draftsQuery);
 
 
-export default function PostSelectionPage() {
-  const [hoveredType, setHoveredType] = useState(null);
-  const isOffRecordHovered = hoveredType === 'off-record';
-  const isDark = false; // Simplified from design
+  if (isUserLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader className="animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    router.push('/auth');
+    return null;
+  }
   
   return (
-    <div className={`min-h-screen pt-32 pb-20 px-6 md:px-12 transition-colors duration-700 ${isOffRecordHovered ? 'bg-[#050505]' : (isDark ? 'bg-[#121212]' : 'bg-background')}`}>
-      <div className={`max-w-5xl mx-auto mb-16 transition-opacity duration-500 ${isOffRecordHovered ? 'opacity-20 blur-sm' : 'opacity-100'}`}>
-        <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className={`font-serif text-4xl md:text-6xl mb-4 ${isDark ? 'text-stone-100' : 'text-foreground'}`}>Editor's Desk</motion.h1>
-        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.8 }} className={`text-lg font-light max-w-xl ${isDark ? 'text-stone-400' : 'text-muted-foreground'}`}>Select the format that best fits the story you need to tell today.</motion.p>
+    <div className={`min-h-screen pt-32 pb-20 px-6 md:px-12 transition-colors duration-700 ${isDark ? 'bg-[#121212]' : 'bg-background'}`}>
+      <div className="max-w-6xl mx-auto">
+        
+        <motion.div 
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ duration: 0.8 }}
+            className="flex flex-col md:flex-row md:items-end justify-between mb-12 border-b border-border pb-8"
+        >
+            <div>
+                <h1 className={`font-serif text-4xl md:text-5xl mb-2 ${isDark ? 'text-stone-100' : 'text-foreground'}`}>Welcome, {user.displayName || 'Author'}</h1>
+                <p className={`text-lg font-light max-w-xl ${isDark ? 'text-stone-400' : 'text-muted-foreground'}`}>This is your personal author dashboard. Manage your content and track your impact.</p>
+            </div>
+            <button onClick={() => router.push('/dashboard/new-story')} className="mt-6 md:mt-0 flex items-center space-x-2 px-6 py-3 rounded-full text-sm font-bold tracking-wide uppercase text-white shadow-lg bg-primary hover:bg-primary/90 transition-all transform hover:scale-105">
+                <PenTool size={16} />
+                <span>Write a New Story</span>
+            </button>
+        </motion.div>
+        
+        {/* STATS */}
+        <motion.div 
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12"
+        >
+            <StatCard icon={FileText} value={articles?.length || 0} label="Published Articles" isDark={isDark} />
+            <StatCard icon={BarChart} value="1.2M" label="Total Reads" isDark={isDark} />
+            <StatCard icon={Feather} value={drafts?.length || 0} label="Active Drafts" isDark={isDark} />
+        </motion.div>
+
+        {/* ARTICLES AND DRAFTS */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Published Articles */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+                <div className="flex items-center space-x-3 mb-6">
+                    <BookOpen size={20} className="text-primary"/>
+                    <h2 className="font-serif text-2xl text-foreground">Recent Publications</h2>
+                </div>
+                <div className={`p-4 rounded-xl border space-y-2 ${isDark ? 'bg-stone-900/50 border-stone-800' : 'bg-white border-stone-200'}`}>
+                    {articlesLoading ? <Loader className="animate-spin mx-auto my-8 text-primary"/> :
+                     articles && articles.length > 0 ? articles.map(article => (
+                        <ArticleListItem key={article.id} article={article} isDark={isDark} onEdit={(id) => router.push(`/dashboard/new-story?id=${id}`)} />
+                    )) : <p className="text-center text-sm text-muted-foreground py-8">No articles published yet.</p>}
+                </div>
+            </motion.div>
+
+            {/* Drafts */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+                 <div className="flex items-center space-x-3 mb-6">
+                    <Clock size={20} className="text-primary"/>
+                    <h2 className="font-serif text-2xl text-foreground">Your Drafts</h2>
+                </div>
+                <div className={`p-4 rounded-xl border space-y-2 ${isDark ? 'bg-stone-900/50 border-stone-800' : 'bg-white border-stone-200'}`}>
+                    {draftsLoading ? <Loader className="animate-spin mx-auto my-8 text-primary"/> :
+                     drafts && drafts.length > 0 ? drafts.map(draft => (
+                        <ArticleListItem key={draft.id} article={draft} isDraft isDark={isDark} onEdit={(id) => router.push(`/dashboard/new-story?draftId=${id}`)} />
+                    )) : <p className="text-center text-sm text-muted-foreground py-8">No drafts saved.</p>}
+                </div>
+            </motion.div>
+        </div>
+
       </div>
-      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
-        <SelectionCard type="news" title="Standard Report" subtitle="Factual • Verified • Record" icon={FileText} href="/dashboard/new-story" onHoverStart={() => setHoveredType('news')} onHoverEnd={() => setHoveredType(null)} />
-        <SelectionCard type="live" title="Live Coverage" subtitle="Breaking • Real-time • Wire" icon={Radio} href="/dashboard/live" onHoverStart={() => setHoveredType('live')} onHoverEnd={() => setHoveredType(null)} />
-        <SelectionCard type="off-record" title="Off the Record" subtitle="Anonymous • Encrypted • Leak" icon={EyeOff} href="/dashboard/off-the-record" onHoverStart={() => setHoveredType('off-record')} onHoverEnd={() => setHoveredType(null)} />
-        <SelectionCard type="opinion" title="Editorial" subtitle="Opinion • Analysis • Voice" icon={Feather} href="/dashboard/editorial" onHoverStart={() => setHoveredType('opinion')} onHoverEnd={() => setHoveredType(null)} />
-      </div>
-      <div className={`text-center mt-20 transition-all duration-500 ${isOffRecordHovered ? 'opacity-0' : 'opacity-40'}`}><p className={`text-xs uppercase tracking-widest ${isDark ? 'text-stone-500' : 'text-muted-foreground'}`}><ShieldAlert size={12} className="inline mr-2 mb-0.5" />All drafts are auto-saved to your local secure storage</p></div>
     </div>
   );
 }
