@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     const signature = cloudinary.utils.api_sign_request({
       timestamp: timestamp,
       public_id: public_id,
-      eager: eager, // Including eager in the signature
+      eager: eager,
     }, process.env.CLOUDINARY_API_SECRET!);
 
     return NextResponse.json({ signature, timestamp, public_id, eager });
