@@ -4,6 +4,7 @@ import React from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { Clock, TrendingUp, MapPin, ArrowRight, Flame, EyeOff } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 
 const Hero = () => {
   const router = useRouter();
@@ -19,7 +20,7 @@ const Hero = () => {
         
         <motion.div className="lg:col-span-8 order-2 lg:order-1" style={{ y: yText }}>
           
-          <div className="flex items-center space-x-3 mb-6">
+          <div className="flex items-center space-x-3 mb-6 animate-fade-in-up">
             <span className="h-[1px] w-8 bg-muted-foreground/50"></span>
             <span className="text-xs font-bold tracking-[0.2em] uppercase text-muted-foreground">Featured Story</span>
           </div>
@@ -38,6 +39,7 @@ const Hero = () => {
             In a world of digital noise, we explore why the most forward-thinking creators are returning to tangible mediums.
           </motion.p>
           
+          {/* Main Feature Image */}
           <motion.div 
             className="h-[400px] w-full relative rounded-lg overflow-hidden cursor-pointer"
             onClick={() => router.push('/article/1')}
@@ -49,10 +51,12 @@ const Hero = () => {
 
         </motion.div>
 
+        {/* Right Column: News Deck (Hidden on Mobile) */}
         <motion.div 
           className="lg:col-span-4 order-1 lg:order-2 hidden lg:flex flex-col justify-end h-full pb-20"
           initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1, delay: 0.5 }}
         >
+           {/* Enter Newsroom CTA */}
            <div className="p-8 border-l border-border">
               <h3 className="font-serif text-3xl font-bold mb-4 text-foreground">The Newsroom</h3>
               <p className="text-sm leading-relaxed mb-8 text-muted-foreground">
@@ -73,14 +77,14 @@ const Hero = () => {
   );
 };
 
-const BriefingCard = ({ title, icon: Icon, items, onViewChange }) => (
+const BriefingCard = ({ title, icon: Icon, items, onViewChange }: any) => (
   <div className="p-6 rounded-xl border flex flex-col h-full transition-all hover:shadow-md bg-card border-border shadow-sm">
     <div className="flex items-center space-x-2 mb-6 pb-4 border-b border-dashed border-border/50">
       <Icon size={16} className="text-muted-foreground" />
       <h3 className="font-serif text-lg font-bold tracking-wide text-foreground">{title}</h3>
     </div>
     <div className="space-y-6 flex-1">
-      {items.map((item, i) => (
+      {items.map((item: any, i: number) => (
         <div key={i} className="group cursor-pointer" onClick={() => onViewChange('/news')}>
           <span className="text-[10px] font-mono block mb-1 uppercase tracking-wider text-muted-foreground/80">{item.time}</span>
           <h4 className="text-sm font-medium leading-snug group-hover:underline text-foreground/80">{item.text}</h4>
@@ -96,12 +100,11 @@ const BriefingCard = ({ title, icon: Icon, items, onViewChange }) => (
   </div>
 );
 
-const BriefingSection = () => {
-  const router = useRouter();
-  const dispatchItems = [
-    { time: "12m ago", text: "Global markets react to new trade sanctions" },
-    { time: "45m ago", text: "Tech giant announces surprise CEO departure" },
-    { time: "1h ago", text: "Climate summit reaches tentative agreement" }
+const BriefingSection = ({ onViewChange }: any) => {
+  const latestNewsItems = [
+    { time: "Just now", text: "The Silent Migration: Why Nordic Citizens are Moving South" },
+    { time: "15m ago", text: "Silicon Valley's Return to Hardware" },
+    { time: "1h ago", text: "The Ocean's Memory: Mapping Deep Sea Currents" }
   ];
   const marketItems = [
     { time: "2h ago", text: "Central Bank holds interest rates steady, citing 'cautious optimism'" },
@@ -122,9 +125,9 @@ const BriefingSection = () => {
            <span className="text-xs font-bold tracking-[0.2em] uppercase text-muted-foreground">The Daily Briefing</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-           <BriefingCard title="The Dispatch" icon={Clock} items={dispatchItems} onViewChange={router.push} />
-           <BriefingCard title="Market Pulse" icon={TrendingUp} items={marketItems} onViewChange={router.push} />
-           <BriefingCard title="City Beat" icon={MapPin} items={cityItems} onViewChange={router.push} />
+           <BriefingCard title="Latest News" icon={Clock} items={latestNewsItems} onViewChange={onViewChange} />
+           <BriefingCard title="Market Pulse" icon={TrendingUp} items={marketItems} onViewChange={onViewChange} />
+           <BriefingCard title="City Beat" icon={MapPin} items={cityItems} onViewChange={onViewChange} />
         </div>
       </div>
     </section>
@@ -211,13 +214,38 @@ const MainGrid = () => {
   );
 };
 
+const LatestDispatch = ({onViewChange}: any) => {
+    return (
+        <section className="py-20 px-6 md:px-12 bg-secondary/30 dark:bg-black border-y border-border">
+            <div className="container mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div className="flex flex-col space-y-6">
+                    <h3 className="font-serif text-3xl font-bold text-foreground">The Latest Dispatch</h3>
+                    <p className="text-sm font-medium leading-snug text-muted-foreground group-hover:underline">The surprising link between gut health and mental focus.</p>
+                    <p className="text-sm font-medium leading-snug text-muted-foreground group-hover:underline">AI's impact on creative industries: A one-year retrospective.</p>
+                    <p className="text-sm font-medium leading-snug text-muted-foreground group-hover:underline">Urban planning reimagined: The 15-minute city model gains traction.</p>
+                </div>
+                <div className="text-right">
+                    <button onClick={() => onViewChange('/news')} className="group inline-flex items-center gap-3 bg-primary text-primary-foreground px-8 py-4 rounded-full text-sm font-bold uppercase tracking-widest transition-all hover:scale-105">
+                        Explore All Stories
+                        <ExternalLink size={16} className="transition-transform group-hover:translate-x-1" />
+                    </button>
+                </div>
+            </div>
+        </section>
+    );
+};
+
+
 export default function LandingPage() {
+    const router = useRouter();
+
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>
             <Hero />
             <Ticker />
-            <BriefingSection />
+            <BriefingSection onViewChange={router.push}/>
             <MainGrid />
+            <LatestDispatch onViewChange={router.push}/>
         </motion.div>
     );
 }
