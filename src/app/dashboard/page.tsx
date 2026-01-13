@@ -53,7 +53,6 @@ export default function AuthorDashboardPage() {
 
   const articlesQuery = useMemo(() => {
     if (!firestore || !user) return null;
-    // Removed orderBy from the query to prevent needing a composite index
     return query(
         collection(firestore, 'articles'), 
         where('authorId', '==', user.uid), 
@@ -73,7 +72,6 @@ export default function AuthorDashboardPage() {
   const { data: rawArticles, isLoading: articlesLoading } = useCollection(articlesQuery);
   const { data: drafts, isLoading: draftsLoading } = useCollection(draftsQuery);
   
-  // Sort articles on the client-side
   const articles = useMemo(() => {
     if (!rawArticles) return [];
     return [...rawArticles].sort((a, b) => {
@@ -111,7 +109,7 @@ export default function AuthorDashboardPage() {
                 <h1 className={`font-serif text-4xl md:text-5xl mb-2 ${isDark ? 'text-stone-100' : 'text-foreground'}`}>Welcome, {user.displayName || 'Author'}</h1>
                 <p className={`text-lg font-light max-w-xl ${isDark ? 'text-stone-400' : 'text-muted-foreground'}`}>This is your personal author dashboard. Manage your content and track your impact.</p>
             </div>
-            <button onClick={() => router.push('/dashboard/new-story')} className="mt-6 md:mt-0 flex items-center space-x-2 px-6 py-3 rounded-full text-sm font-bold tracking-wide uppercase text-white shadow-lg bg-primary hover:bg-primary/90 transition-all transform hover:scale-105">
+            <button onClick={() => router.push('/dashboard/new')} className="mt-6 md:mt-0 flex items-center space-x-2 px-6 py-3 rounded-full text-sm font-bold tracking-wide uppercase text-white shadow-lg bg-primary hover:bg-primary/90 transition-all transform hover:scale-105">
                 <PenTool size={16} />
                 <span>Write a New Story</span>
             </button>
