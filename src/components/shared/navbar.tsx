@@ -4,10 +4,17 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Sun, Moon, ArrowLeft, X, Radio, EyeOff } from 'lucide-react';
+import { Search, Sun, Moon, ArrowLeft, X, Radio, EyeOff, LayoutDashboard } from 'lucide-react';
 import type { View } from '@/app/page';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import Link from 'next/link';
 
 type NavbarProps = {
   isDark: boolean;
@@ -84,9 +91,21 @@ export default function Navbar({ isDark, toggleTheme, onViewChange, currentView,
           <button onClick={toggleTheme} className="text-muted-foreground hover:text-foreground">
             {isDark ? <Sun strokeWidth={1.5} size={20} /> : <Moon strokeWidth={1.5} size={20} />}
           </button>
-          <div className="hidden md:block w-8 h-8 rounded-full overflow-hidden border border-border">
-             <Image src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Profile" width={32} height={32} className="w-full h-full object-cover" />
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="hidden md:block w-8 h-8 rounded-full overflow-hidden border border-border cursor-pointer">
+                 <Image src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Profile" width={32} height={32} className="w-full h-full object-cover" />
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard">
+                  <LayoutDashboard className="mr-2 h-4 w-4" />
+                  <span>Dashboard</span>
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </motion.nav>
 
