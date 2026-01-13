@@ -14,7 +14,12 @@ import type { View } from '@/app/page';
 // Reusable FAQ Accordion Item
 const FAQItem = ({ question, answer }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const isDark = document.documentElement.classList.contains('dark');
+  const [isDark, setIsDark] = useState(false);
+  
+  useEffect(() => {
+    setIsDark(document.documentElement.classList.contains('dark'));
+  }, []);
+
   return (
     <div className={`border-b transition-colors ${isDark ? 'border-stone-800' : 'border-stone-200'}`}>
       <button 
