@@ -2,7 +2,7 @@
 "use client";
 
 import { TrendingUp, Bookmark } from 'lucide-react';
-import type { View } from '@/app/page';
+import { useRouter } from 'next/navigation';
 
 const trendingItems = [
     "Why the global supply chain is shifting to localized hubs faster than predicted.",
@@ -12,10 +12,11 @@ const trendingItems = [
 ];
 
 type SidebarProps = {
-  onViewChange: (view: View) => void;
+  onViewChange: (href: string) => void;
 };
 
 export default function Sidebar({ onViewChange }: SidebarProps) {
+  const router = useRouter();
   return (
     <div className="hidden lg:block lg:col-span-3 pl-8 relative">
       <div className="sticky top-40 space-y-12">
@@ -27,7 +28,7 @@ export default function Sidebar({ onViewChange }: SidebarProps) {
           </div>
           <ul className="space-y-6">
             {trendingItems.map((item, i) => (
-              <li key={i} className="group cursor-pointer flex items-baseline">
+              <li key={i} className="group cursor-pointer flex items-baseline" onClick={() => onViewChange(`/article/${i+1}`)}>
                 <span className="text-xs font-mono mr-4 opacity-50 text-muted-foreground">0{i+1}</span>
                 <span className="text-sm font-medium leading-snug group-hover:underline text-foreground/80 dark:text-foreground/70">
                   {item}

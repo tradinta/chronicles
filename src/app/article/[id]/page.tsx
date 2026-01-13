@@ -5,21 +5,23 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import type { Dispatch, SetStateAction } from 'react';
-import type { View } from '@/app/page';
-import ActionRail from './action-rail';
-import ArticleParagraph from './article-paragraph';
-import ArticleFooter from './article-footer';
+import ActionRail from '@/components/article/action-rail';
+import ArticleParagraph from '@/components/article/article-paragraph';
+import ArticleFooter from '@/components/article/article-footer';
 import { placeholderImages } from '@/lib/data';
+import { useRouter } from 'next/navigation';
 
 type ArticlePageProps = {
-  onViewChange: (view: View) => void;
   isFocusMode: boolean;
   setFocusMode: Dispatch<SetStateAction<boolean>>;
 };
 
 const abstractMemoryImage = placeholderImages.find(p => p.id === 'abstract-memory');
 
-export default function ArticlePage({ onViewChange, isFocusMode, setFocusMode }: ArticlePageProps) {
+export default function ArticlePage() {
+  const router = useRouter();
+  const [isFocusMode, setFocusMode] = useState(false);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -34,12 +36,12 @@ export default function ArticlePage({ onViewChange, isFocusMode, setFocusMode }:
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
           <div className="flex items-center space-x-3 mb-6">
             <span className="h-[1px] w-8 bg-muted-foreground/50"></span>
-            <span 
-              onClick={() => onViewChange('main')}
+            <button 
+              onClick={() => router.push('/news')}
               className="text-xs font-bold tracking-[0.2em] uppercase cursor-pointer hover:underline text-primary"
             >
               Technology
-            </span>
+            </button>
           </div>
           
           <h1 className="font-serif text-5xl md:text-7xl leading-[1.1] mb-8 text-foreground">
@@ -117,7 +119,8 @@ export default function ArticlePage({ onViewChange, isFocusMode, setFocusMode }:
         </div>
       </article>
 
-      <ArticleFooter onViewChange={onViewChange} />
+      <ArticleFooter onViewChange={() => router.push('/article/1')} />
     </motion.div>
   );
 }
+

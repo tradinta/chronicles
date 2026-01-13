@@ -4,13 +4,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, ArrowLeft, Check } from 'lucide-react';
-import type { View } from '@/app/page';
+import { useRouter } from 'next/navigation';
 
-type PasswordResetPageProps = {
-    onViewChange: (view: View) => void;
-};
-
-const PasswordResetPage = ({ onViewChange }: PasswordResetPageProps) => {
+const PasswordResetPage = () => {
+  const router = useRouter();
   const [isDark, setIsDark] = useState(false);
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -48,7 +45,7 @@ const PasswordResetPage = ({ onViewChange }: PasswordResetPageProps) => {
                 If an account exists for <span className="font-semibold">{email}</span>, you will receive an email with instructions on how to reset your password.
               </p>
               <button
-                onClick={() => onViewChange('auth')}
+                onClick={() => router.push('/auth')}
                 className={`mt-8 flex items-center justify-center w-full space-x-2 text-sm font-medium transition-colors ${isDark ? 'text-stone-400 hover:text-white' : 'text-stone-500 hover:text-black'}`}
               >
                 <ArrowLeft size={16} />
@@ -93,7 +90,7 @@ const PasswordResetPage = ({ onViewChange }: PasswordResetPageProps) => {
               </form>
 
               <button
-                onClick={() => onViewChange('auth')}
+                onClick={() => router.push('/auth')}
                 className={`mt-8 flex items-center justify-center w-full space-x-2 text-sm font-medium transition-colors ${isDark ? 'text-stone-400 hover:text-white' : 'text-stone-500 hover:text-black'}`}
               >
                 <ArrowLeft size={16} />

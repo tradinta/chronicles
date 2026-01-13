@@ -4,16 +4,13 @@
 import Image from 'next/image';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import type { View } from '@/app/page';
+import { useRouter } from 'next/navigation';
 import { placeholderImages } from '@/lib/data';
-
-type HeroProps = {
-  onViewChange: (view: View) => void;
-};
 
 const heroImage = placeholderImages.find(p => p.id === 'hero-analogue');
 
-export default function Hero({ onViewChange }: HeroProps) {
+export default function Hero() {
+  const router = useRouter();
   const { scrollY } = useScroll();
   const yText = useTransform(scrollY, [0, 500], [0, 100]);
   const yImg = useTransform(scrollY, [0, 500], [0, -50]);
@@ -39,7 +36,7 @@ export default function Hero({ onViewChange }: HeroProps) {
             In a world of digital noise, we explore why the most forward-thinking creators are returning to tangible mediums.
           </motion.p>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 0.8 }} className="mt-10">
-            <button onClick={() => onViewChange('article')} className="group flex items-center space-x-2 text-sm tracking-widest uppercase font-semibold text-foreground">
+            <button onClick={() => router.push('/article/1')} className="group flex items-center space-x-2 text-sm tracking-widest uppercase font-semibold text-foreground">
               <span>Read Full Story</span>
               <ArrowRight size={16} className="transform group-hover:translate-x-2 transition-transform duration-300" />
             </button>

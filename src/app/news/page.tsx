@@ -3,19 +3,16 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import type { View } from '@/app/page';
-import NewsHeader from './news-header';
-import CategoryRail from './category-rail';
-import ArticleRow from './article-row';
-import InfiniteLoader from './infinite-loader';
-import Sidebar from './sidebar';
+import NewsHeader from '@/components/main-news/news-header';
+import CategoryRail from '@/components/main-news/category-rail';
+import ArticleRow from '@/components/main-news/article-row';
+import InfiniteLoader from '@/components/main-news/infinite-loader';
+import Sidebar from '@/components/main-news/sidebar';
 import { articles as initialArticles, newArticles as loadableArticles } from '@/lib/data';
+import { useRouter } from 'next/navigation';
 
-type MainNewsPageProps = {
-  onViewChange: (view: View) => void;
-};
-
-export default function MainNewsPage({ onViewChange }: MainNewsPageProps) {
+export default function MainNewsPage() {
+  const router = useRouter();
   const [activeCategory, setActiveCategory] = useState('All');
   const [articles, setArticles] = useState(initialArticles);
   
@@ -43,13 +40,13 @@ export default function MainNewsPage({ onViewChange }: MainNewsPageProps) {
           
           <div className="lg:col-span-9">
             {(activeCategory === 'All' ? articles : filteredArticles).map((article) => (
-              <ArticleRow key={article.id} article={article} onViewChange={onViewChange} />
+              <ArticleRow key={article.id} article={article} onViewChange={() => router.push('/article/1')} />
             ))}
             <InfiniteLoader loadMore={loadMoreArticles} />
           </div>
 
           <div className="lg:col-span-3">
-             <Sidebar onViewChange={onViewChange} />
+             <Sidebar onViewChange={() => router.push('/article/1')} />
           </div>
 
         </div>
@@ -57,3 +54,4 @@ export default function MainNewsPage({ onViewChange }: MainNewsPageProps) {
     </motion.div>
   );
 }
+

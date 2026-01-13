@@ -1,19 +1,15 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import type { View } from '@/app/page';
 import { liveUpdates as initialUpdates, newLiveUpdates } from '@/lib/data';
-import LiveStatusBar from './live-status-bar';
-import LiveHeader from './live-header';
-import LiveFeed from './live-feed';
-import LiveContextSidebar from './live-context-sidebar';
+import LiveStatusBar from '@/components/live-coverage/live-status-bar';
+import LiveHeader from '@/components/live-coverage/live-header';
+import LiveFeed from '@/components/live-coverage/live-feed';
+import LiveContextSidebar from '@/components/live-coverage/live-context-sidebar';
 
-type LiveCoveragePageProps = {
-  onViewChange: (view: View) => void;
-};
-
-export default function LiveCoveragePage({ onViewChange }: LiveCoveragePageProps) {
+export default function LiveCoveragePage() {
   const [updates, setUpdates] = useState(initialUpdates);
 
   useEffect(() => {
@@ -50,3 +46,4 @@ export default function LiveCoveragePage({ onViewChange }: LiveCoveragePageProps
     </motion.div>
   );
 }
+

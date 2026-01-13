@@ -2,19 +2,13 @@
 "use client";
 
 import { motion } from 'framer-motion';
-import type { View } from '@/app/page';
-import OffTheRecordHeader from './off-the-record-header';
-import SubmitTipForm from './submit-tip-form';
+import OffTheRecordHeader from '@/components/off-the-record/off-the-record-header';
+import SubmitTipForm from '@/components/off-the-record/submit-tip-form';
 import { Button } from '@/components/ui/button';
 import { Mail } from 'lucide-react';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 
-
-type OffTheRecordPageProps = {
-  onViewChange: (view: View) => void;
-};
-
-export default function OffTheRecordPage({ onViewChange }: OffTheRecordPageProps) {
+export default function OffTheRecordPage() {
   return (
     <Dialog>
       <motion.div
@@ -45,3 +39,4 @@ export default function OffTheRecordPage({ onViewChange }: OffTheRecordPageProps
     </Dialog>
   );
 }
+

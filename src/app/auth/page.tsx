@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { 
   Lock, 
   Mail, 
@@ -13,7 +14,6 @@ import {
   Twitter,
   Check
 } from 'lucide-react';
-import type { View } from '@/app/page';
 
 const AuthInput = ({ label, type, placeholder, icon: Icon, isDark, showPasswordToggle }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -47,12 +47,8 @@ const SocialButton = ({ icon: Icon, label, isDark }) => (
   </button>
 );
 
-type AuthPageProps = {
-  onViewChange: (view: View) => void;
-};
-
-
-const AuthPage = ({ onViewChange }: AuthPageProps) => {
+const AuthPage = () => {
+  const router = useRouter();
   const [isDark, setIsDark] = useState(false);
   const [authMode, setAuthMode] = useState('login'); // 'login' | 'signup'
   const [loading, setLoading] = useState(false);
@@ -69,7 +65,7 @@ const AuthPage = ({ onViewChange }: AuthPageProps) => {
       setLoading(false);
       setSuccess(true);
       setTimeout(() => {
-        onViewChange('landing'); // Redirect after success
+        router.push('/'); // Redirect after success
       }, 1500);
     }, 1500);
   };
@@ -186,7 +182,7 @@ const AuthPage = ({ onViewChange }: AuthPageProps) => {
                           <span>Remember me</span>
                        </label>
                        {authMode === 'login' && (
-                         <a href="#" onClick={() => onViewChange('reset-password')} className="font-bold hover:underline">Forgot Password?</a>
+                         <a href="#" onClick={() => router.push('/auth/reset-password')} className="font-bold hover:underline">Forgot Password?</a>
                        )}
                     </div>
 

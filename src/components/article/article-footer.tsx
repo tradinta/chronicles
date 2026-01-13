@@ -1,10 +1,11 @@
+
 "use client";
 
 import Image from 'next/image';
-import type { View } from '@/app/page';
+import { useRouter } from 'next/navigation';
 
 type ArticleFooterProps = {
-  onViewChange: (view: View) => void;
+  onViewChange: (href: string) => void;
 };
 
 const nextArticles = [
@@ -13,6 +14,7 @@ const nextArticles = [
 ];
 
 export default function ArticleFooter({ onViewChange }: ArticleFooterProps) {
+  const router = useRouter();
   return (
     <div className="py-24 border-t border-border bg-secondary/30 dark:bg-secondary/20">
       <div className="container mx-auto px-6 max-w-4xl">
@@ -31,7 +33,7 @@ export default function ArticleFooter({ onViewChange }: ArticleFooterProps) {
         <h4 className="text-xs font-bold tracking-widest uppercase mb-8 text-muted-foreground">What to Read Next</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {nextArticles.map((item, idx) => (
-            <div key={idx} className="group cursor-pointer" onClick={() => onViewChange('article')}>
+            <div key={idx} className="group cursor-pointer" onClick={() => onViewChange('/article/1')}>
               <span className="text-xs font-bold text-primary uppercase mb-2 block">{item.cat}</span>
               <h3 className="font-serif text-xl group-hover:underline text-foreground">{item.title}</h3>
             </div>

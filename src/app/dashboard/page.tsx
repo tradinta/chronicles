@@ -7,22 +7,15 @@ import { FileText, Radio, EyeOff, Feather, ShieldAlert, ArrowRight } from 'lucid
 import { useRouter } from 'next/navigation';
 
 const SelectionCard = ({ 
-  title, subtitle, icon: Icon, type, onViewChange, onHoverStart, onHoverEnd
+  title, subtitle, icon: Icon, type, onHoverStart, onHoverEnd, href
 }) => {
   const isDark = false; // Simplified for component
-  const isClickable = type === 'news' || type === 'live' || type === 'off-record' || type === 'opinion';
+  const isClickable = href;
+  const router = useRouter();
   
-  let path = '';
-  if (type === 'news') path = '/dashboard/new-story';
-  if (type === 'opinion') path = '/dashboard/editorial';
-  // TODO: Add paths for other dashboards
-  // if (type === 'live') path = '/dashboard/live'; 
-  // if (type === 'off-record') path = '/dashboard/off-record';
-
-
   return (
     <motion.div 
-      onClick={() => isClickable && path && onViewChange(path)}
+      onClick={() => isClickable && href && router.push(href)}
       className={`relative group overflow-hidden rounded-xl border flex flex-col justify-between p-8 min-h-[320px] transition-all duration-500
         ${isClickable ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'}
         ${isDark 
@@ -69,14 +62,9 @@ const SelectionCard = ({
 
 
 export default function PostSelectionPage() {
-  const router = useRouter();
   const [hoveredType, setHoveredType] = useState(null);
   const isOffRecordHovered = hoveredType === 'off-record';
   const isDark = false; // Simplified from design
-
-  const handleViewChange = (path: string) => {
-    router.push(path);
-  };
   
   return (
     <div className={`min-h-screen pt-32 pb-20 px-6 md:px-12 transition-colors duration-700 ${isOffRecordHovered ? 'bg-[#050505]' : (isDark ? 'bg-[#121212]' : 'bg-background')}`}>
@@ -85,10 +73,10 @@ export default function PostSelectionPage() {
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.8 }} className={`text-lg font-light max-w-xl ${isDark ? 'text-stone-400' : 'text-muted-foreground'}`}>Select the format that best fits the story you need to tell today.</motion.p>
       </div>
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
-        <SelectionCard type="news" title="Standard Report" subtitle="Factual • Verified • Record" icon={FileText} onViewChange={handleViewChange} onHoverStart={() => setHoveredType('news')} onHoverEnd={() => setHoveredType(null)} />
-        <SelectionCard type="live" title="Live Coverage" subtitle="Breaking • Real-time • Wire" icon={Radio} onViewChange={handleViewChange} onHoverStart={() => setHoveredType('live')} onHoverEnd={() => setHoveredType(null)} />
-        <SelectionCard type="off-record" title="Off the Record" subtitle="Anonymous • Encrypted • Leak" icon={EyeOff} onViewChange={handleViewChange} onHoverStart={() => setHoveredType('off-record')} onHoverEnd={() => setHoveredType(null)} />
-        <SelectionCard type="opinion" title="Editorial" subtitle="Opinion • Analysis • Voice" icon={Feather} onViewChange={handleViewChange} onHoverStart={() => setHoveredType('opinion')} onHoverEnd={() => setHoveredType(null)} />
+        <SelectionCard type="news" title="Standard Report" subtitle="Factual • Verified • Record" icon={FileText} href="/dashboard/new-story" onHoverStart={() => setHoveredType('news')} onHoverEnd={() => setHoveredType(null)} />
+        <SelectionCard type="live" title="Live Coverage" subtitle="Breaking • Real-time • Wire" icon={Radio} href="/dashboard/live" onHoverStart={() => setHoveredType('live')} onHoverEnd={() => setHoveredType(null)} />
+        <SelectionCard type="off-record" title="Off the Record" subtitle="Anonymous • Encrypted • Leak" icon={EyeOff} href="/dashboard/off-the-record" onHoverStart={() => setHoveredType('off-record')} onHoverEnd={() => setHoveredType(null)} />
+        <SelectionCard type="opinion" title="Editorial" subtitle="Opinion • Analysis • Voice" icon={Feather} href="/dashboard/editorial" onHoverStart={() => setHoveredType('opinion')} onHoverEnd={() => setHoveredType(null)} />
       </div>
       <div className={`text-center mt-20 transition-all duration-500 ${isOffRecordHovered ? 'opacity-0' : 'opacity-40'}`}><p className={`text-xs uppercase tracking-widest ${isDark ? 'text-stone-500' : 'text-muted-foreground'}`}><ShieldAlert size={12} className="inline mr-2 mb-0.5" />All drafts are auto-saved to your local secure storage</p></div>
     </div>

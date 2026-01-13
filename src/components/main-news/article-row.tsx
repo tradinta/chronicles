@@ -4,16 +4,17 @@
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Clock, Share2 } from 'lucide-react';
-import type { View } from '@/app/page';
 import type { Article } from '@/lib/data';
 import { cn } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 
 type ArticleRowProps = {
   article: Article;
-  onViewChange: (view: View) => void;
+  onViewChange: (href: string) => void;
 };
 
 export default function ArticleRow({ article, onViewChange }: ArticleRowProps) {
+  const router = useRouter();
   const isQuote = article.type === 'quote';
   
   if (isQuote) {
@@ -42,7 +43,7 @@ export default function ArticleRow({ article, onViewChange }: ArticleRowProps) {
       initial={{ opacity: 0, y: 10 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-20px" }}
-      onClick={() => onViewChange('article')}
+      onClick={() => onViewChange(`/article/${article.id}`)}
       className="group py-8 border-b border-border cursor-pointer"
     >
       <div className="container mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 items-start">

@@ -3,24 +3,26 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import type { View } from '@/app/page';
-
-type FooterProps = {
-  onViewChange: (view: View) => void;
-};
+import Link from 'next/link';
 
 const footerLinks = {
-  sections: ['World', 'Politics', 'Tech', 'Business', 'Culture'],
+  sections: [
+      { name: 'World', href: '/news'},
+      { name: 'Politics', href: '/news'},
+      { name: 'Tech', href: '/news'},
+      { name: 'Business', href: '/news'},
+      { name: 'Culture', href: '/news'}
+    ],
   company: [
-    { name: 'About', view: 'careers' },
-    { name: 'Careers', view: 'careers' },
-    { name: 'Contact', view: 'main' },
-    { name: 'Privacy Policy', view: 'privacy' },
-    { name: 'Terms of Service', view: 'terms' }
+    { name: 'About', href: '/careers' },
+    { name: 'Careers', href: '/careers' },
+    { name: 'Contact', href: '/main' },
+    { name: 'Privacy Policy', href: '/legal/privacy-policy' },
+    { name: 'Terms of Service', href: '/legal/terms-of-service' }
   ],
 };
 
-export default function Footer({ onViewChange }: FooterProps) {
+export default function Footer() {
   return (
     <footer className="py-20 px-6 md:px-12 bg-[#1a1a1a] text-stone-400">
       <div className="container mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
@@ -31,13 +33,13 @@ export default function Footer({ onViewChange }: FooterProps) {
         <div>
           <h4 className="text-stone-100 text-xs tracking-wider mb-6">SECTIONS</h4>
           <ul className="space-y-4 text-sm opacity-80">
-            {footerLinks.sections.map(link => <li key={link} className="hover:text-stone-200 cursor-pointer" onClick={() => onViewChange('main')}>{link}</li>)}
+            {footerLinks.sections.map(link => <li key={link.name}><Link href={link.href} className="hover:text-stone-200 cursor-pointer">{link.name}</Link></li>)}
           </ul>
         </div>
         <div>
           <h4 className="text-stone-100 text-xs tracking-wider mb-6">COMPANY</h4>
           <ul className="space-y-4 text-sm opacity-80">
-            {footerLinks.company.map(link => <li key={link.name} className="hover:text-stone-200 cursor-pointer" onClick={() => onViewChange(link.view as View)}>{link.name}</li>)}
+            {footerLinks.company.map(link => <li key={link.name}><Link href={link.href} className="hover:text-stone-200 cursor-pointer">{link.name}</Link></li>)}
           </ul>
         </div>
         <div>

@@ -3,13 +3,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import {
   Check, Star, Crown, Coffee,
   Sparkles, ShieldCheck, HelpCircle, ChevronDown, CreditCard,
   Lock, Zap, EyeOff, RefreshCw, Shield, Quote,
 } from 'lucide-react';
-import Navbar from '@/components/shared/navbar';
-import type { View } from '@/app/page';
 
 // Reusable FAQ Accordion Item
 const FAQItem = ({ question, answer }) => {
@@ -88,7 +87,7 @@ type PricingCardProps = {
   planType: 'explorer' | 'insider' | 'vip';
   isDark: boolean;
   icon: React.ElementType;
-  onViewChange: (view: View) => void;
+  onViewChange: (href: string) => void;
 };
 
 const PricingCard = ({ 
@@ -161,7 +160,7 @@ const PricingCard = ({
         ))}
       </div>
 
-      <button onClick={() => onViewChange('checkout')} className={`w-full py-3 rounded-lg text-xs font-bold tracking-widest uppercase transition-all duration-300 ${styles.btn}`}>
+      <button onClick={() => onViewChange('/checkout')} className={`w-full py-3 rounded-lg text-xs font-bold tracking-widest uppercase transition-all duration-300 ${styles.btn}`}>
         {planType === 'explorer' ? 'Start Exploring' : planType === 'insider' ? 'Become an Insider' : 'Unlock VIP'}
       </button>
       
@@ -170,11 +169,8 @@ const PricingCard = ({
   );
 };
 
-type SubscribePageProps = {
-  onViewChange: (view: View) => void;
-};
-
-export default function SubscribePage({ onViewChange }: SubscribePageProps) {
+export default function SubscribePage() {
+    const router = useRouter();
     const [isDark, setIsDark] = useState(false);
     const [billingCycle, setBillingCycle] = useState('monthly'); 
 
@@ -299,7 +295,7 @@ export default function SubscribePage({ onViewChange }: SubscribePageProps) {
                 features={["Standard news articles", "Weekly Newsletter", "5 Off-Record stories/mo", "Comment access"]}
                 icon={Coffee}
                 isDark={isDark}
-                onViewChange={onViewChange}
+                onViewChange={router.push}
               />
 
               <PricingCard 
@@ -311,7 +307,7 @@ export default function SubscribePage({ onViewChange }: SubscribePageProps) {
                 features={["Unlimited News Access", "Full Off-Record Access", "Daily Newsletter", "Ad-Free Experience", "Offline Reading"]}
                 icon={Star}
                 isDark={isDark}
-                onViewChange={onViewChange}
+                onViewChange={router.push}
               />
 
               <PricingCard 
@@ -323,7 +319,7 @@ export default function SubscribePage({ onViewChange }: SubscribePageProps) {
                 features={["Everything in Insider", "Priority Tip Submission", "Direct Editor Access", "Exclusive Events", "Family Account (4)"]}
                 icon={Crown}
                 isDark={isDark}
-                onViewChange={onViewChange}
+                onViewChange={router.push}
               />
 
            </div>
@@ -373,3 +369,4 @@ export default function SubscribePage({ onViewChange }: SubscribePageProps) {
     </div>
   );
 }
+

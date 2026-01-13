@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
+import App from './App';
 
 export const metadata: Metadata = {
   title: 'The Chronicle',
@@ -23,8 +24,9 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <div className="grain-overlay" />
-        {children}
+        <App>
+          {children}
+        </App>
         <Toaster />
       </body>
     </html>

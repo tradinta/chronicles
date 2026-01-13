@@ -1,13 +1,21 @@
 
-"use client";
+'use client';
 
 import { useState, useEffect } from 'react';
-import LandingPage from '@/components/landing/landing-page';
+import { usePathname } from 'next/navigation';
 import { FirebaseClientProvider } from '@/firebase';
+import Navbar from '@/components/shared/navbar';
+import Footer from '@/components/shared/footer';
+import ScrollProgress from '@/components/shared/scroll-progress';
 
-export default function Home() {
+export default function App({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [isDark, setIsDark] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     setIsMounted(true);
@@ -37,10 +45,23 @@ export default function Home() {
   if (!isMounted) {
     return null;
   }
+  
+  const isFocusMode = pathname.startsWith('/article');
+  const showFooter = !pathname.startsWith('/dashboard') && !pathname.startsWith('/auth') && !pathname.startsWith('/checkout') && !pathname.startsWith('/subscribe');
 
   return (
     <FirebaseClientProvider>
-      <LandingPage />
+      <div className="grain-overlay" />
+      <ScrollProgress isFocusMode={isFocusMode} />
+      <Navbar
+        isDark={isDark}
+        toggleTheme={toggleTheme}
+        isFocusMode={isFocusMode}
+      />
+      <main>
+        {children}
+      </main>
+      {showFooter && <Footer />}
     </FirebaseClientProvider>
   );
 }
