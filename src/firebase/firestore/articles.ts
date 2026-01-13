@@ -1,7 +1,7 @@
 
 'use client';
 
-import { collection, addDoc, serverTimestamp, Firestore } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, Firestore, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
@@ -25,6 +25,7 @@ export function createArticle(firestore: Firestore, articleData: ArticleData) {
   
   const data = {
     ...articleData,
+    status: 'published', // default status
     publishDate: serverTimestamp(),
   };
 
@@ -43,4 +44,32 @@ export function createArticle(firestore: Firestore, articleData: ArticleData) {
       // Re-throw the original error to allow the caller's catch block to execute
       throw error;
     });
+}
+
+/**
+ * Fetches all articles by a specific author.
+ */
+export function getArticlesByAuthor(firestore: Firestore, authorId: string) {
+    const articlesRef = collection(firestore, 'articles');
+    return query(articlesRef, where("authorId", "==", authorId));
+}
+
+/**
+ * Updates the status of an article (e.g., for takedown).
+ */
+export async function updateArticleStatus(firestore: Firestore, articleId: string, status: 'published' | 'draft' | 'takedown') {
+    const articleRef = doc(firestore, 'articles', articleId);
+    try {
+        await updateDoc(articleRef, { status });
+    } catch (error) {
+        errorEmitter.emit(
+            'permission-error',
+            new FirestorePermissionError({
+              path: articleRef.path,
+              operation: 'update',
+              requestResourceData: { status },
+            })
+          );
+        throw error;
+    }
 }

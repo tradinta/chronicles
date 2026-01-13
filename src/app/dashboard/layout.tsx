@@ -1,18 +1,14 @@
 
 'use client';
 
-import { useState } from 'react';
+// This layout file can be used to wrap all dashboard pages
+// However, since the dashboard page itself provides the full layout,
+// this can simply pass children through.
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [isDark, setIsDark] = useState(false); // Simplified for layout
-
-  return (
-    <div className={`min-h-screen transition-colors duration-700 ${isDark ? 'bg-[#121212]' : 'bg-background'}`}>
-      {children}
-    </div>
-  );
+  return <>{children}</>;
 }

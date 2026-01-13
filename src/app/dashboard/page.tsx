@@ -37,6 +37,7 @@ import { useToast } from '@/hooks/use-toast';
 import { updateProfile } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { PhotoUploader } from '@/components/shared/photo-uploader';
+import Link from 'next/link';
 
 // --- Data Types ---
 interface ArticleStat {
@@ -220,28 +221,39 @@ export default function AuthorDashboard() {
 // --- Dashboard Sub-Components ---
 
 function Sidebar({ activeTab, setActiveTab, isDarkMode, toggleTheme, onLogout }: any) {
+  const router = useRouter();
   const navItems = [
-    { id: 'overview', icon: Layout, label: 'Overview' },
-    { id: 'stories', icon: FileText, label: 'My Stories' },
+    { id: 'overview', icon: Layout, label: 'Overview', href: '/dashboard' },
+    { id: 'stories', icon: FileText, label: 'My Stories', href: '/dashboard/stories' },
     { id: 'analytics', icon: BarChart2, label: 'Analytics' },
     { id: 'messages', icon: MessageSquare, label: 'Comms' },
     { id: 'research', icon: Search, label: 'Research' },
   ];
 
+  const handleNavigation = (item) => {
+    if (item.href) {
+      router.push(item.href);
+    } else {
+      setActiveTab(item.id);
+    }
+  };
+
   return (
     <aside className="w-[80px] md:w-64 bg-background/95 dark:bg-background/80 backdrop-blur-md border-r border-border flex flex-col sticky top-0 h-screen z-30 transition-all duration-300">
       <div className="p-6 flex items-center justify-center md:justify-start gap-3 border-b border-border h-[80px]">
-        <div className="w-8 h-8 bg-primary text-primary-foreground flex items-center justify-center font-serif font-black text-xl rounded shadow-sm shrink-0">
-          K
-        </div>
-        <span className="font-serif font-bold text-xl tracking-tight hidden md:block">Kihumba.</span>
+        <Link href="/dashboard" className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-primary text-primary-foreground flex items-center justify-center font-serif font-black text-xl rounded shadow-sm shrink-0">
+            K
+          </div>
+          <span className="font-serif font-bold text-xl tracking-tight hidden md:block">Kihumba.</span>
+        </Link>
       </div>
 
       <nav className="flex-1 py-6 px-3 space-y-1">
         {navItems.map((item) => (
           <button
             key={item.id}
-            onClick={() => setActiveTab(item.id)}
+            onClick={() => handleNavigation(item)}
             className={`w-full flex items-center gap-3 px-3 py-3 rounded-md transition-all duration-200 group relative overflow-hidden ${activeTab === item.id ? 'bg-foreground text-background shadow-md' : 'text-muted-foreground hover:bg-foreground/5 hover:text-foreground'}`}
           >
             <item.icon className={`w-5 h-5 relative z-10 ${activeTab === item.id ? 'text-primary' : ''}`} />
@@ -260,7 +272,7 @@ function Sidebar({ activeTab, setActiveTab, isDarkMode, toggleTheme, onLogout }:
             {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             <span className="font-medium text-sm hidden md:block">{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
         </button>
-        <button onClick={() => setActiveTab('profile')} className={`w-full flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${activeTab === 'profile' ? 'bg-foreground/5 text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5'}`}>
+        <button onClick={() => router.push('/dashboard?tab=profile')} className={`w-full flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${activeTab === 'profile' ? 'bg-foreground/5 text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5'}`}>
             <UserIcon className="w-5 h-5" />
             <span className="font-medium text-sm hidden md:block">Profile</span>
         </button>
