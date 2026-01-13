@@ -1,14 +1,26 @@
+
 "use client";
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import type { View } from '@/app/page';
+
+type FooterProps = {
+  onViewChange: (view: View) => void;
+};
 
 const footerLinks = {
   sections: ['World', 'Politics', 'Tech', 'Business', 'Culture'],
-  company: ['About', 'Careers', 'Contact', 'Privacy Policy', 'Terms of Service'],
+  company: [
+    { name: 'About', view: 'careers' },
+    { name: 'Careers', view: 'careers' },
+    { name: 'Contact', view: 'main' },
+    { name: 'Privacy Policy', view: 'privacy' },
+    { name: 'Terms of Service', view: 'terms' }
+  ],
 };
 
-export default function Footer() {
+export default function Footer({ onViewChange }: FooterProps) {
   return (
     <footer className="py-20 px-6 md:px-12 bg-[#1a1a1a] text-stone-400">
       <div className="container mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
@@ -19,13 +31,13 @@ export default function Footer() {
         <div>
           <h4 className="text-stone-100 text-xs tracking-wider mb-6">SECTIONS</h4>
           <ul className="space-y-4 text-sm opacity-80">
-            {footerLinks.sections.map(link => <li key={link} className="hover:text-stone-200 cursor-pointer">{link}</li>)}
+            {footerLinks.sections.map(link => <li key={link} className="hover:text-stone-200 cursor-pointer" onClick={() => onViewChange('main')}>{link}</li>)}
           </ul>
         </div>
         <div>
           <h4 className="text-stone-100 text-xs tracking-wider mb-6">COMPANY</h4>
           <ul className="space-y-4 text-sm opacity-80">
-            {footerLinks.company.map(link => <li key={link} className="hover:text-stone-200 cursor-pointer">{link}</li>)}
+            {footerLinks.company.map(link => <li key={link.name} className="hover:text-stone-200 cursor-pointer" onClick={() => onViewChange(link.view as View)}>{link.name}</li>)}
           </ul>
         </div>
         <div>

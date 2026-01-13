@@ -186,7 +186,7 @@ const AuthPage = ({ onViewChange }: AuthPageProps) => {
                           <span>Remember me</span>
                        </label>
                        {authMode === 'login' && (
-                         <a href="#" className="font-bold hover:underline">Forgot Password?</a>
+                         <a href="#" onClick={() => onViewChange('reset-password')} className="font-bold hover:underline">Forgot Password?</a>
                        )}
                     </div>
 

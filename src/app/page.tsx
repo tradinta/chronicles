@@ -19,9 +19,14 @@ import EditorialEditor from '@/app/dashboard/editorial/new/page';
 import SubscribePage from '@/app/subscribe/page';
 import CheckoutPage from '@/app/checkout/page';
 import AuthPage from '@/app/auth/page';
+import PrivacyPolicyPage from '@/app/legal/privacy-policy/page';
+import TermsOfServicePage from '@/app/legal/terms-of-service/page';
+import TakedownRequestPage from '@/app/legal/takedown/page';
+import CareersPage from '@/app/careers/page';
+import PasswordResetPage from '@/app/auth/reset-password/page';
 
 
-export type View = 'landing' | 'main' | 'article' | 'live' | 'off-the-record' | 'post-selection' | 'editor-news' | 'editorial-dashboard' | 'editor-editorial' | 'subscribe' | 'checkout' | 'auth';
+export type View = 'landing' | 'main' | 'article' | 'live' | 'off-the-record' | 'post-selection' | 'editor-news' | 'editorial-dashboard' | 'editor-editorial' | 'subscribe' | 'checkout' | 'auth' | 'privacy' | 'terms' | 'takedown' | 'careers' | 'reset-password';
 
 export default function Home() {
   const [isDark, setIsDark] = useState(false);
@@ -99,6 +104,16 @@ export default function Home() {
         return <CheckoutPage onViewChange={handleViewChange} />;
       case 'auth':
         return <AuthPage onViewChange={handleViewChange} />;
+      case 'privacy':
+        return <PrivacyPolicyPage key="privacy" />;
+      case 'terms':
+        return <TermsOfServicePage key="terms" />;
+      case 'takedown':
+        return <TakedownRequestPage key="takedown" />;
+      case 'careers':
+        return <CareersPage key="careers" />;
+      case 'reset-password':
+        return <PasswordResetPage key="reset-password" onViewChange={handleViewChange} />;
       default:
         return <LandingPage key="landing" onViewChange={handleViewChange} />;
     }
@@ -121,7 +136,7 @@ export default function Home() {
         {renderContent()}
       </AnimatePresence>
       
-      {showFooter && <Footer />}
+      {showFooter && <Footer onViewChange={handleViewChange}/>}
     </main>
   );
 }
