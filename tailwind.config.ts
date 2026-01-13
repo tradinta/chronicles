@@ -20,6 +20,8 @@ export default {
         body: ['Inter', 'sans-serif'],
         headline: ['Playfair Display', 'serif'],
         code: ['monospace'],
+        sans: ['Inter', 'sans-serif'],
+        serif: ['Playfair Display', 'serif'],
       },
       colors: {
         background: 'hsl(var(--background))',
@@ -85,12 +87,35 @@ export default {
             height: '0',
           },
         },
+        'animate-in': {
+          from: {
+            opacity: '0',
+            transform: 'scale(0.95)',
+          },
+          to: {
+            opacity: '1',
+            transform: 'scale(1)',
+          },
+        },
+        'fade-in': {
+          from: { opacity: '0' },
+          to: { opacity: '1' },
+        },
+        'zoom-in': {
+          from: { transform: 'scale(0.95)' },
+          to: { transform: 'scale(1)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'in': 'animate-in 200ms ease-out',
+        'fade-in': 'fade-in 200ms ease-out',
+        'zoom-in': 'zoom-in 200ms ease-out',
       },
     },
   },
   plugins: [require('tailwindcss-animate')],
 } satisfies Config;
+
+    
