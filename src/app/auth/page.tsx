@@ -18,6 +18,7 @@ import {
 import { useAuth } from '@/firebase';
 import { useUser } from '@/firebase/provider';
 import { initiateEmailSignUp, initiateEmailSignIn } from '@/firebase/non-blocking-login';
+import type { FirebaseError } from 'firebase/auth';
 
 const AuthInput = ({ label, type, placeholder, icon: Icon, isDark, value, onChange, showPasswordToggle }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -75,8 +76,8 @@ const AuthPage = () => {
   
   useEffect(() => {
     if (!isUserLoading && user) {
-      setError(null);
       setLoading(false);
+      setError(null);
       setSuccess(true);
       setTimeout(() => {
         router.push('/'); // Redirect after success
@@ -84,33 +85,41 @@ const AuthPage = () => {
     }
   }, [user, isUserLoading, router]);
 
+  const handleAuthError = (error: FirebaseError) => {
+    setLoading(false);
+    let description = "An unexpected error occurred. Please try again.";
+    if (error.code === 'auth/user-not-found') {
+      setAuthMode('signup');
+      description = "No account found with this email. Please sign up instead.";
+    } else if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+      description = "Invalid email or password. Please check your credentials and try again.";
+    } else if (error.code === 'auth/email-already-in-use') {
+      description = "An account with this email address already exists.";
+    } else if (error.code === 'auth/weak-password') {
+      description = "The password is too weak. Please choose a stronger password.";
+    }
+    setError(description);
+  };
+  
+  const handleAuthSuccess = () => {
+    // The useEffect listening to the user state will handle success UI and redirection
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth) return;
     setLoading(true);
     setError(null);
 
-    try {
-      if (authMode === 'signup') {
-        await initiateEmailSignUp(auth, email, password);
-        // The useEffect above will handle the redirect on successful user state change
-      } else {
-        await initiateEmailSignIn(auth, email, password);
-      }
-    } catch (error: any) {
-      setLoading(false);
-      let description = "An unexpected error occurred. Please try again.";
-      if (error.code === 'auth/user-not-found') {
-        setAuthMode('signup');
-        description = "No account found with this email. Please sign up instead.";
-      } else if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-        description = "Invalid email or password. Please check your credentials and try again.";
-      } else if (error.code === 'auth/email-already-in-use') {
-        description = "An account with this email address already exists.";
-      } else if (error.code === 'auth/weak-password') {
-        description = "The password is too weak. Please choose a stronger password.";
-      }
-      setError(description);
+    const callbacks = {
+      onSuccess: handleAuthSuccess,
+      onError: handleAuthError,
+    };
+
+    if (authMode === 'signup') {
+      initiateEmailSignUp(auth, email, password, callbacks);
+    } else {
+      initiateEmailSignIn(auth, email, password, callbacks);
     }
   };
   
@@ -285,5 +294,3 @@ const AuthPage = () => {
 };
 
 export default AuthPage;
-
-    
