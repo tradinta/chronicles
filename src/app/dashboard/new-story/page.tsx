@@ -103,7 +103,7 @@ export default function NewsEditorPage() {
       formData.append('public_id', public_id);
       formData.append('api_key', process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY || '631177719182385');
       
-      const uploadResponse = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, {
+      const uploadResponse = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'doyg2puov'}/image/upload`, {
         method: 'POST',
         body: formData,
       });
@@ -342,3 +342,5 @@ export default function NewsEditorPage() {
     </div>
   );
 };
+
+    
