@@ -12,6 +12,7 @@ interface PhotoUploaderProps {
   onUploadComplete: (url: string) => void;
   className?: string;
   imageClassName?: string;
+  children?: React.ReactNode;
 }
 
 export function PhotoUploader({ 
@@ -19,6 +20,7 @@ export function PhotoUploader({
   onUploadComplete, 
   className,
   imageClassName,
+  children,
 }: PhotoUploaderProps) {
   const [imageUrl, setImageUrl] = useState(initialImage);
   const [isUploading, setIsUploading] = useState(false);
@@ -36,7 +38,8 @@ export function PhotoUploader({
       // 1. Get signature from our API
       const signResponse = await fetch('/api/sign-image', { method: 'POST' });
       if (!signResponse.ok) {
-        throw new Error('Failed to get upload signature from server.');
+        const errorText = await signResponse.text();
+        throw new Error(`Failed to get upload signature. Server responded with: ${errorText}`);
       }
       const signData = await signResponse.json();
 
@@ -92,6 +95,8 @@ export function PhotoUploader({
     e.stopPropagation();
   };
 
+  const currentImage = imageUrl || initialImage;
+
   return (
     <div
       onClick={() => fileInputRef.current?.click()}
@@ -102,13 +107,17 @@ export function PhotoUploader({
         className
       )}
     >
-      <Image 
-        src={imageUrl || `https://api.dicebear.com/7.x/pixel-art/svg?seed=placeholder`} 
-        alt="Profile" 
-        width={80} 
-        height={80} 
-        className={cn("bg-muted border border-border", imageClassName)} 
-      />
+      {currentImage ? (
+        <Image 
+          src={currentImage}
+          alt="Uploaded content" 
+          width={80} 
+          height={80} 
+          className={cn("bg-muted border border-border object-cover", imageClassName)} 
+        />
+      ) : (
+        children
+      )}
       <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
         {isUploading ? (
           <Loader2 size={24} className="animate-spin" />
@@ -127,3 +136,5 @@ export function PhotoUploader({
     </div>
   );
 }
+
+    

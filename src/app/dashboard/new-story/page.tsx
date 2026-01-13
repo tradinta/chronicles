@@ -31,6 +31,7 @@ import { Button } from '@/components/ui/button';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { createSlug } from '@/lib/utils';
+import { PhotoUploader } from '@/components/shared/photo-uploader';
 
 const AUTOSAVE_INTERVAL = 10000; // 10 seconds
 const LOCAL_STORAGE_KEY = 'kihumba_editor_autosave';
@@ -40,8 +41,6 @@ const NewsEditorPage = () => {
   const router = useRouter();
   const { user } = useUser();
   const firestore = useFirestore();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
 
   const [showEntryModal, setShowEntryModal] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -230,60 +229,6 @@ const NewsEditorPage = () => {
     }
   };
 
-  const handleImageUpload = async (file: File) => {
-    if (!file) return;
-    const formData = new FormData();
-    formData.append('file', file);
-    
-    try {
-      const signResponse = await fetch('/api/sign-image', { method: 'POST' });
-      const signData = await signResponse.json();
-
-      formData.append('api_key', process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY || '631177719182385');
-      formData.append('signature', signData.signature);
-      formData.append('timestamp', signData.timestamp);
-      formData.append('public_id', signData.public_id);
-
-      const uploadResponse = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'doyg2puov'}/image/upload`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (uploadResponse.ok) {
-        const imageData = await uploadResponse.json();
-        setCoverImageUrl(imageData.secure_url);
-        toast({ title: "Cover image uploaded!" });
-      } else {
-        throw new Error('Upload failed');
-      }
-    } catch (error) {
-      console.error('Image upload error:', error);
-      toast({ variant: 'destructive', title: "Upload Failed", description: "Could not upload cover image." });
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
-      handleImageUpload(file);
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleImageUpload(file);
-    }
-  };
-  const triggerFileSelect = () => fileInputRef.current?.click();
-
   const [isDark, setIsDark] = useState(false);
   useEffect(() => {
     setIsDark(document.documentElement.classList.contains('dark'));
@@ -326,21 +271,19 @@ const NewsEditorPage = () => {
             animate={{ opacity: isFocusMode ? 0.3 : 1, y: isFocusMode ? -20 : 0 }}
             className="mb-12 border-b pb-8 transition-colors border-stone-200 dark:border-stone-800"
           >
-             <input type="file" ref={fileInputRef} onChange={handleImageSelect} accept="image/*" className="hidden" />
-             <div 
-               onDrop={handleDrop}
-               onDragOver={handleDragOver}
-               onClick={triggerFileSelect}
-               className="group w-full aspect-video rounded-xl mb-8 flex items-center justify-center border-2 border-dashed transition-colors relative overflow-hidden cursor-pointer border-stone-300 bg-stone-100 hover:border-stone-400 dark:border-stone-800 dark:bg-stone-900/50 dark:hover:border-stone-700">
-                {coverImageUrl ? (
-                   <Image src={coverImageUrl} alt="Cover image" fill objectFit="cover" />
-                ) : (
-                   <div className="text-center p-4">
-                      <ImagePlus size={32} className="mx-auto mb-2 transition-colors text-stone-400 group-hover:text-stone-500 dark:text-stone-600 dark:group-hover:text-stone-500" />
-                      <span className="text-xs font-bold uppercase tracking-wider transition-colors text-stone-500 group-hover:text-stone-600 dark:text-stone-500 dark:group-hover:text-stone-400">Add Cover Image</span>
-                   </div>
+             <PhotoUploader
+                initialImage={coverImageUrl}
+                onUploadComplete={setCoverImageUrl}
+                className="w-full aspect-video rounded-xl mb-8 flex items-center justify-center border-2 border-dashed transition-colors relative overflow-hidden cursor-pointer border-stone-300 bg-stone-100 hover:border-stone-400 dark:border-stone-800 dark:bg-stone-900/50 dark:hover:border-stone-700"
+                imageClassName="w-full h-full object-cover"
+              >
+                {!coverImageUrl && (
+                  <div className="text-center p-4">
+                    <ImagePlus size={32} className="mx-auto mb-2 transition-colors text-stone-400 group-hover:text-stone-500 dark:text-stone-600 dark:group-hover:text-stone-500" />
+                    <span className="text-xs font-bold uppercase tracking-wider transition-colors text-stone-500 group-hover:text-stone-600 dark:text-stone-500 dark:group-hover:text-stone-400">Add Cover Image</span>
+                  </div>
                 )}
-             </div>
+              </PhotoUploader>
              
              <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center space-x-3">
@@ -571,5 +514,7 @@ const NewsEditorPage = () => {
 };
 
 export default NewsEditorPage;
+
+    
 
     
