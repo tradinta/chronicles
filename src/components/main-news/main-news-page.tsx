@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -48,7 +49,7 @@ export default function MainNewsPage({ onViewChange }: MainNewsPageProps) {
           </div>
 
           <div className="lg:col-span-3">
-             <Sidebar />
+             <Sidebar onViewChange={onViewChange} />
           </div>
 
         </div>

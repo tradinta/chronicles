@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -10,8 +11,9 @@ import LandingPage from '@/components/landing/landing-page';
 import MainNewsPage from '@/components/main-news/main-news-page';
 import ArticlePage from '@/components/article/article-page';
 import LiveCoveragePage from '@/components/live-coverage/live-coverage-page';
+import OffTheRecordPage from '@/components/off-the-record/off-the-record-page';
 
-export type View = 'landing' | 'main' | 'article' | 'live';
+export type View = 'landing' | 'main' | 'article' | 'live' | 'off-the-record';
 
 export default function Home() {
   const [isDark, setIsDark] = useState(false);
@@ -73,10 +75,14 @@ export default function Home() {
           />;
       case 'live':
         return <LiveCoveragePage key="live" onViewChange={handleViewChange} />;
+      case 'off-the-record':
+        return <OffTheRecordPage key="off-the-record" onViewChange={handleViewChange} />;
       default:
         return <LandingPage key="landing" onViewChange={handleViewChange} />;
     }
   }
+
+  const showFooter = !['article', 'live', 'off-the-record'].includes(currentView);
 
   return (
     <main>
@@ -93,7 +99,7 @@ export default function Home() {
         {renderContent()}
       </AnimatePresence>
       
-      {currentView !== 'article' && currentView !== 'live' && <Footer />}
+      {showFooter && <Footer />}
     </main>
   );
 }
