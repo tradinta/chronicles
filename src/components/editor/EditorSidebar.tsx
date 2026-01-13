@@ -1,8 +1,8 @@
 
 'use client';
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, AlignLeft, CheckCircle2, Bot, LayoutGrid, Book, Globe, X, Wand2, BrainCircuit } from 'lucide-react';
+import { ChevronRight, AlignLeft, CheckCircle2, Bot, Book, Globe, X, Wand2, BrainCircuit } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { generateHeadlines } from '@/ai/flows/editor-flow';
 
@@ -11,8 +11,8 @@ const SidebarTab = ({ id, icon: Icon, label, activeTab, setActiveTab }) => (
       onClick={() => setActiveTab(id)}
       className="relative flex-1 flex flex-col items-center justify-center p-4 transition-colors duration-300 group"
     >
-      <Icon size={20} className={`transition-colors ${activeTab === id ? 'text-primary' : 'text-stone-400 group-hover:text-stone-200'}`} />
-      <span className={`text-[10px] mt-1 font-bold transition-colors ${activeTab === id ? 'text-primary' : 'text-stone-500 group-hover:text-stone-300'}`}>{label}</span>
+      <Icon size={20} className={`transition-colors ${activeTab === id ? 'text-primary' : 'text-stone-500 dark:text-stone-400 group-hover:text-stone-200'}`} />
+      <span className={`text-[10px] mt-1 font-bold transition-colors ${activeTab === id ? 'text-primary' : 'text-stone-600 dark:text-stone-500 group-hover:text-stone-300'}`}>{label}</span>
       {activeTab === id && (
         <motion.div layoutId="sidebar-active-indicator" className="absolute bottom-0 h-0.5 w-full bg-primary" />
       )}
@@ -22,12 +22,12 @@ const SidebarTab = ({ id, icon: Icon, label, activeTab, setActiveTab }) => (
 const ArticleOutline = ({ blocks }) => {
     const headings = blocks.filter(b => b.type === 'h2');
     if (headings.length === 0) {
-        return <div className="text-center text-xs text-stone-500 py-8">No headings yet.</div>;
+        return <div className="text-center text-xs text-stone-500 py-8">Add H2 blocks to see an outline.</div>;
     }
     return (
         <ul className="space-y-2">
             {headings.map(h => (
-                <li key={h.id} className="text-sm text-stone-400 hover:text-stone-200 transition-colors cursor-pointer truncate">
+                <li key={h.id} className="text-sm text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 transition-colors cursor-pointer truncate">
                     {h.content || 'Untitled Heading'}
                 </li>
             ))}
@@ -45,14 +45,14 @@ const SEOPreview = ({ headline, subheading, isDark }) => (
     </div>
 );
 
-const PreFlightChecklist = ({ checklistItems }) => (
+const PreFlightChecklist = ({ checklistItems, isDark }) => (
     <div className="space-y-3">
         {checklistItems.map((item, i) => (
             <div key={i} className="flex items-center space-x-3 text-sm group cursor-pointer">
-                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${item.done ? 'bg-green-500 border-green-500' : 'border-stone-600 group-hover:border-stone-400'}`}>
-                    {item.done && <Check size={10} className="text-stone-900" />}
+                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${item.done ? 'bg-green-500 border-green-500' : (isDark ? 'border-stone-700 group-hover:border-stone-500' : 'border-stone-300 group-hover:border-stone-400')}`}>
+                    {item.done && <Check size={10} className="text-white dark:text-stone-900" />}
                 </div>
-                <span className={`transition-colors ${item.done ? 'text-stone-500 line-through' : 'text-stone-300 group-hover:text-stone-100'}`}>{item.label}</span>
+                <span className={`transition-colors ${item.done ? 'text-stone-500 line-through' : (isDark ? 'text-stone-300' : 'text-stone-700')}`}>{item.label}</span>
             </div>
         ))}
     </div>
@@ -93,92 +93,79 @@ const EditorSidebar = ({ isOpen, setIsOpen, isFocusMode, isDark, headline, subhe
     };
   
     return (
-        <div className={`fixed right-0 top-0 bottom-0 w-full md:w-96 border-l-2 transform transition-transform duration-300 z-30 flex flex-col
-          ${isOpen && !isFocusMode ? 'translate-x-0' : 'translate-x-full'} 
-          ${isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-200'}`}
-        >
-          {!isOpen && !isFocusMode && (
-             <button onClick={() => setIsOpen(true)} className={`absolute -left-10 top-6 p-2 rounded-l-md border-y border-l shadow-lg ${isDark ? 'bg-stone-900 border-stone-800 text-stone-400' : 'bg-white border-stone-200 text-stone-500'}`}>
-                <AlignLeft size={16} />
-             </button>
-          )}
-  
-          <div className={`h-16 border-b flex items-center justify-between px-4 ${isDark ? 'border-stone-800' : 'border-stone-200'}`}>
-             <div className="flex items-center space-x-2">
-                 <div className="w-2.5 h-2.5 rounded-full bg-green-500"></div>
-                 <span className="text-sm font-semibold">Editor</span>
-             </div>
-             <button onClick={() => setIsOpen(false)} className={`p-2 rounded-md transition-colors ${isDark ? 'hover:bg-stone-800 text-stone-500' : 'hover:bg-stone-100 text-stone-400'}`}>
-                <ChevronRight size={16} />
-             </button>
-          </div>
-
-          <div className={`h-16 border-b flex items-center px-2 ${isDark ? 'border-stone-800' : 'border-stone-200'}`}>
-             <SidebarTab id="checklist" icon={CheckCircle2} label="Checklist" activeTab={activeTab} setActiveTab={setActiveTab} />
-             <SidebarTab id="outline" icon={Book} label="Outline" activeTab={activeTab} setActiveTab={setActiveTab} />
-             <SidebarTab id="seo" icon={Globe} label="SEO" activeTab={activeTab} setActiveTab={setActiveTab} />
-             <SidebarTab id="ai" icon={BrainCircuit} label="Co-pilot" activeTab={activeTab} setActiveTab={setActiveTab} />
-          </div>
-          
-          <div className="flex-1 overflow-y-auto p-6">
-             <AnimatePresence mode="wait">
-              <motion.div key={activeTab} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.2 }}>
-               {activeTab === 'checklist' && (
-                 <div className="space-y-8">
-                   <div>
-                      <div className="flex justify-between items-end mb-4">
-                         <h4 className="text-xs font-bold tracking-widest uppercase text-stone-400">Progress</h4>
-                         <span className="text-xs font-mono text-primary">{Math.round(progress)}%</span>
-                      </div>
-                      <Progress value={progress} className="h-2" />
-                   </div>
-                   <div>
-                      <h4 className="text-xs font-bold tracking-widest uppercase mb-4 text-stone-400">Pre-Flight</h4>
-                      <PreFlightChecklist checklistItems={checklistItems} />
-                   </div>
-                 </div>
-               )}
-                {activeTab === 'outline' && (
-                    <div>
-                        <h4 className="text-xs font-bold tracking-widest uppercase mb-4 text-stone-400">Article Outline</h4>
-                        <ArticleOutline blocks={blocks} />
-                    </div>
-                )}
-                {activeTab === 'seo' && (
-                    <div>
-                        <h4 className="text-xs font-bold tracking-widest uppercase mb-4 text-stone-400">Search Preview</h4>
-                        <SEOPreview headline={headline} subheading={subheading} isDark={isDark} />
-                    </div>
-                )}
-               {activeTab === 'ai' && (
-                  <div className="space-y-6">
-                     <div className={`p-4 rounded-lg border flex flex-col text-center space-y-3 ${isDark ? 'bg-indigo-900/20 border-indigo-500/30' : 'bg-indigo-50 border-indigo-200'}`}>
-                        <Wand2 size={24} className="text-indigo-500 mx-auto" />
-                        <div>
-                           <h4 className={`text-sm font-bold ${isDark ? 'text-indigo-200' : 'text-indigo-900'}`}>Headline Assistant</h4>
-                           <p className={`text-xs mt-1 ${isDark ? 'text-indigo-300/70' : 'text-indigo-700/70'}`}>Generate variations based on article content.</p>
-                        </div>
-                        <button onClick={handleGenerateHeadlines} disabled={isLoadingAi} className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold uppercase rounded shadow-lg transition-colors disabled:opacity-50">
-                            {isLoadingAi ? 'Generating...' : 'Generate Headlines'}
-                        </button>
-                     </div>
-                     {aiSuggestions.length > 0 && (
-                        <div>
-                            <h4 className="text-xs font-bold tracking-widest uppercase mb-3 text-stone-400">Suggestions</h4>
-                            <div className="space-y-2">
-                                {aiSuggestions.map((s, i) => (
-                                    <p key={i} className="text-sm p-3 bg-stone-800 rounded border border-stone-700 text-stone-300 cursor-pointer hover:bg-stone-700">{s}</p>
-                                ))}
-                            </div>
-                        </div>
-                     )}
-                  </div>
-               )}
-              </motion.div>
-             </AnimatePresence>
-          </div>
+      <div className={`fixed right-0 top-0 bottom-0 w-full md:w-96 border-l-2 transform transition-transform duration-300 z-30 flex flex-col
+        ${isOpen && !isFocusMode ? 'translate-x-0' : 'translate-x-full'} 
+        ${isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-200'}`}
+      >
+        <button onClick={() => setIsOpen(false)} className="absolute top-4 right-4 p-2 rounded-full hover:bg-stone-800 transition-colors text-stone-500 lg:hidden">
+            <X size={18} />
+        </button>
+        <div className={`h-16 border-b flex items-center px-4 ${isDark ? 'border-stone-800' : 'border-stone-200'}`}>
+           <h3 className="font-serif text-lg font-semibold">Studio</h3>
         </div>
-      );
+
+        <div className={`h-16 border-b flex items-center px-2 ${isDark ? 'border-stone-800' : 'border-stone-200'}`}>
+           <SidebarTab id="checklist" icon={CheckCircle2} label="Checklist" activeTab={activeTab} setActiveTab={setActiveTab} />
+           <SidebarTab id="ai" icon={BrainCircuit} label="Co-pilot" activeTab={activeTab} setActiveTab={setActiveTab} />
+        </div>
+        
+        <div className="flex-1 overflow-y-auto p-6">
+           <AnimatePresence mode="wait">
+            <motion.div key={activeTab} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.2 }}>
+             {activeTab === 'checklist' && (
+               <div className="space-y-8">
+                 <div>
+                    <div className="flex justify-between items-end mb-4">
+                       <h4 className="text-xs font-bold tracking-widest uppercase text-stone-500 dark:text-stone-400">Progress</h4>
+                       <span className="text-xs font-mono text-primary">{Math.round(progress)}%</span>
+                    </div>
+                    <Progress value={progress} className="h-2" />
+                 </div>
+                 <div>
+                    <h4 className="text-xs font-bold tracking-widest uppercase mb-4 text-stone-500 dark:text-stone-400">Pre-Flight</h4>
+                    <PreFlightChecklist checklistItems={checklistItems} isDark={isDark}/>
+                 </div>
+                 <div>
+                    <h4 className="text-xs font-bold tracking-widest uppercase mb-4 text-stone-500 dark:text-stone-400">Article Outline</h4>
+                    <ArticleOutline blocks={blocks} />
+                 </div>
+                 <div>
+                    <h4 className="text-xs font-bold tracking-widest uppercase mb-4 text-stone-500 dark:text-stone-400">Search Preview</h4>
+                    <SEOPreview headline={headline} subheading={subheading} isDark={isDark} />
+                 </div>
+               </div>
+             )}
+             {activeTab === 'ai' && (
+                <div className="space-y-6">
+                   <div className={`p-4 rounded-lg border flex flex-col text-center space-y-3 ${isDark ? 'bg-indigo-900/20 border-indigo-500/30' : 'bg-indigo-50 border-indigo-200'}`}>
+                      <Wand2 size={24} className="text-indigo-500 mx-auto" />
+                      <div>
+                         <h4 className={`text-sm font-bold ${isDark ? 'text-indigo-200' : 'text-indigo-900'}`}>Headline Assistant</h4>
+                         <p className={`text-xs mt-1 ${isDark ? 'text-indigo-300/70' : 'text-indigo-700/70'}`}>Generate variations based on article content.</p>
+                      </div>
+                      <button onClick={handleGenerateHeadlines} disabled={isLoadingAi} className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold uppercase rounded shadow-lg transition-colors disabled:opacity-50">
+                          {isLoadingAi ? 'Generating...' : 'Generate Headlines'}
+                      </button>
+                   </div>
+                   {aiSuggestions.length > 0 && (
+                      <div>
+                          <h4 className="text-xs font-bold tracking-widest uppercase mb-3 text-stone-500 dark:text-stone-400">Suggestions</h4>
+                          <div className="space-y-2">
+                              {aiSuggestions.map((s, i) => (
+                                  <p key={i} className="text-sm p-3 bg-stone-800 rounded border border-stone-700 text-stone-300 cursor-pointer hover:bg-stone-700">{s}</p>
+                              ))}
+                          </div>
+                      </div>
+                   )}
+                </div>
+             )}
+            </motion.div>
+           </AnimatePresence>
+        </div>
+      </div>
+    );
 };
 
 export default EditorSidebar;
+
+    

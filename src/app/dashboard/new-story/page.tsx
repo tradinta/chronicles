@@ -5,10 +5,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Send, Type, Quote, Heading2, AlertCircle, Zap, Minimize2,
-  Image as ImageIcon,
   ImagePlus,
   Bot, Sparkles, Wand2,
-  LayoutGrid, Book, Check, BrainCircuit
+  LayoutGrid, Book, Check, BrainCircuit, AlignLeft
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore } from '@/firebase';
@@ -27,7 +26,7 @@ const NewsEditorPage = () => {
   const firestore = useFirestore();
 
   const [showEntryModal, setShowEntryModal] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [isBreaking, setIsBreaking] = useState(false);
   
@@ -232,7 +231,7 @@ const NewsEditorPage = () => {
              <div className="my-12 flex justify-center group relative">
                 <div className={`absolute top-1/2 left-0 right-0 h-px transition-colors ${isDark ? 'bg-stone-800 group-hover:bg-stone-700' : 'bg-stone-200 group-hover:bg-stone-300'}`}></div>
                 <div className={`relative z-10 p-1.5 rounded-full border flex space-x-1 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0 ${isDark ? 'bg-stone-900 border-stone-700 shadow-2xl shadow-black' : 'bg-white border-stone-200 shadow-lg'}`}>
-                   {[ { icon: Type, type: 'paragraph', tooltip: 'Text' }, { icon: Quote, type: 'quote', tooltip: 'Quote' }, { icon: Heading2, type: 'h2', tooltip: 'Heading' }, { icon: ImageIcon, type: 'image', tooltip: 'Image' }, { icon: Sparkles, type: 'infobox', tooltip: 'AI Box' }, ].map((tool) => (
+                   {[ { icon: Type, type: 'paragraph', tooltip: 'Text' }, { icon: Quote, type: 'quote', tooltip: 'Quote' }, { icon: Heading2, type: 'h2', tooltip: 'Heading' }, { icon: ImagePlus, type: 'image', tooltip: 'Image' }, { icon: Sparkles, type: 'infobox', tooltip: 'AI Box' }, ].map((tool) => (
                       <button key={tool.type} onClick={() => addBlock(tool.type)} className={`p-2 rounded-full hover:scale-110 transition-transform ${isDark ? 'text-stone-400 hover:text-white' : 'text-stone-500 hover:text-black'}`} title={tool.tooltip}>
                          <tool.icon size={16} />
                       </button>
@@ -258,6 +257,13 @@ const NewsEditorPage = () => {
 
       <motion.div animate={{ y: isFocusMode ? 100 : 0 }} className={`fixed bottom-0 left-0 right-0 h-16 border-t px-6 flex items-center justify-end z-30 transition-transform duration-500 ${isDark ? 'bg-stone-900/80 backdrop-blur-md border-stone-800' : 'bg-white/80 backdrop-blur-md border-stone-200'}`}>
          <div className="flex items-center space-x-4">
+            <button 
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
+              className={`lg:hidden flex items-center space-x-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors border ${isDark ? 'border-stone-700 text-stone-400' : 'border-stone-300 text-stone-500'}`}
+            >
+              <AlignLeft size={12} />
+              <span>Tools</span>
+            </button>
             <button className={`px-4 py-2 rounded-md text-sm font-semibold transition-colors ${isDark ? 'text-stone-400 hover:bg-stone-800' : 'text-stone-600 hover:bg-stone-200'}`}>Save</button>
             <button onClick={handlePublish} disabled={isPublishing} className="px-6 py-2 rounded-md text-sm font-bold tracking-wide text-white shadow-lg bg-primary hover:bg-primary/90 transition-colors flex items-center space-x-2 disabled:bg-opacity-50 disabled:cursor-not-allowed">
                {isPublishing ? 'Publishing...' : 'Publish'}
@@ -270,3 +276,5 @@ const NewsEditorPage = () => {
 };
 
 export default NewsEditorPage;
+
+    
