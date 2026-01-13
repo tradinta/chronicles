@@ -10,6 +10,7 @@ import ArticleParagraph from '@/components/article/article-paragraph';
 import ArticleFooter from '@/components/article/article-footer';
 import { placeholderImages } from '@/lib/data';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 type ArticlePageProps = {
   isFocusMode: boolean;
@@ -49,15 +50,15 @@ export default function ArticlePage() {
           </h1>
 
           <div className="flex flex-col md:flex-row md:items-center justify-between border-t border-b py-6 gap-6 border-border">
-             <div className="flex items-center space-x-4">
-               <div className="w-10 h-10 rounded-full bg-muted overflow-hidden">
+             <Link href="/author/sarah-jenkins" className="flex items-center space-x-4 group">
+               <div className="w-10 h-10 rounded-full bg-muted overflow-hidden transition-all duration-300 group-hover:ring-2 ring-primary ring-offset-2 ring-offset-background">
                  <Image src="https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah" alt="Author" width={40} height={40} />
                </div>
                <div>
-                 <p className="text-sm font-bold text-foreground">Sarah Jenkins</p>
+                 <p className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">Sarah Jenkins</p>
                  <p className="text-xs text-muted-foreground">Senior Tech Correspondent</p>
                </div>
-             </div>
+             </Link>
              <div className="text-xs tracking-widest uppercase font-medium text-muted-foreground">
                Oct 12, 2024 • 8 Min Read
              </div>
@@ -123,4 +124,3 @@ export default function ArticlePage() {
     </motion.div>
   );
 }
-
