@@ -26,7 +26,7 @@ import EditorSidebar from '@/components/editor/EditorSidebar';
 import EditorBlock from '@/components/editor/EditorBlock';
 import { EntryModal } from '@/components/editor/EntryModal';
 import { generateHeadlines, improveWriting } from '@/ai/flows/editor-flow';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -560,3 +560,5 @@ const NewsEditorPage = () => {
 };
 
 export default NewsEditorPage;
+
+    
