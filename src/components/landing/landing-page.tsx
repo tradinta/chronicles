@@ -4,15 +4,10 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Hero from './hero';
-import { placeholderImages, breakingNews } from '@/lib/data';
+import { placeholderImages, featuredStories, trendingItems, marketPulseItems, cityBeatItems, dispatchItems } from '@/lib/data';
 import { useRouter } from 'next/navigation';
-import { Zap, ArrowRight } from 'lucide-react';
-import LatestDispatch from './latest-dispatch';
-
-const featuredStories = [
-  { title: "Tokyo's Hidden Jazz Bars", cat: "Culture", href: "/article/1" },
-  { title: "Death of Open Plan Offices", cat: "Business", href: "/article/1" }
-];
+import { Zap, ArrowRight, TrendingUp, Briefcase, Building } from 'lucide-react';
+import ContentCard from './content-card';
 
 const ethicsImage = placeholderImages.find(p => p.id === 'ethics-synthetic-memory');
 
@@ -51,9 +46,34 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-20 px-6 md:px-12 bg-background border-t border-border">
+      <section className="py-20 px-6 md:px-12 bg-secondary/30 dark:bg-secondary/10 border-t border-border">
           <div className="container mx-auto">
-              <LatestDispatch />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <ContentCard 
+                  title="The Dispatch"
+                  items={dispatchItems}
+                  buttonText="Explore All Stories"
+                  onButtonClick={() => router.push('/news')}
+                />
+                <ContentCard 
+                  title="Trending Now"
+                  icon={TrendingUp}
+                  items={trendingItems.slice(0,3).map(item => ({ title: item }))}
+                  onItemClick={(item) => router.push('/article/1')}
+                />
+                <ContentCard 
+                  title="Market Pulse"
+                  icon={Briefcase}
+                  items={marketPulseItems}
+                  onItemClick={(item) => router.push('/article/1')}
+                />
+                 <ContentCard 
+                  title="City Beat"
+                  icon={Building}
+                  items={cityBeatItems}
+                  onItemClick={(item) => router.push('/article/1')}
+                />
+              </div>
           </div>
       </section>
     </motion.div>

@@ -39,7 +39,7 @@ export const placeholderImages: ImagePlaceholder[] = [
     },
     {
       id: "vernacular-architecture",
-      description: "A modern building with natural materials and a unique, non-traditional design.",
+      description: "A modern building with a unique, non-traditional design.",
       imageUrl: "https://images.unsplash.com/photo-1502005229766-939cb9a27fea?q=80&w=2670&auto=format&fit=crop",
       imageHint: "modern architecture",
     },
@@ -219,4 +219,34 @@ export const newLiveUpdates: Omit<LiveUpdate, 'id'>[] = [
     body: 'Minor waves of approximately 1-2 meters have made landfall in northern coastal towns. No major damage has been reported from this initial surge. The larger, more dangerous wave is still expected.',
     source: 'Local Media Reports',
   }
+];
+
+export const featuredStories = [
+  { title: "Tokyo's Hidden Jazz Bars", cat: "Culture", href: "/article/1" },
+  { title: "Death of Open Plan Offices", cat: "Business", href: "/article/1" }
+];
+
+export const dispatchItems = [
+    { time: "12m ago", title: "Global markets react to new trade sanctions" },
+    { time: "45m ago", title: "Tech giant announces surprise CEO departure" },
+    { time: "1h ago", title: "Climate summit reaches tentative agreement" },
+];
+
+export const trendingItems = [
+    "Why the global supply chain is shifting to localized hubs faster than predicted.",
+    "The surprising link between gut health and mental focus.",
+    "AI's impact on creative industries: A one-year retrospective.",
+    "Urban planning reimagined: The 15-minute city model gains traction."
+];
+
+export const marketPulseItems = [
+  { title: "Central Bank holds interest rates steady, citing 'cautious optimism'.", time: '2h ago' },
+  { title: "Analysis: Are tech stocks overvalued in the current climate?", time: '5h ago' },
+  { title: "New agricultural fund launches to support small-scale farmers.", time: '8h ago' },
+];
+
+export const cityBeatItems = [
+  { title: "Proposed high-rise development in Westlands faces resident opposition.", time: '30m ago' },
+  { title: "Nairobi traffic reform: Is the new bus rapid transit system working?", time: '3h ago' },
+  { title: "The cultural revival of Nairobi's downtown arts scene.", time: '1d ago' },
 ];
