@@ -4,16 +4,10 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Sun, Moon, ArrowLeft, X, Radio, EyeOff, LayoutDashboard } from 'lucide-react';
+import { Search, Sun, Moon, ArrowLeft, X, Radio, EyeOff, PenTool } from 'lucide-react';
 import type { View } from '@/app/page';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import Link from 'next/link';
 
 type NavbarProps = {
@@ -85,27 +79,20 @@ export default function Navbar({ isDark, toggleTheme, onViewChange, currentView,
         </div>
 
         <div className="flex items-center space-x-6">
+          <Link href="/dashboard"
+            className="flex items-center space-x-2 px-3 py-1.5 rounded-full transition-all duration-300 bg-secondary text-secondary-foreground hover:bg-secondary/80">
+             <PenTool size={16} />
+             <span className="text-xs font-bold tracking-wider uppercase hidden sm:block">Write</span>
+          </Link>
           <button onClick={() => setIsSearchOpen(true)} className="text-muted-foreground hover:text-foreground">
             <Search strokeWidth={1.5} size={20} />
           </button>
           <button onClick={toggleTheme} className="text-muted-foreground hover:text-foreground">
             {isDark ? <Sun strokeWidth={1.5} size={20} /> : <Moon strokeWidth={1.5} size={20} />}
           </button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <div className="hidden md:block w-8 h-8 rounded-full overflow-hidden border border-border cursor-pointer">
-                 <Image src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Profile" width={32} height={32} className="w-full h-full object-cover" />
-              </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link href="/dashboard">
-                  <LayoutDashboard className="mr-2 h-4 w-4" />
-                  <span>Dashboard</span>
-                </Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="hidden md:block w-8 h-8 rounded-full overflow-hidden border border-border cursor-pointer">
+             <Image src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Profile" width={32} height={32} className="w-full h-full object-cover" />
+          </div>
         </div>
       </motion.nav>
 
