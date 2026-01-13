@@ -29,13 +29,13 @@ export default function NewStoryPage() {
           <div>
             <Input
               placeholder="Story Title..."
-              className="text-4xl font-serif h-auto p-0 border-none focus-visible:ring-0"
+              className="text-4xl font-serif h-auto p-0 border-none focus-visible:ring-0 bg-transparent"
             />
           </div>
           <div>
             <Textarea
               placeholder="Tell your story..."
-              className="text-lg font-serif leading-relaxed h-auto p-0 border-none focus-visible:ring-0 min-h-[400px]"
+              className="text-lg font-serif leading-relaxed h-auto p-0 border-none focus-visible:ring-0 min-h-[400px] bg-transparent"
             />
           </div>
         </div>
