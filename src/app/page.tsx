@@ -12,8 +12,14 @@ import MainNewsPage from '@/components/main-news/main-news-page';
 import ArticlePage from '@/components/article/article-page';
 import LiveCoveragePage from '@/components/live-coverage/live-coverage-page';
 import OffTheRecordPage from '@/components/off-the-record/off-the-record-page';
+import PostSelectionPage from '@/app/dashboard/page';
+import NewsEditorPage from '@/app/dashboard/new-story/page';
+import EditorialDashboard from '@/app/dashboard/editorial/page';
+import EditorialEditor from '@/app/dashboard/editorial/new/page';
+import SubscribePage from '@/app/subscribe/page';
 
-export type View = 'landing' | 'main' | 'article' | 'live' | 'off-the-record';
+
+export type View = 'landing' | 'main' | 'article' | 'live' | 'off-the-record' | 'post-selection' | 'editor-news' | 'editorial-dashboard' | 'editor-editorial' | 'subscribe';
 
 export default function Home() {
   const [isDark, setIsDark] = useState(false);
@@ -77,12 +83,22 @@ export default function Home() {
         return <LiveCoveragePage key="live" onViewChange={handleViewChange} />;
       case 'off-the-record':
         return <OffTheRecordPage key="off-the-record" onViewChange={handleViewChange} />;
+      case 'post-selection':
+        return <PostSelectionPage />;
+      case 'editor-news':
+        return <NewsEditorPage />;
+      case 'editorial-dashboard':
+        return <EditorialDashboard />;
+      case 'editor-editorial':
+        return <EditorialEditor />;
+      case 'subscribe':
+        return <SubscribePage />;
       default:
         return <LandingPage key="landing" onViewChange={handleViewChange} />;
     }
   }
 
-  const showFooter = !['article', 'live', 'off-the-record'].includes(currentView);
+  const showFooter = !['article', 'live', 'off-the-record', 'post-selection', 'editor-news', 'editorial-dashboard', 'editor-editorial', 'subscribe'].includes(currentView);
 
   return (
     <main>
@@ -103,3 +119,4 @@ export default function Home() {
     </main>
   );
 }
+
