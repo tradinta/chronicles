@@ -14,8 +14,11 @@ import {
   Twitter,
   Check
 } from 'lucide-react';
+import { useAuth, useUser } from '@/firebase';
+import { initiateEmailSignUp, initiateEmailSignIn } from '@/firebase/non-blocking-login';
+import { useToast } from '@/hooks/use-toast';
 
-const AuthInput = ({ label, type, placeholder, icon: Icon, isDark, showPasswordToggle }) => {
+const AuthInput = ({ label, type, placeholder, icon: Icon, isDark, value, onChange, showPasswordToggle }) => {
   const [showPassword, setShowPassword] = useState(false);
   const inputType = showPasswordToggle ? (showPassword ? "text" : "password") : type;
 
@@ -28,6 +31,9 @@ const AuthInput = ({ label, type, placeholder, icon: Icon, isDark, showPasswordT
           type={inputType} 
           placeholder={placeholder} 
           className={`w-full bg-transparent py-3 outline-none text-sm ${isDark ? 'text-stone-200 placeholder-stone-700' : 'text-stone-800 placeholder-stone-400'}`}
+          value={value}
+          onChange={onChange}
+          required
         />
         {showPasswordToggle && (
           <button type="button" onClick={() => setShowPassword(!showPassword)} className={`${isDark ? 'text-stone-600 hover:text-stone-300' : 'text-stone-400 hover:text-stone-600'}`}>
@@ -49,25 +55,53 @@ const SocialButton = ({ icon: Icon, label, isDark }) => (
 
 const AuthPage = () => {
   const router = useRouter();
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
+  const { toast } = useToast();
+
   const [isDark, setIsDark] = useState(false);
   const [authMode, setAuthMode] = useState('login'); // 'login' | 'signup'
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+
   useEffect(() => {
     setIsDark(document.documentElement.classList.contains('dark'));
   }, []);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setTimeout(() => {
+  
+  useEffect(() => {
+    if (!isUserLoading && user) {
       setLoading(false);
       setSuccess(true);
       setTimeout(() => {
         router.push('/'); // Redirect after success
       }, 1500);
-    }, 1500);
+    }
+  }, [user, isUserLoading, router]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!auth) return;
+    setLoading(true);
+
+    try {
+      if (authMode === 'signup') {
+        await initiateEmailSignUp(auth, email, password);
+        // The useEffect above will handle the redirect on successful user state change
+      } else {
+        await initiateEmailSignIn(auth, email, password);
+      }
+    } catch (error: any) {
+      setLoading(false);
+      toast({
+        variant: "destructive",
+        title: "Authentication Failed",
+        description: error.message || "An unexpected error occurred.",
+      });
+    }
   };
 
   return (
@@ -160,13 +194,13 @@ const AuthPage = () => {
                    onSubmit={handleSubmit}
                  >
                     {authMode === 'signup' && (
-                      <AuthInput label="Full Name" type="text" placeholder="Jane Doe" icon={User} isDark={isDark} showPasswordToggle={false}/>
+                      <AuthInput label="Full Name" type="text" placeholder="Jane Doe" icon={User} isDark={isDark} showPasswordToggle={false} value={fullName} onChange={e => setFullName(e.target.value)} />
                     )}
                     
-                    <AuthInput label="Email Address" type="email" placeholder="jane@example.com" icon={Mail} isDark={isDark} showPasswordToggle={false}/>
+                    <AuthInput label="Email Address" type="email" placeholder="jane@example.com" icon={Mail} isDark={isDark} showPasswordToggle={false} value={email} onChange={e => setEmail(e.target.value)} />
                     
                     <div className="space-y-4">
-                       <AuthInput label="Password" type="password" placeholder="••••••••" icon={Lock} isDark={isDark} showPasswordToggle />
+                       <AuthInput label="Password" type="password" placeholder="••••••••" icon={Lock} isDark={isDark} showPasswordToggle value={password} onChange={e => setPassword(e.target.value)} />
                        {authMode === 'signup' && (
                          <div className="flex gap-1 h-1 mt-2">
                             <div className="flex-1 bg-red-500 rounded-full opacity-50"></div>
@@ -188,15 +222,15 @@ const AuthPage = () => {
 
                     <button 
                       type="submit"
-                      disabled={loading}
+                      disabled={loading || isUserLoading}
                       className={`w-full py-4 rounded-lg text-sm font-bold tracking-widest uppercase transition-all transform active:scale-95
                         ${isDark 
                           ? 'bg-white text-black hover:bg-stone-200' 
                           : 'bg-black text-white hover:bg-stone-800'}
-                        ${loading ? 'opacity-70 cursor-not-allowed' : 'shadow-lg hover:shadow-xl'}
+                        ${loading || isUserLoading ? 'opacity-70 cursor-not-allowed' : 'shadow-lg hover:shadow-xl'}
                       `}
                     >
-                      {loading ? 'Processing...' : (authMode === 'login' ? 'Log In' : 'Create Account')}
+                      {loading || isUserLoading ? 'Processing...' : (authMode === 'login' ? 'Log In' : 'Create Account')}
                     </button>
 
                     <div className="relative flex items-center justify-center my-8">
@@ -220,3 +254,5 @@ const AuthPage = () => {
 };
 
 export default AuthPage;
+
+    
