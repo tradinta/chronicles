@@ -12,12 +12,12 @@ import {
   EyeOff,
   Github,
   Twitter,
-  Check
+  Check,
+  AlertCircle
 } from 'lucide-react';
 import { useAuth } from '@/firebase';
 import { useUser } from '@/firebase/provider';
 import { initiateEmailSignUp, initiateEmailSignIn } from '@/firebase/non-blocking-login';
-import { useToast } from '@/hooks/use-toast';
 
 const AuthInput = ({ label, type, placeholder, icon: Icon, isDark, value, onChange, showPasswordToggle }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -58,12 +58,12 @@ const AuthPage = () => {
   const router = useRouter();
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
-  const { toast } = useToast();
 
   const [isDark, setIsDark] = useState(false);
   const [authMode, setAuthMode] = useState('login'); // 'login' | 'signup'
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -75,6 +75,7 @@ const AuthPage = () => {
   
   useEffect(() => {
     if (!isUserLoading && user) {
+      setError(null);
       setLoading(false);
       setSuccess(true);
       setTimeout(() => {
@@ -87,6 +88,7 @@ const AuthPage = () => {
     e.preventDefault();
     if (!auth) return;
     setLoading(true);
+    setError(null);
 
     try {
       if (authMode === 'signup') {
@@ -108,14 +110,14 @@ const AuthPage = () => {
       } else if (error.code === 'auth/weak-password') {
         description = "The password is too weak. Please choose a stronger password.";
       }
-
-      toast({
-        variant: "destructive",
-        title: "Authentication Failed",
-        description: description,
-      });
+      setError(description);
     }
   };
+  
+  const handleModeChange = (mode: string) => {
+    setAuthMode(mode);
+    setError(null);
+  }
 
   return (
     <div className={`min-h-screen flex ${isDark ? 'bg-[#121212]' : 'bg-[#FDFBF7]'}`}>
@@ -169,7 +171,7 @@ const AuthPage = () => {
                {['login', 'signup'].map(mode => (
                  <button 
                    key={mode}
-                   onClick={() => setAuthMode(mode)}
+                   onClick={() => handleModeChange(mode)}
                    className={`flex-1 pb-4 text-sm font-bold uppercase tracking-widest relative transition-colors
                      ${authMode === mode 
                        ? (isDark ? 'text-white' : 'text-black') 
@@ -233,20 +235,36 @@ const AuthPage = () => {
                        )}
                     </div>
 
-                    <button 
-                      type="submit"
-                      disabled={loading || isUserLoading}
-                      className={`w-full py-4 rounded-lg text-sm font-bold tracking-widest uppercase transition-all transform active:scale-95
-                        ${isDark 
-                          ? 'bg-white text-black hover:bg-stone-200' 
-                          : 'bg-black text-white hover:bg-stone-800'}
-                        ${loading || isUserLoading ? 'opacity-70 cursor-not-allowed' : 'shadow-lg hover:shadow-xl'}
-                      `}
-                    >
-                      {loading || isUserLoading ? 'Processing...' : (authMode === 'login' ? 'Log In' : 'Create Account')}
-                    </button>
+                    <div>
+                      <button 
+                        type="submit"
+                        disabled={loading || isUserLoading}
+                        className={`w-full py-4 rounded-lg text-sm font-bold tracking-widest uppercase transition-all transform active:scale-95
+                          ${isDark 
+                            ? 'bg-white text-black hover:bg-stone-200' 
+                            : 'bg-black text-white hover:bg-stone-800'}
+                          ${loading || isUserLoading ? 'opacity-70 cursor-not-allowed' : 'shadow-lg hover:shadow-xl'}
+                        `}
+                      >
+                        {loading || isUserLoading ? 'Processing...' : (authMode === 'login' ? 'Log In' : 'Create Account')}
+                      </button>
 
-                    <div className="relative flex items-center justify-center my-8">
+                      <AnimatePresence>
+                        {error && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="mt-4 flex items-center space-x-2 text-red-500 text-xs p-3 bg-red-500/10 rounded-md border border-red-500/20"
+                          >
+                            <AlertCircle size={14} />
+                            <span>{error}</span>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
+                    <div className="relative flex items-center justify-center my-4">
                        <div className={`absolute inset-0 flex items-center`}>
                           <div className={`w-full border-t ${isDark ? 'border-stone-800' : 'border-stone-200'}`}></div>
                        </div>
@@ -267,3 +285,5 @@ const AuthPage = () => {
 };
 
 export default AuthPage;
+
+    
