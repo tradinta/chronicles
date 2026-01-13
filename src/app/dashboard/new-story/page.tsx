@@ -126,8 +126,10 @@ const NewsEditorPage = () => {
     setBlocks([...blocks, { id: Date.now(), type, content: '' }]);
   };
 
-  const updateBlockContent = (id: number, newContent: string) => {
-    setBlocks(blocks.map(block => block.id === id ? { ...block, content: newContent } : block));
+  const updateBlock = (id: number, updatedValues: object) => {
+    setBlocks(blocks.map(block => 
+      block.id === id ? { ...block, ...updatedValues } : block
+    ));
   };
   
   const handleSaveDraft = async () => {
@@ -354,7 +356,7 @@ const NewsEditorPage = () => {
 
           <div className="min-h-[500px] pb-32 relative">
              {blocks.map((block) => (
-                <EditorBlock key={block.id} block={block} updateContent={updateBlockContent} isDark={isDark} />
+                <EditorBlock key={block.id} block={block} updateBlock={updateBlock} isDark={isDark} />
              ))}
              <div className="my-12 flex justify-center group relative">
                 <div className="absolute top-1/2 left-0 right-0 h-px transition-colors bg-stone-200 group-hover:bg-stone-300 dark:bg-stone-800 dark:group-hover:bg-stone-700"></div>
