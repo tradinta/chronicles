@@ -7,7 +7,8 @@ import {
   Send, Type, Quote, Heading2, AlertCircle, Zap,
   ImagePlus,
   Layout, Book, Check, BrainCircuit, AlignLeft,
-  Minimize2
+  Minimize2,
+  Sparkles
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore } from '@/firebase';
@@ -18,7 +19,7 @@ import Image from 'next/image';
 import EditorSidebar from '@/components/editor/EditorSidebar';
 import EditorBlock from '@/components/editor/EditorBlock';
 import { EntryModal } from '@/components/editor/EntryModal';
-import { generateHeadlines } from '@/ai/flows/editor-flow';
+import { generateHeadlines, improveWriting } from '@/ai/flows/editor-flow';
 
 const NewsEditorPage = () => {
   const { toast } = useToast();
@@ -252,7 +253,11 @@ const NewsEditorPage = () => {
           </div>
         </div>
       </main>
-      <div className={`relative z-20 transition-all duration-300 ${isSidebarOpen ? 'w-96' : 'w-0'}`}>
+      <motion.div 
+        className="fixed top-16 right-0 bottom-16 border-l z-20"
+        animate={{ width: isSidebarOpen && !isFocusMode ? '360px' : '0px' }}
+        transition={{ duration: 0.3, ease: 'easeInOut' }}
+      >
         <EditorSidebar
           isOpen={isSidebarOpen}
           setIsOpen={setIsSidebarOpen}
@@ -265,9 +270,14 @@ const NewsEditorPage = () => {
           setTags={setTags}
           coverImageUrl={coverImageUrl}
         />
-      </div>
+      </motion.div>
 
-      <motion.div animate={{ y: isFocusMode ? 100 : 0 }} className={`fixed bottom-0 left-0 right-0 h-16 border-t px-6 flex items-center justify-end z-30 transition-transform duration-500 ${isDark ? 'bg-stone-900/80 backdrop-blur-md border-stone-800' : 'bg-white/80 backdrop-blur-md border-stone-200'}`}>
+      <motion.div 
+        animate={{ y: isFocusMode ? 100 : 0 }} 
+        className={`fixed bottom-0 left-0 right-0 h-16 border-t px-6 flex items-center justify-end z-30 transition-transform duration-500 
+          ${isDark ? 'bg-stone-900/80 backdrop-blur-md border-stone-800' : 'bg-white/80 backdrop-blur-md border-stone-200'}
+          `}
+      >
          <div className="flex items-center space-x-4">
             <button 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
