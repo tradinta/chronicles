@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Send, Type, Quote, Heading2, AlertCircle, Zap,
@@ -26,7 +26,8 @@ import EditorSidebar from '@/components/editor/EditorSidebar';
 import EditorBlock from '@/components/editor/EditorBlock';
 import { EntryModal } from '@/components/editor/EntryModal';
 import { generateHeadlines, improveWriting } from '@/ai/flows/editor-flow';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
@@ -41,7 +42,7 @@ const NewsEditorPage = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
 
-  const [showEntryModal, setShowEntryModal] = useState(false);
+  const [showEntryModal, setShowEntryModal] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [isBreaking, setIsBreaking] = useState(false);
@@ -54,6 +55,7 @@ const NewsEditorPage = () => {
   const [articleFormat, setArticleFormat] = useState('');
   const [author, setAuthor] = useState<string | null>(null);
   const [authorError, setAuthorError] = useState<string | null>(null);
+  const [showProfileUpdateModal, setShowProfileUpdateModal] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -62,7 +64,8 @@ const NewsEditorPage = () => {
         setAuthorError(null);
       } else {
         setAuthor(null);
-        setAuthorError("Error: User display name is missing.");
+        setAuthorError("Your user profile is missing a display name.");
+        setShowProfileUpdateModal(true);
       }
     }
   }, [user]);
@@ -168,6 +171,13 @@ const NewsEditorPage = () => {
     if (!user || !firestore) {
       toast({ variant: 'destructive', title: 'Authentication error', description: 'You must be signed in to publish.' });
       return;
+    }
+    if (!author) {
+        setAuthorError("Author name is missing. Please select an author.");
+        if (!user.displayName) {
+          setShowProfileUpdateModal(true);
+        }
+        return;
     }
 
     setIsPublishing(true);
@@ -279,6 +289,25 @@ const NewsEditorPage = () => {
         setCategory={setCategory}
         setArticleFormat={setArticleFormat}
       />
+      
+      <Dialog open={showProfileUpdateModal} onOpenChange={setShowProfileUpdateModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update Your Profile</DialogTitle>
+            <DialogDescription>
+              {authorError} To continue, you must set a display name for your author profile.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+             <DialogClose asChild>
+              <Button type="button" variant="secondary">
+                Close
+              </Button>
+            </DialogClose>
+            <Button onClick={() => router.push('/dashboard?tab=profile')}>Go to Dashboard</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       
       {/* Main Content Area */}
       <main className="flex-1 transition-all duration-300 ease-in-out overflow-y-auto pt-16">
@@ -520,7 +549,7 @@ const NewsEditorPage = () => {
               <Save size={14} />
               <span>{isSaving ? 'Saving...' : 'Save Draft'}</span>
             </button>
-            <button onClick={handlePublish} disabled={isPublishing} className="px-6 py-2 rounded-md text-sm font-bold tracking-wide text-white shadow-lg bg-primary hover:bg-primary/90 transition-colors flex items-center space-x-2 disabled:bg-opacity-50 disabled:cursor-not-allowed">
+            <button onClick={handlePublish} disabled={isPublishing || !!authorError} className="px-6 py-2 rounded-md text-sm font-bold tracking-wide text-white shadow-lg bg-primary hover:bg-primary/90 transition-colors flex items-center space-x-2 disabled:bg-opacity-50 disabled:cursor-not-allowed">
                {isPublishing ? 'Publishing...' : 'Publish'}
                {!isPublishing && <Send size={14} />}
             </button>
@@ -531,9 +560,3 @@ const NewsEditorPage = () => {
 };
 
 export default NewsEditorPage;
-
-    
-
-    
-
-    
