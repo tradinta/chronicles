@@ -99,3 +99,4 @@ export const EntryModal = ({ show, setShow, isDark, setCategory, setArticleForma
       )}
     </AnimatePresence>
   );
+};
