@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
-export const Hero = ({ article }: { article: any }) => {
+export const LandingHero = ({ article }: { article: any }) => {
   const router = useRouter();
   const { scrollY } = useScroll();
   const yText = useTransform(scrollY, [0, 500], [0, 100]);

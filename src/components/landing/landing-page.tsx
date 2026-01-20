@@ -12,7 +12,7 @@ import { formatDistanceToNow } from 'date-fns';
 
 import { FeedSkeleton } from '@/components/loader/FeedSkeleton';
 
-import { Hero } from './Hero';
+import { LandingHero } from './LandingHero';
 import { Ticker } from './Ticker';
 import { BriefingSection } from './BriefingSection';
 import { MainGrid, LatestDispatch } from './MainGrid';
@@ -63,7 +63,7 @@ export default function LandingPage() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>
-      <Hero article={featured} />
+      <LandingHero article={featured} />
       <Ticker items={recent} />
       <BriefingSection
         onViewChange={router.push}
