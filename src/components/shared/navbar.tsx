@@ -74,15 +74,8 @@ export default function Navbar({ isDark, toggleTheme, isFocusMode }: NavbarProps
         animate={isHidden ? "hidden" : "visible"}
         transition={{ duration: 0.3, ease: 'easeInOut' }}
       >
-        <div className="flex items-center space-x-4">
-          {(pathname !== '/') && !isFocusMode && (
-            <button
-              onClick={() => router.back()}
-              className="p-2 rounded-full transition-colors text-muted-foreground hover:bg-secondary"
-            >
-              <ArrowLeft size={20} />
-            </button>
-          )}
+        {/* Left: Brand */}
+        <div className="flex items-center">
           <div className="flex-shrink-0 cursor-pointer group" onClick={() => router.push('/')}>
             <h1 className="font-serif text-2xl tracking-tighter font-bold text-foreground">
               The Chronicle<span className="text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300">.</span>
@@ -90,49 +83,82 @@ export default function Navbar({ isDark, toggleTheme, isFocusMode }: NavbarProps
           </div>
         </div>
 
+        {/* Center: Navigation Pill */}
         <div className={cn(
-          "hidden md:flex items-center space-x-8 transition-opacity duration-300",
-          (pathname.startsWith('/article') || pathname.startsWith('/subscribe') || pathname.startsWith('/checkout') || pathname.startsWith('/dashboard') || pathname.startsWith('/profile')) ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center",
+          "bg-secondary/50 backdrop-blur-md border border-border rounded-full p-1 px-1.5 shadow-sm transition-all duration-300",
+          (pathname.startsWith('/article') || pathname.startsWith('/dashboard') || pathname.startsWith('/profile')) ? 'opacity-0 pointer-events-none' : 'opacity-100'
         )}>
-          <Link href="/live" className="relative group cursor-pointer h-full flex items-center">
-            <span className="flex items-center text-sm font-medium tracking-wide text-primary group-hover:text-foreground transition-colors duration-300">
-              <Radio size={14} className="mr-2 animate-pulse" />
-              Live
-            </span>
-          </Link>
-          <Link href="/off-the-record" className="relative group cursor-pointer h-full flex items-center">
-            <span className="flex items-center text-sm font-medium tracking-wide text-purple-500/80 dark:text-purple-400/80 group-hover:text-foreground transition-colors duration-300">
-              <EyeOff size={14} className="mr-2" />
-              Off the Record
-            </span>
-          </Link>
-          <Link href="/subscribe" className="text-sm font-medium tracking-wide text-muted-foreground hover:text-foreground transition-colors">
-            Subscribe
-          </Link>
+          <div className="flex items-center gap-1">
+            <Link href="/live" className="relative group px-4 py-1.5 rounded-full hover:bg-background transition-all duration-300">
+              <span className="flex items-center text-sm font-medium tracking-wide text-foreground/80 group-hover:text-primary transition-colors">
+                <Radio size={14} className="mr-2 animate-pulse text-red-500" />
+                Live
+              </span>
+            </Link>
+            <Link href="/off-the-record" className="relative group px-4 py-1.5 rounded-full hover:bg-background transition-all duration-300">
+              <span className="flex items-center text-sm font-medium tracking-wide text-foreground/80 group-hover:text-purple-500 transition-colors">
+                <EyeOff size={14} className="mr-2" />
+                Off Record
+              </span>
+            </Link>
+            <Link href="/subscribe" className="relative group px-4 py-1.5 rounded-full hover:bg-background transition-all duration-300">
+              <span className="flex items-center text-sm font-medium tracking-wide text-foreground/80 group-hover:text-foreground transition-colors">
+                Subscribe
+              </span>
+            </Link>
+          </div>
         </div>
 
-        <div className="flex items-center space-x-6">
-          {!user && !isUserLoading && <Link href="/auth"
-            className="hidden md:block text-xs font-bold tracking-wider uppercase transition-colors text-muted-foreground hover:text-foreground"
-          >
-            Sign In
-          </Link>}
-          <Link href="/dashboard/new"
-            className="flex items-center space-x-2 px-3 py-1.5 rounded-full transition-all duration-300 bg-secondary text-secondary-foreground hover:bg-secondary/80">
-            <PenTool size={16} />
-            <span className="text-xs font-bold tracking-wider uppercase hidden sm:block">Write</span>
-          </Link>
-          <button onClick={() => setIsSearchOpen(true)} className="text-muted-foreground hover:text-foreground">
-            <Search strokeWidth={1.5} size={20} />
-          </button>
-          <button onClick={toggleTheme} className="text-muted-foreground hover:text-foreground">
-            {isDark ? <Sun strokeWidth={1.5} size={20} /> : <Moon strokeWidth={1.5} size={20} />}
-          </button>
-          {user && <div className="hidden md:block w-8 h-8 rounded-full overflow-hidden border border-border cursor-pointer">
-            <Link href="/profile">
-              <Image src={user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`} alt="Profile" width={32} height={32} className="w-full h-full object-cover" />
+        {/* Right: Actions Pill */}
+        <div className="flex items-center gap-4">
+          {!user && !isUserLoading && (
+            <Link href="/auth" className="hidden md:block text-sm font-bold tracking-wide text-muted-foreground hover:text-foreground transition-colors mr-2">
+              Sign In
             </Link>
-          </div>}
+          )}
+
+          <div className="flex items-center bg-secondary/50 backdrop-blur-md border border-border rounded-full p-1 gap-1 shadow-sm">
+            {/* Write Button - Protected */}
+            {user && (
+              <Link
+                href="/dashboard/new"
+                className="p-2 rounded-full hover:bg-background text-muted-foreground hover:text-foreground transition-all duration-300 group"
+                title="Write a story"
+              >
+                <PenTool size={18} className="group-hover:text-primary transition-colors" />
+              </Link>
+            )}
+
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-full hover:bg-background text-muted-foreground hover:text-foreground transition-all duration-300"
+            >
+              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="p-2 rounded-full hover:bg-background text-muted-foreground hover:text-foreground transition-all duration-300"
+            >
+              <Search size={18} />
+            </button>
+
+            {/* Avatar */}
+            {user && (
+              <div className="pl-1 pr-1">
+                <Link href="/profile" className="block w-7 h-7 rounded-full overflow-hidden border border-border hover:border-primary transition-colors">
+                  <Image
+                    src={user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`}
+                    alt="Profile"
+                    width={28}
+                    height={28}
+                    className="w-full h-full object-cover"
+                  />
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </motion.nav>
 

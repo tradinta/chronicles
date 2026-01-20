@@ -89,9 +89,9 @@ const Ticker = () => (
   </div>
 );
 
-export default function AssignmentChooser() {
+export default function NewStoryPage() {
   const router = useRouter();
-  const { user } = useUser();
+  const { user, isLoading } = useUser();
   const firestore = useFirestore();
   const [selected, setSelected] = useState<AssignmentType | null>(null);
   const [hovered, setHovered] = useState<AssignmentType | null>(null);
@@ -102,6 +102,12 @@ export default function AssignmentChooser() {
     const d = new Date();
     setDateStr(d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase());
   }, []);
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push('/login?redirect=/dashboard/new');
+    }
+  }, [user, isLoading, router]);
 
   useEffect(() => {
     const fetchRole = async () => {

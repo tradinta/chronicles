@@ -1,78 +1,68 @@
-'use client';
+import type { Metadata } from 'next';
+import CategoryPageClient from './category-client';
 
-import { motion } from 'framer-motion';
-import { useParams, useRouter } from 'next/navigation';
-import ArticleRow from '@/components/main-news/article-row';
-import { ArrowLeft, Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://thechronicle.news';
 
-export default function CategoryPage() {
-  const router = useRouter();
-  const params = useParams();
-  const slug = params.slug as string;
-  const firestore = useFirestore();
+type Props = {
+  params: Promise<{ slug: string }>;
+};
 
-  const [categoryName, setCategoryName] = useState('');
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const categoryName = slug.charAt(0).toUpperCase() + slug.slice(1);
 
-  const articlesQuery = useMemoFirebase(() => {
-    if (!firestore || !slug) return null;
-    const articlesRef = collection(firestore, 'articles');
-    // Ensure the first letter is capitalized for the query, assuming categories are stored like "Technology"
-    const formattedSlug = slug.charAt(0).toUpperCase() + slug.slice(1);
-    return query(articlesRef, where('category', '==', formattedSlug));
-  }, [firestore, slug]);
+  return {
+    title: `${categoryName} News | The Chronicle`,
+    description: `Read the latest ${categoryName.toLowerCase()} news and in-depth coverage. Expert analysis and breaking stories in ${categoryName.toLowerCase()}.`,
+    keywords: [categoryName.toLowerCase(), `${categoryName.toLowerCase()} news`, 'news', 'journalism', 'coverage'],
+    alternates: {
+      canonical: `/category/${slug}`,
+    },
+    openGraph: {
+      type: 'website',
+      url: `${SITE_URL}/category/${slug}`,
+      title: `${categoryName} News | The Chronicle`,
+      description: `Latest ${categoryName.toLowerCase()} news and coverage.`,
+      siteName: 'The Chronicle',
+      images: [{ url: `${SITE_URL}/logo.png`, width: 1200, height: 630, alt: `${categoryName} News` }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${categoryName} News | The Chronicle`,
+      description: `Latest ${categoryName.toLowerCase()} news and coverage.`,
+      images: [`${SITE_URL}/logo.png`],
+    },
+  };
+}
 
-  const { data: articles, isLoading } = useCollection(articlesQuery);
-
-  useEffect(() => {
-    if (slug) {
-      const formattedSlug = Array.isArray(slug) 
-        ? slug[0].charAt(0).toUpperCase() + slug[0].slice(1)
-        : slug.charAt(0).toUpperCase() + slug.slice(1);
-      setCategoryName(formattedSlug);
-    }
-  }, [slug]);
+export default async function CategoryPage({ params }: Props) {
+  const { slug } = await params;
+  const categoryName = slug.charAt(0).toUpperCase() + slug.slice(1);
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.5 }}
-      className="min-h-screen bg-background"
-    >
-      <header className="pt-32 pb-12 px-6 md:px-12 border-b border-border bg-secondary/30 dark:bg-secondary/10">
-        <div className="container mx-auto">
-          <button onClick={() => router.push('/news')} className="flex items-center space-x-2 text-sm text-muted-foreground hover:text-foreground mb-6">
-            <ArrowLeft size={16} />
-            <span>All News</span>
-          </button>
-          <h1 className="font-serif text-5xl md:text-6xl text-foreground">{categoryName}</h1>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-6 md:px-12 py-12">
-        <div className="lg:col-span-9">
-          {isLoading && (
-            <div className="flex items-center justify-center py-20">
-              <Loader2 className="animate-spin text-primary mr-4" />
-              <p className="text-muted-foreground">Loading articles...</p>
-            </div>
-          )}
-          {!isLoading && articles && articles.length > 0 ? (
-            articles.map((article) => (
-              <ArticleRow key={article.id} article={article as any} onViewChange={() => router.push(`/article/${article.slug}`)} />
-            ))
-          ) : !isLoading && (
-            <div className="text-center py-20 border-2 border-dashed border-border rounded-lg">
-                <h2 className="text-xl font-semibold">No articles found</h2>
-                <p className="text-muted-foreground mt-2">There are no articles in the "{categoryName}" category yet.</p>
-            </div>
-          )}
-        </div>
-      </main>
-    </motion.div>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'CollectionPage',
+            name: `${categoryName} News`,
+            description: `Latest news and coverage in ${categoryName}`,
+            url: `${SITE_URL}/category/${slug}`,
+            isPartOf: {
+              '@type': 'WebSite',
+              name: 'The Chronicle',
+              url: SITE_URL,
+            },
+            about: {
+              '@type': 'Thing',
+              name: categoryName,
+            },
+          }),
+        }}
+      />
+      <CategoryPageClient slug={slug} categoryName={categoryName} />
+    </>
   );
 }

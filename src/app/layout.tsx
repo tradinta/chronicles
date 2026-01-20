@@ -7,7 +7,12 @@ import QueryProvider from '@/components/providers/query-provider';
 export const metadata: Metadata = {
   title: 'The Chronicle',
   description: 'Intelligent journalism for the modern era.',
+  icons: {
+    icon: '/logo.png',
+    apple: '/logo.png',
+  },
 };
+
 
 export default function RootLayout({
   children,
