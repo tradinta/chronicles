@@ -1,4 +1,4 @@
-import { Firestore, doc, setDoc, deleteDoc, getDoc, collection, query, orderBy, getDocs, serverTimestamp, increment, updateDoc } from 'firebase/firestore';
+import { Firestore, doc, runTransaction, getDoc, collection, query, orderBy, getDocs, serverTimestamp, increment, updateDoc } from 'firebase/firestore';
 
 export type ReactionType = 'like' | 'love' | 'insightful' | 'surprised' | 'angry';
 
@@ -11,8 +11,7 @@ export interface Reaction {
 }
 
 /**
- * Adds or updates a reaction on an article.
- * Uses a compound key of `userId_articleId` to ensure one reaction per user per article.
+ * Adds or updates a reaction on an article using a transaction to prevent race conditions.
  */
 export async function setReaction(
     firestore: Firestore,
@@ -22,60 +21,73 @@ export async function setReaction(
 ): Promise<void> {
     const reactionId = `${userId}_${articleId}`;
     const reactionRef = doc(firestore, 'reactions', reactionId);
+    const articleRef = doc(firestore, 'articles', articleId);
 
-    // Check if reaction exists to update article count atomically
-    const existing = await getDoc(reactionRef);
+    await runTransaction(firestore, async (transaction) => {
+        const reactionDoc = await transaction.get(reactionRef);
+        const articleDoc = await transaction.get(articleRef);
 
-    await setDoc(reactionRef, {
-        articleId,
-        userId,
-        type,
-        createdAt: serverTimestamp(),
-    });
-
-    // If this is a new reaction (not an update), increment article reaction count
-    if (!existing.exists()) {
-        const articleRef = doc(firestore, 'articles', articleId);
-        await updateDoc(articleRef, {
-            [`reactions.${type}`]: increment(1),
-            totalReactions: increment(1)
-        });
-    } else {
-        // If updating (changing reaction type), we would need more complex logic. 
-        // For simplicity in this v1, simpler to just set it. 
-        // But if we want accurate counts, we'd need to decrement value of old type.
-        // Let's assume for now UI handles "unreact first".
-        // Actually, let's just make it robust:
-        const oldType = existing.data().type as ReactionType;
-        if (oldType !== type) {
-            const articleRef = doc(firestore, 'articles', articleId);
-            await updateDoc(articleRef, {
-                [`reactions.${oldType}`]: increment(-1),
-                [`reactions.${type}`]: increment(1)
-            });
+        if (!articleDoc.exists()) {
+            throw new Error("Article does not exist!");
         }
-    }
+
+        if (!reactionDoc.exists()) {
+            // New reaction
+            transaction.set(reactionRef, {
+                articleId,
+                userId,
+                type,
+                createdAt: serverTimestamp(),
+            });
+
+            // Increment new type and total
+            transaction.update(articleRef, {
+                [`reactions.${type}`]: increment(1),
+                totalReactions: increment(1)
+            });
+        } else {
+            // Updating existing reaction
+            const oldType = reactionDoc.data().type as ReactionType;
+            if (oldType !== type) {
+                transaction.update(reactionRef, {
+                    type,
+                    createdAt: serverTimestamp(),
+                });
+
+                // Decrement old, increment new
+                transaction.update(articleRef, {
+                    [`reactions.${oldType}`]: increment(-1),
+                    [`reactions.${type}`]: increment(1)
+                });
+            }
+            // If type is same, do nothing
+        }
+    });
 }
 
 /**
- * Removes a reaction from an article.
+ * Removes a reaction from an article using a transaction.
  */
 export async function removeReaction(firestore: Firestore, articleId: string, userId: string): Promise<void> {
     const reactionId = `${userId}_${articleId}`;
     const reactionRef = doc(firestore, 'reactions', reactionId);
+    const articleRef = doc(firestore, 'articles', articleId);
 
-    const existing = await getDoc(reactionRef);
-    if (existing.exists()) {
-        const type = existing.data().type as ReactionType;
-        await deleteDoc(reactionRef);
+    await runTransaction(firestore, async (transaction) => {
+        const reactionDoc = await transaction.get(reactionRef);
 
-        // Decrement article reaction count
-        const articleRef = doc(firestore, 'articles', articleId);
-        await updateDoc(articleRef, {
-            [`reactions.${type}`]: increment(-1),
-            totalReactions: increment(-1)
-        });
-    }
+        if (reactionDoc.exists()) {
+            const type = reactionDoc.data().type as ReactionType;
+
+            transaction.delete(reactionRef);
+
+            // Decrement counts
+            transaction.update(articleRef, {
+                [`reactions.${type}`]: increment(-1),
+                totalReactions: increment(-1)
+            });
+        }
+    });
 }
 
 /**

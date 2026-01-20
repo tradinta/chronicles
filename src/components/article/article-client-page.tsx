@@ -166,7 +166,7 @@ export default function ArticleClientPage({ slug }: Props) {
                     )}
 
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
-                        <div className="prose prose-lg md:prose-xl dark:prose-invert font-serif prose-p:leading-[1.8] prose-h2:font-serif prose-headings:font-bold prose-a:text-primary" dangerouslySetInnerHTML={{ __html: article.content }} />
+                        <div className="prose prose-lg md:prose-xl dark:prose-invert font-serif prose-p:leading-[1.8] prose-h2:font-serif prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6 prose-headings:font-bold prose-a:text-primary prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-muted-foreground prose-figure:my-12 prose-img:rounded-xl" dangerouslySetInnerHTML={{ __html: article.content }} />
                     </motion.div>
                 </div>
             </article>

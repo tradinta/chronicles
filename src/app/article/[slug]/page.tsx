@@ -15,13 +15,32 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!article) return { title: 'Not Found' };
 
+  // Fetch author
+  let authorName = 'The Chronicle Editorial Team';
+  if (article.authorId) {
+    const { doc, getDoc } = require('firebase/firestore');
+    // Note: getFirebaseServer returns firestore instance. We need 'doc' and 'getDoc' from sdk if not exported by server lib.
+    // But we can import standard sdk functions as they work with the instance provided they match versions.
+    // Actually simpler: let's assume the server lib might expose user helper or we do direct query?
+    // Let's use standard import at top.
+    const authorRef = doc(firestore, 'users', article.authorId);
+    try {
+      const authorSnap = await getDoc(authorRef);
+      if (authorSnap.exists()) {
+        authorName = authorSnap.data().displayName || authorName;
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://thechronicle.news';
   const url = `${SITE_URL}/article/${slug}`;
 
   return {
     title: article.title,
     description: article.summary,
-    authors: [{ name: 'The Chronicle Editorial Team' }], // Ideally fetch author name if available
+    authors: [{ name: authorName }],
     alternates: {
       canonical: url,
     },

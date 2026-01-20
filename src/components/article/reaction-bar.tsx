@@ -29,6 +29,8 @@ export function ReactionBar({ articleId }: ReactionBarProps) {
     const [counts, setCounts] = useState<Record<ReactionType, number>>({ like: 0, love: 0, insightful: 0, surprised: 0, angry: 0 });
     const [isExpanded, setIsExpanded] = useState(false);
 
+    const [isLoading, setIsLoading] = useState(false);
+
     useEffect(() => {
         if (!firestore) return;
 
@@ -50,8 +52,9 @@ export function ReactionBar({ articleId }: ReactionBarProps) {
             toast({ variant: 'destructive', title: 'Sign in to react' });
             return;
         }
-        if (!firestore) return;
+        if (!firestore || isLoading) return;
 
+        setIsLoading(true);
         try {
             if (userReaction === type) {
                 // Remove reaction
@@ -71,6 +74,8 @@ export function ReactionBar({ articleId }: ReactionBarProps) {
         } catch (error) {
             console.error('Error setting reaction:', error);
             toast({ variant: 'destructive', title: 'Failed to react' });
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -81,11 +86,13 @@ export function ReactionBar({ articleId }: ReactionBarProps) {
             <button
                 onMouseEnter={() => setIsExpanded(true)}
                 onMouseLeave={() => setIsExpanded(false)}
+                disabled={isLoading}
                 className={cn(
                     "flex items-center gap-2 px-3 py-2 rounded-full border transition-all",
                     userReaction
                         ? "border-primary/50 bg-primary/10"
-                        : "border-border hover:border-primary/50"
+                        : "border-border hover:border-primary/50",
+                    isLoading && "opacity-50 cursor-not-allowed"
                 )}
             >
                 {userReaction ? (
@@ -102,7 +109,7 @@ export function ReactionBar({ articleId }: ReactionBarProps) {
             </button>
 
             <AnimatePresence>
-                {isExpanded && (
+                {isExpanded && !isLoading && (
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9, y: 10 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -115,6 +122,7 @@ export function ReactionBar({ articleId }: ReactionBarProps) {
                             <button
                                 key={type}
                                 onClick={() => handleReaction(type)}
+                                disabled={isLoading}
                                 className={cn(
                                     "p-2 rounded-full transition-all hover:scale-125",
                                     userReaction === type ? `${color} bg-secondary` : "text-muted-foreground hover:text-foreground"

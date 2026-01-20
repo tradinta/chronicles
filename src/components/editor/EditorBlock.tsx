@@ -53,16 +53,16 @@ const EditorBlock = ({ block, updateBlock, isDark }: EditorBlockProps) => {
         <EditorFloatingToolbar isDark={isDark} isVisible={isFocused && type === 'paragraph'} />
 
         {type === 'h2' && (
-          <div contentEditable suppressContentEditableWarning onBlur={e => updateBlock(id, { content: e.currentTarget.innerText })} className={`editor-placeholder text-3xl font-serif font-bold tracking-tight mb-4 outline-none ${isDark ? 'text-stone-100' : 'text-stone-900'}`} placeholder="Heading">{content}</div>
+          <div contentEditable suppressContentEditableWarning onBlur={e => updateBlock(id, { content: e.currentTarget.innerHTML })} className={`editor-placeholder text-3xl font-serif font-bold tracking-tight mb-4 outline-none ${isDark ? 'text-stone-100' : 'text-stone-900'}`} placeholder="Heading">{content}</div>
         )}
 
         {type === 'paragraph' && (
-          <div contentEditable suppressContentEditableWarning onBlur={e => updateBlock(id, { content: e.currentTarget.innerText })} className={`editor-placeholder text-xl font-serif leading-[1.8] outline-none ${isDark ? 'text-stone-300' : 'text-stone-800'}`} placeholder="Start typing...">{content}</div>
+          <div contentEditable suppressContentEditableWarning onBlur={e => updateBlock(id, { content: e.currentTarget.innerHTML })} className={`editor-placeholder text-xl font-serif leading-[1.8] outline-none ${isDark ? 'text-stone-300' : 'text-stone-800'}`} placeholder="Start typing...">{content}</div>
         )}
 
         {type === 'quote' && (
           <div className={`my-8 pl-8 border-l-4 ${isDark ? 'border-primary' : 'border-primary'}`}>
-            <div contentEditable suppressContentEditableWarning onBlur={e => updateBlock(id, { content: e.currentTarget.innerText })} className={`text-2xl font-serif italic outline-none mb-3 ${isDark ? 'text-stone-200' : 'text-stone-900'}`} placeholder="Quote text...">{content}</div>
+            <div contentEditable suppressContentEditableWarning onBlur={e => updateBlock(id, { content: e.currentTarget.innerHTML })} className={`text-2xl font-serif italic outline-none mb-3 ${isDark ? 'text-stone-200' : 'text-stone-900'}`} placeholder="Quote text...">{content}</div>
             <div className="flex items-center space-x-2">
               <div className="h-px w-8 bg-stone-400"></div>
               <div contentEditable suppressContentEditableWarning onBlur={e => updateBlock(id, { source: e.currentTarget.innerText })} className="text-xs font-bold uppercase tracking-widest opacity-70 outline-none" placeholder="Source Name">{source}</div>
@@ -113,7 +113,7 @@ const EditorBlock = ({ block, updateBlock, isDark }: EditorBlockProps) => {
               <Sparkles size={16} className="text-indigo-500" />
               <div contentEditable suppressContentEditableWarning className={`text-xs font-bold uppercase tracking-widest outline-none text-indigo-500`} placeholder="FACT BOX TITLE">Key Takeaways</div>
             </div>
-            <div contentEditable suppressContentEditableWarning onBlur={e => updateBlock(id, { content: e.currentTarget.innerText })} className={`text-base leading-relaxed outline-none ${isDark ? 'text-stone-300' : 'text-stone-700'}`} placeholder="Add context or data points here...">{content}</div>
+            <div contentEditable suppressContentEditableWarning onBlur={e => updateBlock(id, { content: e.currentTarget.innerHTML })} className={`text-base leading-relaxed outline-none ${isDark ? 'text-stone-300' : 'text-stone-700'}`} placeholder="Add context or data points here...">{content}</div>
           </div>
         )}
       </div>

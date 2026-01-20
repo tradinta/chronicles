@@ -328,14 +328,15 @@ const NewsEditorPage = () => {
           title: "Article Updated!",
           description: `${headline} has been successfully updated.`
         });
+        router.push(`/dashboard/editorial/${articleId}`);
       } else {
-        await createArticle(firestore, articleData);
+        const docRef = await createArticle(firestore, articleData);
         toast({
           title: "Article Published!",
           description: `${headline} is now live.`
         });
+        router.push(`/dashboard/editorial/${docRef.id}`);
       }
-      router.push('/dashboard/stories');
     } catch (error) {
       console.error("Publishing error:", error);
       toast({
