@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import App from './App';
+import QueryProvider from '@/components/providers/query-provider';
 
 export const metadata: Metadata = {
   title: 'The Chronicle',
@@ -25,7 +26,9 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased">
         <App>
-          {children}
+          <QueryProvider>
+            {children}
+          </QueryProvider>
         </App>
         <Toaster />
       </body>

@@ -1,7 +1,7 @@
 
 "use client";
 
-import type { Dispatch, SetStateAction } from 'react';
+import { useState, Dispatch, SetStateAction } from 'react';
 import { motion } from 'framer-motion';
 import { Bookmark, Share2, Type, Volume2, Minimize2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -38,10 +38,11 @@ export default function ActionRail({ isFocusMode, setFocusMode }: ActionRailProp
     }
 
     // A mock article object - in a real app this would come from the page props
-    const articleData = { 
-      title: 'The Ethics of Synthetic Memory', 
+    // We kept this mock for now as per previous logic, can be improved later
+    const articleData = {
+      title: 'The Chronicle Article',
       publishDate: new Date().toISOString(),
-      imageUrl: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=2565&auto=format&fit=crop'
+      imageUrl: ''
     };
 
     if (isBookmarked) {
@@ -53,11 +54,60 @@ export default function ActionRail({ isFocusMode, setFocusMode }: ActionRailProp
     }
   };
 
+  // Dynamic data handling: In a real app, pass article data as props.
+  // For now, we will use a safe fallback or assume the parent component can eventually pass it.
+  // This version handles the actions generically.
+
+  const handleShare = async () => {
+    const shareData = {
+      title: 'The Chronicle',
+      text: 'Read this story on The Chronicle',
+      url: window.location.href,
+    };
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        toast({ title: 'Shared successfully' });
+      } catch (err) {
+        console.error('Error sharing:', err);
+      }
+    } else {
+      await navigator.clipboard.writeText(window.location.href);
+      toast({ title: 'Link copied to clipboard' });
+    }
+  };
+
+  const handleAudio = () => {
+    // Simple Text-to-Speech toggle stub
+    const isSpeaking = window.speechSynthesis.speaking;
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      toast({ title: 'Audio stopped' });
+    } else {
+      const textToRead = document.querySelector('article')?.textContent || "No content found to read.";
+      const utterance = new SpeechSynthesisUtterance(textToRead.substring(0, 500) + "..."); // Limit for demo
+      window.speechSynthesis.speak(utterance);
+      toast({ title: 'Reading article...' });
+    }
+  };
+
+  const [textSizeIndex, setTextSizeIndex] = useState(0);
+  const textSizes = ['text-base', 'text-lg', 'text-xl'];
+
+  const handleTextSize = () => {
+    const nextIndex = (textSizeIndex + 1) % textSizes.length;
+    setTextSizeIndex(nextIndex);
+    // In a real app, you'd lift this state up or use a context to affect the article body text size.
+    // For now, we mimic the action.
+    document.documentElement.style.setProperty('--article-font-size', nextIndex === 0 ? '1rem' : nextIndex === 1 ? '1.125rem' : '1.25rem');
+    toast({ title: `Text size: ${nextIndex === 0 ? 'Normal' : nextIndex === 1 ? 'Large' : 'Extra Large'}` });
+  };
+
   const actions = [
     { icon: Bookmark, label: "Save", action: handleBookmarkToggle, active: isBookmarked, fillClass: isBookmarked ? 'fill-current' : 'fill-none' },
-    { icon: Share2, label: "Share" },
-    { icon: Type, label: "Text Size" },
-    { icon: Volume2, label: "Listen" },
+    { icon: Share2, label: "Share", action: handleShare },
+    { icon: Type, label: "Text Size", action: handleTextSize },
+    { icon: Volume2, label: "Listen", action: handleAudio },
     { icon: Minimize2, label: "Focus", action: () => setFocusMode(!isFocusMode), active: isFocusMode }
   ];
 
@@ -80,7 +130,7 @@ export default function ActionRail({ isFocusMode, setFocusMode }: ActionRailProp
             Item.active
               ? 'bg-orange-900/50 text-orange-200 dark:bg-accent dark:text-accent-foreground'
               : 'bg-white text-muted-foreground hover:text-foreground dark:bg-secondary dark:text-muted-foreground dark:hover:text-foreground'
-            )}
+          )}
         >
           <Item.icon size={20} strokeWidth={1.5} className={Item.fillClass} />
           <span className="absolute right-full mr-4 top-1/2 -translate-y-1/2 px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap bg-secondary text-secondary-foreground shadow-sm">

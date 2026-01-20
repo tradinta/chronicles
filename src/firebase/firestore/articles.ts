@@ -228,3 +228,8 @@ export async function getAuthorStats(firestore: Firestore, authorId: string) {
     totalViews
   };
 }
+
+/**
+ * Fetches a single article by its Slug field.
+ */
+

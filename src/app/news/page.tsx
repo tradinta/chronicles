@@ -1,28 +1,48 @@
+'use client';
 
-"use client";
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useFirestore } from '@/firebase';
+import { getRecentArticles, getArticlesByCategory } from '@/firebase/firestore/articles';
+import { useRouter } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
+
+// Components
 import NewsHeader from '@/components/main-news/news-header';
 import CategoryRail from '@/components/main-news/category-rail';
 import ArticleRow from '@/components/main-news/article-row';
-import InfiniteLoader from '@/components/main-news/infinite-loader';
 import Sidebar from '@/components/main-news/sidebar';
-import { articles as initialArticles, newArticles as loadableArticles } from '@/lib/data';
-import { useRouter } from 'next/navigation';
 
 export default function MainNewsPage() {
   const router = useRouter();
+  const firestore = useFirestore();
   const [activeCategory, setActiveCategory] = useState('All');
-  const [articles, setArticles] = useState(initialArticles);
-  
-  const loadMoreArticles = () => {
-    setArticles(prev => [...prev, ...loadableArticles]);
-  };
-  
-  const filteredArticles = articles.filter(article => 
-    activeCategory === 'All' || (article.type === 'article' && article.category === activeCategory)
-  );
+  const [articles, setArticles] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchNews() {
+      if (!firestore) return;
+      setIsLoading(true);
+      try {
+        let data;
+        if (activeCategory === 'All') {
+          data = await getRecentArticles(firestore, 20);
+        } else {
+          data = await getArticlesByCategory(firestore, activeCategory, 20);
+        }
+        // Map Firestore data to the format expected by ArticleRow if necessary
+        // Assuming ArticleRow expects { id, title, summary, category, imageUrl, authorId, publishDate }
+        // The getRecentArticles returns exactly that + id.
+        setArticles(data);
+      } catch (error) {
+        console.error("Failed to fetch news:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchNews();
+  }, [firestore, activeCategory]);
 
   return (
     <motion.div
@@ -34,19 +54,41 @@ export default function MainNewsPage() {
     >
       <NewsHeader />
       <CategoryRail activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
-      
+
       <div className="container mx-auto px-6 md:px-12 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          
-          <div className="lg:col-span-9">
-            {(activeCategory === 'All' ? articles : filteredArticles).map((article) => (
-              <ArticleRow key={article.id} article={article} onViewChange={() => router.push(`/article/${article.id}`)} />
+
+          <div className="lg:col-span-9 min-h-[50vh]">
+            {isLoading && (
+              <div className="flex justify-center items-center py-20">
+                <Loader2 className="animate-spin w-8 h-8 text-primary" />
+              </div>
+            )}
+
+            {!isLoading && articles.length === 0 && (
+              <div className="text-center py-20 text-muted-foreground font-serif italic">
+                No stories found in this section.
+              </div>
+            )}
+
+            {!isLoading && articles.map((article) => (
+              <ArticleRow
+                key={article.id}
+                article={{
+                  ...article,
+                  type: 'article', // Shim for legacy component prop
+                  longSummary: article.summary, // Shim
+                  date: article.publishDate?.toDate?.().toLocaleDateString() || 'Recently' // Shim
+                }}
+                onViewChange={() => router.push(`/article/${article.id}`)}
+              />
             ))}
-            <InfiniteLoader loadMore={loadMoreArticles} />
+
+            {/* Infinite Loader removed for now, simple pagination/limit is better for stability first */}
           </div>
 
           <div className="lg:col-span-3">
-             <Sidebar onViewChange={(id) => router.push(`/article/${id}`)} />
+            <Sidebar onViewChange={(id) => router.push(`/article/${id}`)} />
           </div>
 
         </div>

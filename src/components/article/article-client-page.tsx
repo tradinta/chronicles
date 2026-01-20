@@ -8,6 +8,7 @@ import ArticleFooter from '@/components/article/article-footer';
 import { useRouter } from 'next/navigation';
 import { DocumentData, doc, getDoc } from 'firebase/firestore';
 import { getArticleById } from '@/firebase/firestore/articles';
+import { getArticleBySlug } from '@/firebase/firestore/article-slug';
 import { useScroll, useSpring } from 'framer-motion';
 import { ArticleSkeleton } from '@/components/loader/ArticleSkeleton';
 import { useFirestore } from '@/firebase';
@@ -39,7 +40,7 @@ export default function ArticleClientPage({ slug }: Props) {
             setIsLoading(true);
 
             try {
-                const articleData = await getArticleById(firestore, articleId);
+                const articleData = await getArticleBySlug(firestore, articleId);
 
                 if (articleData) {
                     setArticle(articleData);

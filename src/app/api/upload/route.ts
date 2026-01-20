@@ -7,6 +7,9 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+export const dynamic = 'force-dynamic';
+
+
 export async function POST(req: NextRequest) {
     try {
         const formData = await req.formData();
