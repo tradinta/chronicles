@@ -16,8 +16,10 @@ import {
   ChevronDown,
   Loader2,
   Link as LinkIcon,
-  AtSign
+  AtSign,
+  LogOut
 } from 'lucide-react';
+import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore } from '@/firebase';
 import { createArticle, getArticleById, updateArticle } from '@/firebase/firestore/articles';
@@ -323,7 +325,12 @@ const EditorialEditorPage = () => {
   }
 
   return (
-    <div className="flex h-screen bg-stone-50 dark:bg-stone-900">
+    <div className="flex h-screen bg-stone-50 dark:bg-stone-900 relative">
+      <Link href="/dashboard" className="absolute top-6 right-6 z-50 flex items-center text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors">
+        <LogOut size={16} className="mr-2" />
+        Exit Editor
+      </Link>
+
       {/* Optional: We could show EntryModal if we wanted to change "Opinion" to "Analysis", 
           but for now we default to Editorial/Opinion to streamline. */}
 

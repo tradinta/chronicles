@@ -14,6 +14,8 @@ import { ArticleSkeleton } from '@/components/loader/ArticleSkeleton';
 import { useFirestore } from '@/firebase';
 import Link from 'next/link';
 import { format } from 'date-fns';
+import { ReactionBar } from './reaction-bar';
+import CommentSection from './comment-section';
 
 type Props = {
     slug: string;
@@ -153,7 +155,7 @@ export default function ArticleClientPage({ slug }: Props) {
                 </div>
             )}
 
-            <article className="px-6 md:px-12 max-w-3xl mx-auto pb-32">
+            <article className="px-6 md:px-12 max-w-3xl mx-auto pb-8">
                 <div className={`transition-all duration-700 ${isFocusMode ? 'grayscale-[0.5]' : ''}`}>
                     {article.summary && (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
@@ -168,6 +170,13 @@ export default function ArticleClientPage({ slug }: Props) {
                     </motion.div>
                 </div>
             </article>
+
+            <div className="max-w-3xl mx-auto pb-24 border-t border-border pt-8">
+                <div className="flex justify-center mb-8">
+                    <ReactionBar articleId={article.id!} />
+                </div>
+                <CommentSection articleId={article.id!} />
+            </div>
 
             <ArticleFooter onViewChange={() => router.push('/news')} />
         </motion.div>

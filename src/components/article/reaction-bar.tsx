@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useUser, useFirestore } from '@/firebase';
 import { setReaction, removeReaction, getUserReaction, getArticleReactions, ReactionType } from '@/firebase/firestore/reactions';
-import { Heart, Sparkles, Lightbulb, Zap } from 'lucide-react';
+import { Heart, Sparkles, Lightbulb, Zap, Frown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,6 +13,7 @@ const REACTION_CONFIG: { type: ReactionType; icon: any; label: string; color: st
     { type: 'love', icon: Sparkles, label: 'Love', color: 'text-pink-500' },
     { type: 'insightful', icon: Lightbulb, label: 'Insightful', color: 'text-yellow-500' },
     { type: 'surprised', icon: Zap, label: 'Surprised', color: 'text-blue-500' },
+    { type: 'angry', icon: Frown, label: 'Disagree', color: 'text-orange-600' },
 ];
 
 interface ReactionBarProps {
@@ -25,7 +26,7 @@ export function ReactionBar({ articleId }: ReactionBarProps) {
     const { toast } = useToast();
 
     const [userReaction, setUserReaction] = useState<ReactionType | null>(null);
-    const [counts, setCounts] = useState<Record<ReactionType, number>>({ like: 0, love: 0, insightful: 0, surprised: 0 });
+    const [counts, setCounts] = useState<Record<ReactionType, number>>({ like: 0, love: 0, insightful: 0, surprised: 0, angry: 0 });
     const [isExpanded, setIsExpanded] = useState(false);
 
     useEffect(() => {

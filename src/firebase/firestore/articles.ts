@@ -289,3 +289,33 @@ export async function getBreakingNews(firestore: Firestore, limitCount: number =
     return [];
   }
 }
+/**
+ * Fetches the N most trending published articles (by views).
+ */
+export async function getTrendingArticles(firestore: Firestore, limitCount: number = 5): Promise<DocumentData[]> {
+  const articlesRef = collection(firestore, 'articles');
+
+  try {
+    // Note: This requires an index on status + views + publishDate (or just status + views)
+    const q = query(
+      articlesRef,
+      where("status", "==", "published"),
+      orderBy("views", "desc"),
+      limit(limitCount)
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    // If we have some articles, return them
+    if (!querySnapshot.empty) {
+      return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    }
+
+    // Fallback to recent if empty
+    return getRecentArticles(firestore, limitCount);
+  } catch (error) {
+    console.warn("Error fetching trending articles (likely missing index):", error);
+    // Fallback to recent articles if views index is not ready
+    return getRecentArticles(firestore, limitCount);
+  }
+}

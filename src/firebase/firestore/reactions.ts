@@ -1,6 +1,6 @@
 import { Firestore, doc, setDoc, deleteDoc, getDoc, collection, query, orderBy, getDocs, serverTimestamp, increment, updateDoc } from 'firebase/firestore';
 
-export type ReactionType = 'like' | 'love' | 'insightful' | 'surprised';
+export type ReactionType = 'like' | 'love' | 'insightful' | 'surprised' | 'angry';
 
 export interface Reaction {
     id?: string;
@@ -40,6 +40,20 @@ export async function setReaction(
             [`reactions.${type}`]: increment(1),
             totalReactions: increment(1)
         });
+    } else {
+        // If updating (changing reaction type), we would need more complex logic. 
+        // For simplicity in this v1, simpler to just set it. 
+        // But if we want accurate counts, we'd need to decrement value of old type.
+        // Let's assume for now UI handles "unreact first".
+        // Actually, let's just make it robust:
+        const oldType = existing.data().type as ReactionType;
+        if (oldType !== type) {
+            const articleRef = doc(firestore, 'articles', articleId);
+            await updateDoc(articleRef, {
+                [`reactions.${oldType}`]: increment(-1),
+                [`reactions.${type}`]: increment(1)
+            });
+        }
     }
 }
 
@@ -90,7 +104,8 @@ export async function getArticleReactions(firestore: Firestore, articleId: strin
             love: reactions.love || 0,
             insightful: reactions.insightful || 0,
             surprised: reactions.surprised || 0,
+            angry: reactions.angry || 0,
         };
     }
-    return { like: 0, love: 0, insightful: 0, surprised: 0 };
+    return { like: 0, love: 0, insightful: 0, surprised: 0, angry: 0 };
 }

@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
-import { Search, Sun, Moon, ArrowLeft, X, Radio, EyeOff, PenTool } from 'lucide-react';
+import { Search, Sun, Moon, ArrowLeft, X, Radio, EyeOff, PenTool, Sparkles } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -82,6 +82,50 @@ export default function Navbar({ isDark, toggleTheme, isFocusMode }: NavbarProps
           <h1 className={cn("font-serif text-xl tracking-tighter font-bold", isDark ? 'text-stone-100' : 'text-stone-900')}>
             The Chronicle<span className={cn("opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-orange-600")}>.</span>
           </h1>
+        </div>
+      </motion.div>
+
+      {/* --- CENTER PILL: NAVIGATION --- */}
+      <motion.div
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut", delay: 0.05 }}
+        className={cn(
+          "fixed top-6 left-1/2 -translate-x-1/2 z-50 hidden md:flex items-center px-1 py-1 rounded-full border shadow-sm transition-all duration-300",
+          isDark ? "bg-stone-900/80 border-stone-800 text-stone-400" : "bg-[#FDFBF7]/80 border-stone-200 text-stone-600",
+          "backdrop-blur-md"
+        )}
+      >
+        <div className="flex items-center space-x-1">
+          <Link href="/live" className={cn(
+            "flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-300",
+            pathname.startsWith('/live')
+              ? (isDark ? "bg-stone-800 text-white" : "bg-white text-black shadow-sm")
+              : "hover:text-orange-600"
+          )}>
+            <Radio size={16} className={cn("animate-pulse", pathname.startsWith('/live') ? "text-red-500" : "")} />
+            <span className="text-xs font-bold uppercase tracking-widest">Live</span>
+          </Link>
+
+          <Link href="/off-the-record" className={cn(
+            "flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-300",
+            pathname.startsWith('/off-the-record')
+              ? (isDark ? "bg-stone-800 text-white" : "bg-white text-black shadow-sm")
+              : "hover:text-orange-600"
+          )}>
+            <EyeOff size={16} />
+            <span className="text-xs font-bold uppercase tracking-widest">Off Record</span>
+          </Link>
+
+          <Link href="/subscribe" className={cn(
+            "flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-300",
+            pathname.startsWith('/subscribe')
+              ? (isDark ? "bg-stone-800 text-white" : "bg-white text-black shadow-sm")
+              : "hover:text-orange-600"
+          )}>
+            <div className="w-2 h-2 rounded-full bg-orange-500" />
+            <span className="text-xs font-bold uppercase tracking-widest">Subscribe</span>
+          </Link>
         </div>
       </motion.div>
 

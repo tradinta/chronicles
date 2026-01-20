@@ -249,8 +249,13 @@ export default function NewStoryPage() {
             <div className="h-4 w-4 bg-primary" />
             <span className="font-serif text-sm font-bold tracking-widest uppercase text-primary">The Newsroom</span>
           </div>
-          <div className="hidden md:block text-[10px] tracking-[0.2em] font-medium uppercase text-muted-foreground">
-            {dateStr} — Vol. CDXX
+          <div className="flex items-center">
+            <div className="hidden md:block text-[10px] tracking-[0.2em] font-medium uppercase text-muted-foreground mr-6">
+              {dateStr} — Vol. CDXX
+            </div>
+            <Link href="/dashboard" className="text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-primary transition-colors flex items-center">
+              <ArrowRight className="w-4 h-4 mr-1 rotate-180" /> Exit Terminal
+            </Link>
           </div>
         </div>
         <div className="flex justify-between items-end">
@@ -270,10 +275,10 @@ export default function NewStoryPage() {
             </p>
           </div>
         </div>
-      </header>
+      </header >
 
       {/* Main Content Grid */}
-      <main className="relative z-10 flex-1 w-full max-w-[1600px] mx-auto p-6 md:p-12 pb-24">
+      < main className="relative z-10 flex-1 w-full max-w-[1600px] mx-auto p-6 md:p-12 pb-24" >
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -339,7 +344,7 @@ export default function NewStoryPage() {
             </motion.div>
           )}
         </AnimatePresence>
-      </main>
+      </main >
 
 
       <Dialog open={showLoginModal} onOpenChange={() => { }}>
