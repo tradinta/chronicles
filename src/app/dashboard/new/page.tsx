@@ -340,9 +340,9 @@ export default function NewStoryPage() {
           )}
         </AnimatePresence>
       </main>
-      </main>
 
-      <Dialog open={showLoginModal} onOpenChange={() => {}}>
+
+      <Dialog open={showLoginModal} onOpenChange={() => { }}>
         <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle className="font-serif text-2xl">Authentication Required</DialogTitle>
