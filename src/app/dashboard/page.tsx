@@ -387,31 +387,36 @@ const ResourcesView = () => (
                     <h3 className="text-lg font-bold text-white mb-2">{r.title}</h3>
                     <p className="text-sm text-zinc-400">{r.desc}</p>
                 </div>
+            ))}
+        </div>
+    </div>
+);
+
 // --- MAIN PAGE ---
 
 export default function EditorDashboard() {
     const [isCollapsed, setIsCollapsed] = useState(false);
-            const [currentTab, setCurrentTab] = useState('overview');
-            const {user, isLoading} = useUser();
-            const router = useRouter();
+    const [currentTab, setCurrentTab] = useState('overview');
+    const { user, isLoading } = useUser();
+    const router = useRouter();
 
-            // Updated Nav Items
-            const sidebarNavItems = [
-            {id: 'overview', label: 'Newsroom', icon: LayoutDashboard },
-            {id: 'stories', label: 'My Stories', icon: FileText },
-            {id: 'drafts', label: 'Drafts', icon: PenTool },
-            {id: 'analytics', label: 'Performance', icon: BarChart2 },
-            {id: 'resources', label: 'Resources', icon: BookOpen },
-            {id: 'settings', label: 'Settings', icon: Settings },
-            ];
+    // Updated Nav Items
+    const sidebarNavItems = [
+        { id: 'overview', label: 'Newsroom', icon: LayoutDashboard },
+        { id: 'stories', label: 'My Stories', icon: FileText },
+        { id: 'drafts', label: 'Drafts', icon: PenTool },
+        { id: 'analytics', label: 'Performance', icon: BarChart2 },
+        { id: 'resources', label: 'Resources', icon: BookOpen },
+        { id: 'settings', label: 'Settings', icon: Settings },
+    ];
 
-            // Pass custom nav items to Sidebar if properly refactored, but for now we stick to contextual usage or direct edit.
-            // Actually, Sidebar component is defined above. I need to update IT directly or pass logic.
-            // I'll update the component above via full replacement of the Main Page + sub-components block
-            // Wait, replace_file_content targets lines. I'll just update the Sidebar definition in the next step or careful edit.
-            // Easier to just duplicate the logic in the replacement since it IS the file.
+    // Pass custom nav items to Sidebar if properly refactored, but for now we stick to contextual usage or direct edit.
+    // Actually, Sidebar component is defined above. I need to update IT directly or pass logic.
+    // I'll update the component above via full replacement of the Main Page + sub-components block
+    // Wait, replace_file_content targets lines. I'll just update the Sidebar definition in the next step or careful edit.
+    // Easier to just duplicate the logic in the replacement since it IS the file.
 
-            if (isLoading) {
+    if (isLoading) {
         return (
             <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
@@ -419,32 +424,32 @@ export default function EditorDashboard() {
                     <p className="text-zinc-500 text-sm animate-pulse">Loading Workspace...</p>
                 </div>
             </div>
-            );
+        );
     }
 
-            if (!user) {
-                router.push('/login');
-            return null;
+    if (!user) {
+        router.push('/login');
+        return null;
     }
 
-            return (
-            <EditorContext.Provider value={{ isCollapsed, setIsCollapsed, currentTab, setCurrentTab }}>
-                <div className="min-h-screen bg-[#09090b] text-zinc-200 font-sans selection:bg-orange-500/30">
-                    <Sidebar />
-                    <TopBar />
+    return (
+        <EditorContext.Provider value={{ isCollapsed, setIsCollapsed, currentTab, setCurrentTab }}>
+            <div className="min-h-screen bg-[#09090b] text-zinc-200 font-sans selection:bg-orange-500/30">
+                <Sidebar />
+                <TopBar />
 
-                    <main className={cn(
-                        "pt-28 px-8 pb-12 transition-all duration-300 min-h-screen",
-                        isCollapsed ? "ml-20" : "ml-64"
-                    )}>
-                        {currentTab === 'overview' && <Overview />}
-                        {currentTab === 'stories' && <StoriesView />}
-                        {currentTab === 'drafts' && <StoriesView statusFilter="draft" />}
-                        {currentTab === 'analytics' && <AnalyticsView />}
-                        {currentTab === 'resources' && <ResourcesView />}
-                        {currentTab === 'settings' && <SettingsView />}
-                    </main>
-                </div>
-            </EditorContext.Provider>
-            );
+                <main className={cn(
+                    "pt-28 px-8 pb-12 transition-all duration-300 min-h-screen",
+                    isCollapsed ? "ml-20" : "ml-64"
+                )}>
+                    {currentTab === 'overview' && <Overview />}
+                    {currentTab === 'stories' && <StoriesView />}
+                    {currentTab === 'drafts' && <StoriesView statusFilter="draft" />}
+                    {currentTab === 'analytics' && <AnalyticsView />}
+                    {currentTab === 'resources' && <ResourcesView />}
+                    {currentTab === 'settings' && <SettingsView />}
+                </main>
+            </div>
+        </EditorContext.Provider>
+    );
 }

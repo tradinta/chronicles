@@ -14,6 +14,15 @@ import {
   Globe
 } from 'lucide-react';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from "@/components/ui/dialog";
 import { useUser, useFirestore } from '@/firebase';
 import { canCreateStandardArticle, canCreateLiveEvent, canCreateOffTheRecord, canCreateEditorial } from '@/firebase/firestore/rbac';
 
@@ -103,11 +112,19 @@ export default function NewStoryPage() {
     setDateStr(d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase());
   }, []);
 
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
   useEffect(() => {
     if (!isLoading && !user) {
-      router.push('/login?redirect=/dashboard/new');
+      setShowLoginModal(true);
+    } else {
+      setShowLoginModal(false);
     }
-  }, [user, isLoading, router]);
+  }, [user, isLoading]);
+
+  const handleLoginRedirect = () => {
+    router.push('/auth?redirect=/dashboard/new');
+  };
 
   useEffect(() => {
     const fetchRole = async () => {
@@ -323,7 +340,29 @@ export default function NewStoryPage() {
           )}
         </AnimatePresence>
       </main>
-    </div>
+      </main>
+
+      <Dialog open={showLoginModal} onOpenChange={() => {}}>
+        <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle className="font-serif text-2xl">Authentication Required</DialogTitle>
+            <DialogDescription>
+              Access to the Assignment Protocol is restricted to authorized personnel only. Please log in to proceed.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-center py-4">
+            <div className="bg-muted p-4 rounded-full">
+              <FileLock className="w-12 h-12 text-muted-foreground" />
+            </div>
+          </div>
+          <DialogFooter className="sm:justify-center">
+            <Button onClick={handleLoginRedirect} className="w-full sm:w-auto">
+              Log In
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div >
   );
 }
 

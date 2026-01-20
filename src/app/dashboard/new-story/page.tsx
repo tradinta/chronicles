@@ -15,7 +15,9 @@ import {
   Server,
   Laptop,
   ChevronDown,
-  Loader2
+  Loader2,
+  Link as LinkIcon,
+  AtSign
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore } from '@/firebase';
@@ -26,6 +28,7 @@ import Image from 'next/image';
 import EditorSidebar from '@/components/editor/EditorSidebar';
 import EditorBlock from '@/components/editor/EditorBlock';
 import { EntryModal } from '@/components/editor/EntryModal';
+import { EditorialStandardsModal } from '@/components/editor/EditorialStandardsModal';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
@@ -33,8 +36,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { createSlug } from '@/lib/utils';
 import { PhotoUploader } from '@/components/shared/photo-uploader';
 
-const AUTOSAVE_INTERVAL = 10000; // 10 seconds
+const AUTOSAVE_INTERVAL = 3000; // 3 seconds for better responsiveness
 const LOCAL_STORAGE_KEY = 'kihumba_editor_autosave';
+const STANDARDS_ACCEPTED_KEY = 'kihumba_editorial_standards_accepted';
 
 const NewsEditorPage = () => {
   const { toast } = useToast();
@@ -55,9 +59,13 @@ const NewsEditorPage = () => {
   const [isLoadingArticle, setIsLoadingArticle] = useState(isEditMode);
 
   const [showEntryModal, setShowEntryModal] = useState(!isEditMode);
+  const [showEditorialModal, setShowEditorialModal] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [isBreaking, setIsBreaking] = useState(false);
+
+  // Autosave Status
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
 
   const [headline, setHeadline] = useState('');
   const [subheading, setSubheading] = useState('');
@@ -80,8 +88,20 @@ const NewsEditorPage = () => {
         setAuthorError("Your user profile is missing a display name.");
         setShowProfileUpdateModal(true);
       }
+
+      // Check Editorial Standards
+      const hasAccepted = localStorage.getItem(STANDARDS_ACCEPTED_KEY);
+      if (!hasAccepted) {
+        setShowEditorialModal(true);
+      }
     }
   }, [user]);
+
+  const handleAcceptStandards = () => {
+    localStorage.setItem(STANDARDS_ACCEPTED_KEY, 'true');
+    setShowEditorialModal(false);
+    toast({ title: "Welcome Aboard", description: "You're all set to write history." });
+  };
 
   useEffect(() => {
     setSlug(createSlug(headline));
@@ -181,30 +201,44 @@ const NewsEditorPage = () => {
     };
   }, [headline, subheading, slug, coverImageUrl, tags, category, articleFormat, blocks]);
 
+  // Robust Autosave Effect
   useEffect(() => {
-    const timer = setInterval(() => {
-      if (headline || blocks.some(b => b.content)) {
+    const timer = setTimeout(() => {
+      if (headline || blocks.some(b => b.content) || blocks.some(b => b.imageUrl)) {
+        setSaveStatus('saving');
         const currentState = getArticleState();
+
+        // Save to state
         setLocalDrafts(prev => {
+          // Basic deduping
+          const lastDraft = prev[0];
+          if (lastDraft && lastDraft.headline === currentState.headline && JSON.stringify(lastDraft.blocks) === JSON.stringify(currentState.blocks)) {
+            return prev;
+          }
           const newDrafts = [currentState, ...prev].slice(0, 10);
           localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newDrafts));
           return newDrafts;
         });
+
+        // Simulate network for UX
+        setTimeout(() => setSaveStatus('saved'), 500);
       }
     }, AUTOSAVE_INTERVAL);
 
-    return () => clearInterval(timer);
+    return () => clearTimeout(timer);
   }, [getArticleState, headline, blocks]);
 
-
   const addBlock = (type: string) => {
-    setBlocks([...blocks, { id: Date.now(), type, content: '' }]);
+    // Add block and smooth scroll to it
+    const newBlock = { id: Date.now(), type, content: '' };
+    setBlocks(prev => [...prev, newBlock]);
   };
 
   const updateBlock = (id: number, updatedValues: object) => {
     setBlocks(blocks.map(block =>
       block.id === id ? { ...block, ...updatedValues } : block
     ));
+    setSaveStatus('unsaved');
   };
 
   const handleSaveDraft = async () => {
@@ -269,7 +303,9 @@ const NewsEditorPage = () => {
         case 'h2': return `<h2>${block.content}</h2>`;
         case 'quote': return `<blockquote><p>${block.content}</p><footer>${(block as any).source || ''}</footer></blockquote>`;
         case 'paragraph': return `<p>${block.content}</p>`;
-        case 'image': return `<figure><img src="${(block as any).imageUrl || ''}" alt="${(block as any).caption || ''}" /><figcaption>${(block as any).caption || ''}</figcaption></figure>`
+        case 'image': return `<figure><img src="${(block as any).imageUrl || ''}" alt="${(block as any).caption || ''}" /><figcaption>${(block as any).caption || ''}</figcaption></figure>`;
+        case 'embed': return `<div class="embed-block" data-url="${(block as any).url}"></div>`;
+        case 'reference': return `<span class="mention" data-email="${(block as any).email}">@${block.content}</span>`;
         default: return '';
       }
     }).join('');
@@ -334,6 +370,12 @@ const NewsEditorPage = () => {
         isDark={isDark}
         setCategory={setCategory}
         setArticleFormat={setArticleFormat}
+      />
+
+      <EditorialStandardsModal
+        isOpen={showEditorialModal}
+        onAccept={handleAcceptStandards}
+        isDark={isDark}
       />
 
       <Dialog open={showProfileUpdateModal} onOpenChange={setShowProfileUpdateModal}>
@@ -403,6 +445,12 @@ const NewsEditorPage = () => {
               </div>
             </div>
 
+            {/* Added Save Status Indicator */}
+            <div className="absolute top-0 right-0 -mt-8 text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center space-x-2">
+              {saveStatus === 'saving' && <Loader2 size={10} className="animate-spin" />}
+              <span>{saveStatus === 'saved' ? 'Saved locally' : (saveStatus === 'saving' ? 'Saving...' : 'Unsaved changes')}</span>
+            </div>
+
             <input
               type="text"
               placeholder="Headline"
@@ -451,7 +499,15 @@ const NewsEditorPage = () => {
             <div className="my-12 flex justify-center group relative">
               <div className="absolute top-1/2 left-0 right-0 h-px transition-colors bg-stone-200 group-hover:bg-stone-300 dark:bg-stone-800 dark:group-hover:bg-stone-700"></div>
               <div className="relative z-10 p-1.5 rounded-full border flex space-x-1 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0 bg-white border-stone-200 shadow-lg dark:bg-stone-900 dark:border-stone-700 dark:shadow-2xl dark:shadow-black">
-                {[{ icon: Type, type: 'paragraph', tooltip: 'Text' }, { icon: Quote, type: 'quote', tooltip: 'Quote' }, { icon: Heading2, type: 'h2', tooltip: 'Heading' }, { icon: ImagePlus, type: 'image', tooltip: 'Image' }, { icon: Sparkles, type: 'infobox', tooltip: 'AI Box' },].map((tool) => (
+                {[
+                  { icon: Type, type: 'paragraph', tooltip: 'Text' },
+                  { icon: Quote, type: 'quote', tooltip: 'Quote' },
+                  { icon: Heading2, type: 'h2', tooltip: 'Heading' },
+                  { icon: ImagePlus, type: 'image', tooltip: 'Image' },
+                  { icon: AtSign, type: 'reference', tooltip: 'Mention Author' },
+                  { icon: LinkIcon, type: 'embed', tooltip: 'Embed URL' },
+                  { icon: Sparkles, type: 'infobox', tooltip: 'AI Box' }
+                ].map((tool) => (
                   <button key={tool.type} onClick={() => addBlock(tool.type)} className="p-2 rounded-full hover:scale-110 transition-transform text-stone-500 hover:text-black dark:text-stone-400 dark:hover:text-white" title={tool.tooltip}>
                     <tool.icon size={16} />
                   </button>

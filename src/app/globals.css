@@ -18,6 +18,7 @@
     --muted-foreground: 0 0% 45.1%;
     --accent: 25 76% 48%;
     --accent-foreground: 0 0% 9%;
+    --color-accent: #ea580c;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 89.8%;
@@ -80,11 +81,11 @@
   }
 
   .font-serif {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-serif);
   }
 
   .font-sans {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-sans);
   }
 
   /* Custom Scrollbar */
@@ -216,6 +217,20 @@
   pointer-events: none;
   z-index: 50;
   mix-blend-mode: overlay;
+}
+
+.text-tight-hover:hover {
+  letter-spacing: -0.02em;
+  transition: letter-spacing 0.3s ease;
+}
+
+.blur-reveal {
+  filter: blur(8px);
+  transition: filter 0.3s ease;
+}
+
+.blur-reveal:hover {
+  filter: blur(0);
 }
 
 @media print {
