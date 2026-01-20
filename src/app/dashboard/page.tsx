@@ -213,10 +213,33 @@ export default function EditorDashboard() {
         // Actually, let's keep it safe.
     }
 
-    // Protection if redirect is slow
+    // Protection if redirect is slow or user is not logged in
     if (!user && !isLoading) {
-        if (typeof window !== 'undefined') router.push('/login');
-        return null;
+        return (
+            <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-4">
+                <div className="max-w-md w-full bg-[#18181b] border border-red-500/20 rounded-2xl p-8 text-center space-y-6 animate-in zoom-in-95 duration-300">
+                    <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto text-red-500 mb-2">
+                        <LogOut size={32} />
+                    </div>
+                    <div>
+                        <h1 className="text-2xl font-serif font-bold text-white mb-2">Access Restricted</h1>
+                        <p className="text-zinc-400">You must be logged in to access the editorial dashboard.</p>
+                    </div>
+                    <button
+                        onClick={() => router.push('/login')}
+                        className="w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-zinc-200 transition-colors"
+                    >
+                        Log In to Continue
+                    </button>
+                    <button
+                        onClick={() => router.push('/')}
+                        className="w-full text-zinc-500 text-sm hover:text-white transition-colors"
+                    >
+                        Return to Home
+                    </button>
+                </div>
+            </div>
+        );
     }
 
     return (

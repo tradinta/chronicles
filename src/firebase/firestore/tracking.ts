@@ -21,7 +21,7 @@ export interface PageView {
     path: string;
     articleId?: string;
     articleTitle?: string;
-    userId?: string;
+    userId?: string | null;
     sessionId: string;
     userAgent: string;
     referrer: string;
@@ -32,7 +32,7 @@ export interface PageView {
 
 export interface SessionData {
     sessionId: string;
-    userId?: string;
+    userId?: string | null;
     startedAt: Timestamp;
     lastActive: Timestamp;
     pageCount: number;
@@ -91,7 +91,7 @@ export async function recordPageView(
         path: data.path,
         articleId: data.articleId,
         articleTitle: data.articleTitle,
-        userId: data.userId || undefined,
+        userId: data.userId || null,
         sessionId,
         userAgent,
         referrer,

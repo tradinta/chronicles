@@ -3,6 +3,7 @@ import { getArticleById } from '@/firebase/firestore/articles';
 import { getArticleBySlug } from '@/firebase/firestore/article-slug';
 import { Metadata } from 'next';
 import ArticleClientPage from '@/components/article/article-client-page';
+import { doc, getDoc } from 'firebase/firestore';
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -18,11 +19,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Fetch author
   let authorName = 'The Chronicle Editorial Team';
   if (article.authorId) {
-    const { doc, getDoc } = require('firebase/firestore');
-    // Note: getFirebaseServer returns firestore instance. We need 'doc' and 'getDoc' from sdk if not exported by server lib.
-    // But we can import standard sdk functions as they work with the instance provided they match versions.
-    // Actually simpler: let's assume the server lib might expose user helper or we do direct query?
-    // Let's use standard import at top.
     const authorRef = doc(firestore, 'users', article.authorId);
     try {
       const authorSnap = await getDoc(authorRef);
@@ -30,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         authorName = authorSnap.data().displayName || authorName;
       }
     } catch (e) {
-      // ignore
+      console.error("Error fetching author for metadata:", e);
     }
   }
 

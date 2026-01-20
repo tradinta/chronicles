@@ -178,7 +178,7 @@ export default function ArticleClientPage({ slug }: Props) {
                 <CommentSection articleId={article.id!} />
             </div>
 
-            <ArticleFooter onViewChange={() => router.push('/news')} />
+            <ArticleFooter onViewChange={() => router.push('/news')} author={author} />
         </motion.div>
     );
 }

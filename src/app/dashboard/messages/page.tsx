@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 const MessagesPage = () => {
     const messages = [
         { id: 1, sender: "Editor-in-Chief", subject: "Re: Draft submission for 'Shadow Banking'", preview: "Great work on the latest draft. I have a few suggestions regarding the intro...", time: "10:42 AM", unread: true },
-        { id: 2, sender: "Sarah Jenkins", subject: "Interview confirmation", preview: "Hi! I'm available for the interview next Tuesday at 2 PM using Zoom link...", time: "Yesterday", unread: false },
         { id: 3, sender: "Fact Checking Team", subject: "Verification complete: Urban Reforestation", preview: "All distinct claims have been verified. The only outstanding item is the quote from...", time: "Oct 24", unread: false },
         { id: 4, sender: "System", subject: "Your article is trending!", preview: "Congratulations! 'The Future of Agri-Tech' has just passed 10,000 views...", time: "Oct 22", unread: false },
     ];
