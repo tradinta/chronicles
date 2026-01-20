@@ -30,6 +30,7 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
+
   .dark {
     --background: 0 0% 7%;
     --foreground: 0 0% 98%;
@@ -62,56 +63,85 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground font-sans;
     overflow-x: hidden;
-    font-size: clamp(1rem, 0.95rem + 0.25vw, 1.125rem); /* Fluid type: 16px -> 18px */
+    font-size: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+    /* Fluid type: 16px -> 18px */
     line-height: 1.6;
   }
-  
+
   @media (min-width: 768px) {
     body {
-        line-height: 1.8; /* Looser leading for desktop reading */
+      line-height: 1.8;
+      /* Looser leading for desktop reading */
     }
   }
-  
+
   .font-serif {
     font-family: 'Playfair Display', serif;
   }
+
   .font-sans {
     font-family: 'Inter', sans-serif;
   }
-  
+
   /* Custom Scrollbar */
-  ::-webkit-scrollbar { @apply w-[6px]; }
-  ::-webkit-scrollbar-track { @apply bg-transparent; }
-  ::-webkit-scrollbar-thumb { @apply bg-border rounded-[3px]; }
-  ::-webkit-scrollbar-thumb:hover { @apply bg-muted-foreground; }
+  ::-webkit-scrollbar {
+    @apply w-[6px];
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-[3px];
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground;
+  }
 
   .text-tight-hover:hover {
-    letter-spacing: -0.02em; 
+    letter-spacing: -0.02em;
     transition: letter-spacing 0.3s ease;
   }
-  
+
   .ticker-wrap {
     width: 100%;
     overflow: hidden;
     white-space: nowrap;
   }
+
   .ticker {
     display: inline-block;
     animation: ticker 30s linear infinite;
   }
+
   .ticker-wrap:hover .ticker {
     animation-play-state: paused;
   }
+
   @keyframes ticker {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+    0% {
+      transform: translateX(0);
+    }
+
+    100% {
+      transform: translateX(-50%);
+    }
   }
-  
-  .no-scrollbar::-webkit-scrollbar { display: none; }
-  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 
   /* Article Specific */
   .drop-cap:first-letter {
@@ -125,33 +155,51 @@
     animation-duration: 200ms;
     animation-timing-function: ease-out;
   }
+
   .fade-in {
     animation-name: fade-in;
   }
+
   .zoom-in {
     animation-name: zoom-in;
   }
+
   @keyframes animate-in {
     from {
       opacity: 0;
       transform: scale(0.95);
     }
+
     to {
       opacity: 1;
       transform: scale(1);
     }
   }
+
   @keyframes fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
   }
+
   @keyframes zoom-in {
-    from { transform: scale(0.95); }
-    to { transform: scale(1); }
+    from {
+      transform: scale(0.95);
+    }
+
+    to {
+      transform: scale(1);
+    }
   }
+
   .bg-radial-light {
     background-image: radial-gradient(circle, rgba(234, 88, 12, 0.05), transparent 40%);
   }
+
   .bg-radial-dark {
     background-image: radial-gradient(circle, rgba(234, 88, 12, 0.1), transparent 40%);
   }
@@ -159,10 +207,44 @@
 
 .grain-overlay {
   position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
   opacity: 0.4;
   pointer-events: none;
   z-index: 50;
   mix-blend-mode: overlay;
+}
+
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  header,
+  nav,
+  aside,
+  footer,
+  .action-rail,
+  .grain-overlay,
+  .ticker-wrap,
+  button {
+    display: none !important;
+  }
+
+  main,
+  article {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+
+  a {
+    text-decoration: none;
+    color: black;
+  }
 }

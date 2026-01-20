@@ -1,37 +1,49 @@
 
 
-import { collection, addDoc, serverTimestamp, Firestore, query, where, getDocs, doc, updateDoc, getDoc, DocumentData, orderBy, limit } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, Firestore, query, where, getDocs, doc, updateDoc, getDoc, DocumentData, orderBy, limit, Timestamp } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
-type ArticleData = {
+export type ArticleStatus = 'draft' | 'review' | 'published' | 'scheduled' | 'takedown';
+
+export type ArticleData = {
   title: string;
   summary: string;
   slug: string;
   content: string;
   imageUrl: string;
   authorId: string;
+  authorIds?: string[]; // Multi-author support
   category: string;
   tags: string[];
+  status?: ArticleStatus;
+  publishAt?: Date | null; // Scheduled publish time
+  isBreaking?: boolean;
 }
 
 /**
- * Creates a new article in Firestore.
- * This is a non-blocking write operation that returns a promise.
+ * Creates a new article in Firestore with workflow support.
+ * Status defaults to 'draft'. Set to 'review' to submit for editorial review.
  */
-export function createArticle(firestore: Firestore, articleData: ArticleData) {
+export function createArticle(firestore: Firestore, articleData: ArticleData, options?: { status?: ArticleStatus }) {
   const articlesRef = collection(firestore, 'articles');
+
+  const status = options?.status || articleData.status || 'draft';
+  const isScheduled = status === 'scheduled' && articleData.publishAt;
 
   const data = {
     ...articleData,
-    status: 'published', // default status
-    publishDate: serverTimestamp(),
+    status,
+    authorIds: articleData.authorIds || [articleData.authorId],
+    publishDate: status === 'published' ? serverTimestamp() : null,
+    scheduledPublishAt: isScheduled ? Timestamp.fromDate(articleData.publishAt!) : null,
+    createdAt: serverTimestamp(),
+    lastUpdated: serverTimestamp(),
+    version: 1,
   };
 
-  // Return the promise so the caller can await it if needed
   return addDoc(articlesRef, data)
     .catch(error => {
-      // Create and emit a contextual permission error
       errorEmitter.emit(
         'permission-error',
         new FirestorePermissionError({
@@ -40,10 +52,10 @@ export function createArticle(firestore: Firestore, articleData: ArticleData) {
           requestResourceData: data,
         })
       );
-      // Re-throw the original error to allow the caller's catch block to execute
       throw error;
     });
 }
+
 
 /**
  * Fetches all articles by a specific author.
@@ -103,12 +115,32 @@ export async function getArticleById(firestore: Firestore, articleId: string): P
 
 
 /**
- * Updates the status of an article (e.g., for takedown).
+ * Updates the status of an article (supports full publishing workflow).
+ * If publishing, sets publishDate. If scheduling, sets scheduledPublishAt.
  */
-export async function updateArticleStatus(firestore: Firestore, articleId: string, status: 'published' | 'draft' | 'takedown') {
+export async function updateArticleStatus(
+  firestore: Firestore,
+  articleId: string,
+  status: ArticleStatus,
+  options?: { publishAt?: Date; incrementVersion?: boolean }
+) {
   const articleRef = doc(firestore, 'articles', articleId);
   try {
-    await updateDoc(articleRef, { status });
+    const updateData: any = { status, lastUpdated: serverTimestamp() };
+
+    if (status === 'published') {
+      updateData.publishDate = serverTimestamp();
+      updateData.scheduledPublishAt = null;
+    } else if (status === 'scheduled' && options?.publishAt) {
+      updateData.scheduledPublishAt = Timestamp.fromDate(options.publishAt);
+    }
+
+    if (options?.incrementVersion) {
+      // In a real app, you'd get the current version first
+      // For now, we assume version tracking is handled separately
+    }
+
+    await updateDoc(articleRef, updateData);
   } catch (error) {
     errorEmitter.emit(
       'permission-error',
@@ -121,6 +153,7 @@ export async function updateArticleStatus(firestore: Firestore, articleId: strin
     throw error;
   }
 }
+
 
 /**
  * Fetches the most recent article marked as featured.

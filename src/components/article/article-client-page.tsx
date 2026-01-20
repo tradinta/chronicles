@@ -99,19 +99,20 @@ export default function ArticleClientPage({ slug }: Props) {
                 className="fixed top-0 left-0 right-0 h-1 bg-primary transform origin-left z-50"
                 style={{ scaleX }}
             />
-            <ActionRail isFocusMode={isFocusMode} setFocusMode={setFocusMode} />
+            <ActionRail isFocusMode={isFocusMode} setFocusMode={setFocusMode} articleId={articleId} />
 
-            <header className={`pt-20 pb-12 px-6 md:px-12 max-w-4xl mx-auto transition-opacity duration-500 ${isFocusMode ? 'opacity-40 hover:opacity-100' : 'opacity-100'}`}>
+            <div className={`pt-24 px-6 md:px-12 max-w-4xl mx-auto transition-opacity duration-500 ${isFocusMode ? 'opacity-0' : 'opacity-100'}`}>
+                <nav className="flex items-center text-xs text-muted-foreground font-mono uppercase tracking-widest space-x-2">
+                    <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+                    <span>/</span>
+                    <Link href="/news" className="hover:text-primary transition-colors">News</Link>
+                    <span>/</span>
+                    <span className="text-primary font-bold">{article.category || 'Article'}</span>
+                </nav>
+            </div>
+
+            <header className={`pt-8 pb-12 px-6 md:px-12 max-w-4xl mx-auto transition-opacity duration-500 ${isFocusMode ? 'opacity-40 hover:opacity-100' : 'opacity-100'}`}>
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-                    <div className="flex items-center space-x-3 mb-6">
-                        <span className="h-[1px] w-8 bg-muted-foreground/50"></span>
-                        <Link
-                            href={`/news`}
-                            className="text-xs font-bold tracking-[0.2em] uppercase cursor-pointer hover:underline text-primary"
-                        >
-                            {article.category || 'Opinion'}
-                        </Link>
-                    </div>
 
                     <h1 className="font-serif text-5xl md:text-7xl leading-[1.1] mb-8 text-foreground"
                         dangerouslySetInnerHTML={{ __html: article.title ? article.title.replace(/<br\s*\/?>/gi, '') : 'Untitled' }}

@@ -15,13 +15,15 @@ import { useMemo } from 'react';
 type ActionRailProps = {
   isFocusMode: boolean;
   setFocusMode: Dispatch<SetStateAction<boolean>>;
+  articleId: string;
 };
 
-export default function ActionRail({ isFocusMode, setFocusMode }: ActionRailProps) {
+export default function ActionRail({ isFocusMode, setFocusMode, articleId }: ActionRailProps) {
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
-  const articleId = '1'; // This should be dynamic based on the article
+  // articleId is now passed via props
+
 
   const bookmarkRef = useMemo(() => {
     if (!firestore || !user) return null;
