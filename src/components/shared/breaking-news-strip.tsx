@@ -1,92 +1,85 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useRouter } from 'next/navigation';
-import { ArrowRight, X } from 'lucide-react';
-import { breakingNews } from '@/lib/data';
+import { X, ArrowRight, AlertCircle } from 'lucide-react';
+import Link from 'next/link';
+import { useFirestore } from '@/firebase';
+import { getBreakingNews } from '@/firebase/firestore/articles';
+import { DocumentData } from 'firebase/firestore';
 
 export default function BreakingNewsStrip() {
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
-  const router = useRouter();
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const firestore = useFirestore();
+  const [breakingNews, setBreakingNews] = useState<DocumentData[]>([]);
 
+  useEffect(() => {
+    const fetchBreaking = async () => {
+      if (!firestore) return;
+      const news = await getBreakingNews(firestore);
+      setBreakingNews(news);
+    };
+    fetchBreaking();
+  }, [firestore]);
+
+  // Cycle through headlines
   useEffect(() => {
     if (breakingNews.length <= 1) return;
 
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % breakingNews.length);
-    }, 5000); // Change headline every 5 seconds
+    }, 5000);
 
     return () => clearInterval(interval);
-  }, []);
-
-  const handleFollowCoverage = () => {
-    router.push('/live');
-  };
+  }, [breakingNews.length]);
 
   if (!isVisible || breakingNews.length === 0) {
     return null;
   }
 
+  const currentArticle = breakingNews[currentIndex];
+
   return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.div
-          initial={{ y: -50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -50, opacity: 0 }}
-          transition={{ duration: 0.5, ease: 'easeInOut' }}
-          className="fixed top-20 left-0 right-0 z-30 h-11 bg-[#cc3333] text-white flex items-center justify-center shadow-md font-serif"
-        >
-          <div className="container mx-auto px-6 md:px-12 flex items-center justify-between h-full">
-            <div className="flex items-center gap-4 flex-1 min-w-0">
-              <div className="flex-shrink-0 bg-black/10 backdrop-blur-sm rounded-md px-3 py-1 flex items-center gap-2">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+    <div className="fixed top-0 left-0 right-0 z-50 bg-[#cc0000] text-white h-[44px] flex items-center shadow-md">
+      <div className="container mx-auto px-4 md:px-12 flex items-center justify-between">
+
+        <div className="flex items-center flex-1 overflow-hidden">
+          <motion.div
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+            className="flex items-center mr-4 shrink-0"
+          >
+            <AlertCircle className="w-4 h-4 mr-2" fill="currentColor" stroke="none" />
+            <span className="text-xs font-bold tracking-wider uppercase">Breaking</span>
+          </motion.div>
+
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentIndex}
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -20, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="flex items-center truncate mr-4"
+            >
+              <Link href={`/article/${currentArticle.slug || currentArticle.id}`} className="hover:underline flex items-center">
+                <span className="text-sm font-medium mr-2 truncate">
+                  {currentArticle.title}
                 </span>
-                <span className="text-xs font-bold tracking-wider uppercase">Breaking</span>
-              </div>
+                <ArrowRight className="w-3 h-3 opacity-70" />
+              </Link>
+            </motion.div>
+          </AnimatePresence>
+        </div>
 
-              <div className="relative flex-1 h-full flex items-center min-w-0">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentIndex}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.5 }}
-                    className="absolute inset-0 flex items-center"
-                  >
-                    <p className="text-sm truncate">
-                      <span className="font-bold mr-2">LIVE:</span>
-                      {breakingNews[currentIndex].title}
-                    </p>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <button
-                onClick={handleFollowCoverage}
-                className="hidden sm:flex items-center gap-2 text-xs font-bold tracking-wider uppercase opacity-80 hover:opacity-100 transition-opacity"
-              >
-                <span>Follow Coverage</span>
-                <ArrowRight size={16} />
-              </button>
-              <button
-                onClick={() => setIsVisible(false)}
-                className="p-1 opacity-80 hover:opacity-100 transition-opacity"
-              >
-                <X size={18} />
-              </button>
-            </div>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+        <button
+          onClick={() => setIsVisible(false)}
+          className="p-1 hover:bg-black/10 rounded-full transition-colors ml-4"
+        >
+          <X size={16} />
+        </button>
+      </div>
+    </div>
   );
 }

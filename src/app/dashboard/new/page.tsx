@@ -3,15 +3,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { 
-  Newspaper, 
-  Radio, 
-  FileLock, 
-  Feather, 
-  ArrowRight, 
-  CheckCircle2, 
-  Clock, 
-  Globe 
+import {
+  Newspaper,
+  Radio,
+  FileLock,
+  Feather,
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  Globe
 } from 'lucide-react';
 import Link from 'next/link';
 import { useUser } from '@/firebase';
@@ -105,8 +105,8 @@ export default function AssignmentChooser() {
 
     const paths: Record<AssignmentType, string> = {
       standard: '/dashboard/new-story',
-      live: '/live',
-      secret: '/off-the-record',
+      live: '/dashboard/live',
+      secret: '/dashboard/off-the-record',
       editorial: '/dashboard/editorial/new',
     };
 
@@ -213,77 +213,77 @@ export default function AssignmentChooser() {
           </div>
         </div>
         <div className="flex justify-between items-end">
-             <motion.h1 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-                className="font-serif text-5xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.9] text-foreground"
-            >
-                Assignment<br/>Protocol
-            </motion.h1>
-            <div className="hidden lg:block text-right max-w-xs">
-                <p className="font-sans text-xs text-muted-foreground leading-relaxed border-l-2 border-primary pl-3">
-                    Welcome back, <span className="font-bold">{user?.displayName?.split(' ')[0] || 'Editor'}</span>. Select a format to begin.
-                    <br/>
-                    <Link href="/dashboard" className="text-primary hover:underline">Return to dashboard</Link>.
-                </p>
-            </div>
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="font-serif text-5xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.9] text-foreground"
+          >
+            Assignment<br />Protocol
+          </motion.h1>
+          <div className="hidden lg:block text-right max-w-xs">
+            <p className="font-sans text-xs text-muted-foreground leading-relaxed border-l-2 border-primary pl-3">
+              Welcome back, <span className="font-bold">{user?.displayName?.split(' ')[0] || 'Editor'}</span>. Select a format to begin.
+              <br />
+              <Link href="/dashboard" className="text-primary hover:underline">Return to dashboard</Link>.
+            </p>
+          </div>
         </div>
       </header>
 
       {/* Main Content Grid */}
       <main className="relative z-10 flex-1 w-full max-w-[1600px] mx-auto p-6 md:p-12 pb-24">
-        <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="mb-8 md:mb-12 flex items-center justify-between"
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="mb-8 md:mb-12 flex items-center justify-between"
         >
-             <h2 className="font-sans text-sm font-medium uppercase tracking-widest text-muted-foreground">
-                Select Format Type
-             </h2>
-             <div className="h-[1px] flex-1 bg-border mx-4"></div>
-             <span className="text-xs font-mono text-primary">4 Available</span>
+          <h2 className="font-sans text-sm font-medium uppercase tracking-widest text-muted-foreground">
+            Select Format Type
+          </h2>
+          <div className="h-[1px] flex-1 bg-border mx-4"></div>
+          <span className="text-xs font-mono text-primary">4 Available</span>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 h-full">
-            {options.map((option, index) => (
-                <AssignmentCard 
-                    key={option.id}
-                    option={option}
-                    index={index}
-                    isSelected={selected === option.id}
-                    isHovered={hovered === option.id}
-                    isDimmed={hovered !== null && hovered !== option.id}
-                    onClick={() => setSelected(option.id)}
-                    onHover={(state) => setHovered(state ? option.id : null)}
-                />
-            ))}
+          {options.map((option, index) => (
+            <AssignmentCard
+              key={option.id}
+              option={option}
+              index={index}
+              isSelected={selected === option.id}
+              isHovered={hovered === option.id}
+              isDimmed={hovered !== null && hovered !== option.id}
+              onClick={() => setSelected(option.id)}
+              onHover={(state) => setHovered(state ? option.id : null)}
+            />
+          ))}
         </div>
 
         {/* Action Bar */}
         <AnimatePresence>
-            {selected && (
-                <motion.div 
-                    initial={{ opacity: 0, y: 50 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 50 }}
-                    className="fixed bottom-0 right-0 p-6 md:p-12 z-50 pointer-events-none"
+          {selected && (
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 50 }}
+              className="fixed bottom-0 right-0 p-6 md:p-12 z-50 pointer-events-none"
+            >
+              <div className="pointer-events-auto bg-foreground text-background p-1 pl-6 rounded-full flex items-center shadow-2xl gap-4">
+                <div className="flex flex-col">
+                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Confirm Selection</span>
+                  <span className="font-serif font-bold text-lg leading-none pb-1">{options.find(o => o.id === selected)?.title}</span>
+                </div>
+                <button
+                  className="bg-primary hover:bg-accent text-white h-12 w-12 rounded-full flex items-center justify-center transition-colors group"
+                  onClick={handleConfirm}
                 >
-                     <div className="pointer-events-auto bg-foreground text-background p-1 pl-6 rounded-full flex items-center shadow-2xl gap-4">
-                        <div className="flex flex-col">
-                            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Confirm Selection</span>
-                            <span className="font-serif font-bold text-lg leading-none pb-1">{options.find(o => o.id === selected)?.title}</span>
-                        </div>
-                        <button 
-                            className="bg-primary hover:bg-accent text-white h-12 w-12 rounded-full flex items-center justify-center transition-colors group"
-                            onClick={handleConfirm}
-                        >
-                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                        </button>
-                     </div>
-                </motion.div>
-            )}
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            </motion.div>
+          )}
         </AnimatePresence>
       </main>
     </div>
@@ -292,130 +292,130 @@ export default function AssignmentChooser() {
 
 // --- Sub-Components ---
 
-function AssignmentCard({ 
-    option, 
-    index, 
-    isSelected, 
-    isHovered, 
-    isDimmed,
-    onClick,
-    onHover 
-}: { 
-    option: AssignmentOption, 
-    index: number,
-    isSelected: boolean, 
-    isHovered: boolean,
-    isDimmed: boolean,
-    onClick: () => void,
-    onHover: (state: boolean) => void
+function AssignmentCard({
+  option,
+  index,
+  isSelected,
+  isHovered,
+  isDimmed,
+  onClick,
+  onHover
+}: {
+  option: AssignmentOption,
+  index: number,
+  isSelected: boolean,
+  isHovered: boolean,
+  isDimmed: boolean,
+  onClick: () => void,
+  onHover: (state: boolean) => void
 }) {
-    const Icon = option.icon;
+  const Icon = option.icon;
 
-    return (
-        <motion.div
-            layout
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ 
-                opacity: isDimmed ? 0.5 : 1, 
-                y: 0,
-                scale: isHovered ? 1.02 : 1,
-            }}
-            transition={{ 
-                duration: 0.4, 
-                delay: index * 0.1,
-                ease: "backOut" 
-            }}
-            onClick={onClick}
-            onMouseEnter={() => onHover(true)}
-            onMouseLeave={() => onHover(false)}
-            className={`
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 20 }}
+      animate={{
+        opacity: isDimmed ? 0.5 : 1,
+        y: 0,
+        scale: isHovered ? 1.02 : 1,
+      }}
+      transition={{
+        duration: 0.4,
+        delay: index * 0.1,
+        ease: "backOut"
+      }}
+      onClick={onClick}
+      onMouseEnter={() => onHover(true)}
+      onMouseLeave={() => onHover(false)}
+      className={`
                 group relative cursor-pointer flex flex-col justify-between
                 h-full min-h-[340px] p-6 rounded-lg border-2
                 transition-all duration-500 ease-out
-                ${isSelected 
-                    ? 'bg-foreground text-background border-foreground shadow-2xl ring-2 ring-primary ring-offset-4 ring-offset-background' 
-                    : 'bg-card text-card-foreground border-border hover:border-foreground/50 hover:shadow-xl'
-                }
+                ${isSelected
+          ? 'bg-foreground text-background border-foreground shadow-2xl ring-2 ring-primary ring-offset-4 ring-offset-background'
+          : 'bg-card text-card-foreground border-border hover:border-foreground/50 hover:shadow-xl'
+        }
             `}
-        >
-            {/* Hover Accent Line */}
-            <div 
-                className="absolute top-0 left-0 w-full h-1.5 transition-all duration-300 origin-left transform scale-x-0 group-hover:scale-x-100"
-                style={{ backgroundColor: `hsl(${option.colorVar})` }}
-            />
+    >
+      {/* Hover Accent Line */}
+      <div
+        className="absolute top-0 left-0 w-full h-1.5 transition-all duration-300 origin-left transform scale-x-0 group-hover:scale-x-100"
+        style={{ backgroundColor: `hsl(${option.colorVar})` }}
+      />
 
-            {/* Badge */}
-            <div className="flex justify-between items-start mb-8">
-                <span 
-                    className={`
+      {/* Badge */}
+      <div className="flex justify-between items-start mb-8">
+        <span
+          className={`
                         text-[10px] font-mono uppercase tracking-widest py-1 px-2 rounded-sm border
                         transition-colors duration-300
                         ${isSelected
-                            ? 'border-background/20 text-background/80' 
-                            : 'border-foreground/10 text-muted-foreground group-hover:border-primary group-hover:text-primary'
-                        }
+              ? 'border-background/20 text-background/80'
+              : 'border-foreground/10 text-muted-foreground group-hover:border-primary group-hover:text-primary'
+            }
                     `}
-                >
-                    {option.id === 'live' && <span className="inline-block w-2 h-2 rounded-full bg-red-500 mr-2 animate-pulse"/>}
-                    {option.badge}
-                </span>
-                
-                {isSelected && <CheckCircle2 className="w-5 h-5 text-primary" />}
-            </div>
+        >
+          {option.id === 'live' && <span className="inline-block w-2 h-2 rounded-full bg-red-500 mr-2 animate-pulse" />}
+          {option.badge}
+        </span>
 
-            {/* Icon & Visuals */}
-            <div className="flex-1 flex flex-col items-center justify-center py-4 relative">
-                 <motion.div
-                    animate={{ 
-                        rotate: isHovered ? [0, -5, 5, 0] : 0,
-                        scale: isHovered ? 1.1 : 1
-                    }}
-                    transition={{ duration: 0.5 }}
-                 >
-                     <Icon 
-                        strokeWidth={1}
-                        className={`w-20 h-20 mb-6 transition-colors duration-300 ${isSelected ? 'text-primary' : 'text-foreground/80'}`} 
-                        style={{
-                            filter: isHovered ? `drop-shadow(0 0 8px hsl(${option.colorVar}))` : 'none'
-                        }}
-                     />
-                 </motion.div>
-                 
-                 {/* Decorative elements based on type */}
-                 {option.id === 'secret' && (
-                     <div className={`absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none ${isSelected ? 'hidden' : ''}`} 
-                          style={{ backgroundImage: 'linear-gradient(45deg, transparent 45%, currentColor 45%, currentColor 55%, transparent 55%)', backgroundSize: '10px 10px' }} 
-                     />
-                 )}
-            </div>
+        {isSelected && <CheckCircle2 className="w-5 h-5 text-primary" />}
+      </div>
 
-            {/* Content */}
-            <div className="relative z-10">
-                <h3 className={`font-serif text-2xl md:text-3xl font-bold mb-3 leading-tight ${isSelected ? 'text-background' : 'text-foreground'}`}>
-                    {option.title}
-                </h3>
-                <p className={`font-sans text-sm leading-relaxed transition-colors duration-300 ${isSelected ? 'text-background/70' : 'text-muted-foreground group-hover:text-foreground'}`}>
-                    {option.description}
-                </p>
-                
-                {/* Meta Data on Hover */}
-                <div className={`mt-6 pt-4 border-t flex items-center justify-between overflow-hidden transition-all duration-500 ${isHovered || isSelected ? 'opacity-100 max-h-20' : 'opacity-0 max-h-0'}`}>
-                    <div className={`flex items-center gap-2 text-[10px] uppercase tracking-wider ${isSelected ? 'text-background/50 border-background/20' : 'text-muted-foreground border-border'}`}>
-                        <Clock className="w-3 h-3" />
-                        <span>Est. 2h</span>
-                    </div>
-                    <div className={`flex items-center gap-2 text-[10px] uppercase tracking-wider ${isSelected ? 'text-background/50' : 'text-muted-foreground'}`}>
-                        <Globe className="w-3 h-3" />
-                        <span>Global</span>
-                    </div>
-                </div>
-            </div>
-
-            {/* Animated Background Gradient on Hover */}
-            <div 
-                className="absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-500 pointer-events-none"
-                style={{ background: `radial-gradient(circle at center, hsl(${option.colorVar}), transparent)` }}
-            />
+      {/* Icon & Visuals */}
+      <div className="flex-1 flex flex-col items-center justify-center py-4 relative">
+        <motion.div
+          animate={{
+            rotate: isHovered ? [0, -5, 5, 0] : 0,
+            scale: isHovered ? 1.1 : 1
+          }}
+          transition={{ duration: 0.5 }}
+        >
+          <Icon
+            strokeWidth={1}
+            className={`w-20 h-20 mb-6 transition-colors duration-300 ${isSelected ? 'text-primary' : 'text-foreground/80'}`}
+            style={{
+              filter: isHovered ? `drop-shadow(0 0 8px hsl(${option.colorVar}))` : 'none'
+            }}
+          />
         </motion.div>
-    );
+
+        {/* Decorative elements based on type */}
+        {option.id === 'secret' && (
+          <div className={`absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none ${isSelected ? 'hidden' : ''}`}
+            style={{ backgroundImage: 'linear-gradient(45deg, transparent 45%, currentColor 45%, currentColor 55%, transparent 55%)', backgroundSize: '10px 10px' }}
+          />
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10">
+        <h3 className={`font-serif text-2xl md:text-3xl font-bold mb-3 leading-tight ${isSelected ? 'text-background' : 'text-foreground'}`}>
+          {option.title}
+        </h3>
+        <p className={`font-sans text-sm leading-relaxed transition-colors duration-300 ${isSelected ? 'text-background/70' : 'text-muted-foreground group-hover:text-foreground'}`}>
+          {option.description}
+        </p>
+
+        {/* Meta Data on Hover */}
+        <div className={`mt-6 pt-4 border-t flex items-center justify-between overflow-hidden transition-all duration-500 ${isHovered || isSelected ? 'opacity-100 max-h-20' : 'opacity-0 max-h-0'}`}>
+          <div className={`flex items-center gap-2 text-[10px] uppercase tracking-wider ${isSelected ? 'text-background/50 border-background/20' : 'text-muted-foreground border-border'}`}>
+            <Clock className="w-3 h-3" />
+            <span>Est. 2h</span>
+          </div>
+          <div className={`flex items-center gap-2 text-[10px] uppercase tracking-wider ${isSelected ? 'text-background/50' : 'text-muted-foreground'}`}>
+            <Globe className="w-3 h-3" />
+            <span>Global</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Animated Background Gradient on Hover */}
+      <div
+        className="absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-500 pointer-events-none"
+        style={{ background: `radial-gradient(circle at center, hsl(${option.colorVar}), transparent)` }}
+      />
+    </motion.div>
+  );
 }

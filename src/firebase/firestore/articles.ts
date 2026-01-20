@@ -233,3 +233,26 @@ export async function getAuthorStats(firestore: Firestore, authorId: string) {
  * Fetches a single article by its Slug field.
  */
 
+
+/**
+ * Fetches breaking news articles.
+ */
+export async function getBreakingNews(firestore: Firestore, limitCount: number = 5): Promise<DocumentData[]> {
+  const articlesRef = collection(firestore, 'articles');
+  try {
+    const q = query(
+      articlesRef,
+      where("isBreaking", "==", true),
+      where("status", "==", "published"),
+      orderBy("publishDate", "desc"),
+      limit(limitCount)
+    );
+
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    // If index is missing, just return recent articles as fallback or empty
+    console.warn("Error fetching breaking news (check indexes):", error);
+    return [];
+  }
+}
