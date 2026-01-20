@@ -14,7 +14,8 @@ import {
   Globe
 } from 'lucide-react';
 import Link from 'next/link';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
+import { canCreateStandardArticle, canCreateLiveEvent, canCreateOffTheRecord, canCreateEditorial } from '@/firebase/firestore/rbac';
 
 // --- Types ---
 type AssignmentType = 'standard' | 'live' | 'secret' | 'editorial';
@@ -91,14 +92,31 @@ const Ticker = () => (
 export default function AssignmentChooser() {
   const router = useRouter();
   const { user } = useUser();
+  const firestore = useFirestore();
   const [selected, setSelected] = useState<AssignmentType | null>(null);
   const [hovered, setHovered] = useState<AssignmentType | null>(null);
   const [dateStr, setDateStr] = useState('');
+  const [userRole, setUserRole] = useState<any>(null);
 
   useEffect(() => {
     const d = new Date();
     setDateStr(d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase());
   }, []);
+
+  useEffect(() => {
+    const fetchRole = async () => {
+      if (!user || !firestore) return;
+      try {
+        const { getUserRole } = await import('@/firebase/firestore/rbac');
+        const role = await getUserRole(firestore, user.uid);
+        setUserRole(role || 'subscriber'); // Default to subscriber
+      } catch (e) {
+        console.error("Error checking role", e);
+      }
+    };
+    fetchRole();
+  }, [user, firestore]);
+
 
   const handleConfirm = () => {
     if (!selected) return;
@@ -243,22 +261,35 @@ export default function AssignmentChooser() {
             Select Format Type
           </h2>
           <div className="h-[1px] flex-1 bg-border mx-4"></div>
-          <span className="text-xs font-mono text-primary">4 Available</span>
+          <span className="text-xs font-mono text-primary">
+            {userRole ? `Role: ${userRole.toUpperCase()}` : 'Verifying Clearance...'}
+          </span>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 h-full">
-          {options.map((option, index) => (
-            <AssignmentCard
-              key={option.id}
-              option={option}
-              index={index}
-              isSelected={selected === option.id}
-              isHovered={hovered === option.id}
-              isDimmed={hovered !== null && hovered !== option.id}
-              onClick={() => setSelected(option.id)}
-              onHover={(state) => setHovered(state ? option.id : null)}
-            />
-          ))}
+          {options.map((option, index) => {
+            // Check permissions
+            let isAllowed = false;
+            if (option.id === 'standard') isAllowed = canCreateStandardArticle(userRole);
+            else if (option.id === 'live') isAllowed = canCreateLiveEvent(userRole);
+            else if (option.id === 'secret') isAllowed = canCreateOffTheRecord(userRole);
+            else if (option.id === 'editorial') isAllowed = canCreateEditorial(userRole);
+
+            if (!isAllowed) return null; // Or render a locked state
+
+            return (
+              <AssignmentCard
+                key={option.id}
+                option={option}
+                index={index}
+                isSelected={selected === option.id}
+                isHovered={hovered === option.id}
+                isDimmed={hovered !== null && hovered !== option.id}
+                onClick={() => setSelected(option.id)}
+                onHover={(state) => setHovered(state ? option.id : null)}
+              />
+            );
+          })}
         </div>
 
         {/* Action Bar */}

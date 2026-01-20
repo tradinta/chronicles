@@ -18,9 +18,7 @@ import { CalendarWidget } from '@/components/dashboard/widgets/calendar-widget';
 import { QuickTasks } from '@/components/dashboard/widgets/quick-tasks';
 import { RecentProjects } from '@/components/dashboard/widgets/recent-projects';
 
-// Admin
-import { ModerationQueue } from '@/components/dashboard/admin/moderation-queue';
-import { UserManagement } from '@/components/dashboard/admin/user-management';
+
 
 // --- Dev Tools (Seed Button) ---
 function DevTools() {
@@ -121,19 +119,7 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
-                {/* 3. Admin Zone */}
-                <div className="pt-8 border-t border-white/5">
-                    <h2 className="text-xl font-bold text-white font-serif mb-6 flex items-center gap-2">
-                        <span className="w-2 h-8 bg-primary rounded-full"></span>
-                        Admin Control Center
-                    </h2>
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                        <ModerationQueue />
-                        <UserManagement />
-                    </div>
-                </div>
-
-                {/* 4. Footer / Dev Tools */}
+                {/* 3. Footer / Dev Tools */}
                 <DevTools />
 
             </div>
