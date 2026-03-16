@@ -19,6 +19,7 @@ export type ArticleData = {
   status?: ArticleStatus;
   publishAt?: Date | null; // Scheduled publish time
   isBreaking?: boolean;
+  isPremium?: boolean;
 }
 
 /**
@@ -37,6 +38,7 @@ export function createArticle(firestore: Firestore, articleData: ArticleData, op
     authorIds: articleData.authorIds || [articleData.authorId],
     publishDate: status === 'published' ? serverTimestamp() : null,
     scheduledPublishAt: isScheduled ? Timestamp.fromDate(articleData.publishAt!) : null,
+    isPremium: !!articleData.isPremium,
     createdAt: serverTimestamp(),
     lastUpdated: serverTimestamp(),
     version: 1,

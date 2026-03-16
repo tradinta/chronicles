@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils';
 import {
     Send,
     Image as ImageIcon,
@@ -21,6 +22,7 @@ import {
     getLiveEventBySlug,
     updateLiveEvent,
     pushLiveUpdate,
+    updateLiveUpdate,
     subscribeToLiveUpdates,
     LiveEvent,
     LiveUpdate
@@ -47,6 +49,7 @@ export default function LiveConsolePage() {
     const [isImageUpdate, setIsImageUpdate] = useState(false);
     const [imageUrl, setImageUrl] = useState('');
     const [isSending, setIsSending] = useState(false);
+    const [editingUpdateId, setEditingUpdateId] = useState<string | null>(null);
 
     // Subscribe to updates & fetch event details
     useEffect(() => {
@@ -75,22 +78,30 @@ export default function LiveConsolePage() {
         setIsSending(true);
 
         try {
-            await pushLiveUpdate(firestore, id, {
-                content: newUpdateContent,
-                type: isBreaking ? 'breaking' : isImageUpdate && imageUrl ? 'image' : 'text',
-                authorId: user.uid,
-                authorName: user.displayName || 'Editor',
-                ...(isImageUpdate && imageUrl ? { imageUrl } : {}) // You might need to update the Type definition if imageUrl isn't there yet
-            } as any);
+            if (editingUpdateId) {
+                // Handle Edit
+                await updateLiveUpdate(firestore, id, editingUpdateId, newUpdateContent);
+                toast({ title: "Update Modified", description: "The live update has been edited." });
+                setEditingUpdateId(null);
+            } else {
+                // Handle New Post
+                await pushLiveUpdate(firestore, id, {
+                    content: newUpdateContent,
+                    type: isBreaking ? 'breaking' : isImageUpdate && imageUrl ? 'image' : 'text',
+                    authorId: user.uid,
+                    authorName: user.displayName || 'Editor',
+                    ...(isImageUpdate && imageUrl ? { imageUrl } : {}) 
+                } as any);
+                toast({ title: "Update Posted", description: "Live feed updated successfully." });
+            }
 
             setNewUpdateContent('');
             setImageUrl('');
             setIsBreaking(false);
             setIsImageUpdate(false);
-            toast({ title: "Update Posted", description: "Live feed updated successfully." });
         } catch (error) {
-            console.error("Error posting update", error);
-            toast({ variant: "destructive", title: "Failed to Post", description: "Something went wrong." });
+            console.error("Error saving update", error);
+            toast({ variant: "destructive", title: "Failed to Save", description: "Something went wrong." });
         } finally {
             setIsSending(false);
         }
@@ -169,22 +180,40 @@ export default function LiveConsolePage() {
 
                         <div className="flex items-center justify-between border-t border-border pt-4">
                             <div className="flex items-center gap-6">
-                                <div className="flex items-center space-x-2">
-                                    <Switch id="breaking" checked={isBreaking} onCheckedChange={setIsBreaking} />
-                                    <Label htmlFor="breaking" className={`font-bold flex items-center gap-1 ${isBreaking ? 'text-red-500' : 'text-muted-foreground'}`}>
-                                        <AlertTriangle className="w-4 h-4" /> Breaking News
-                                    </Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <Switch id="image-mode" checked={isImageUpdate} onCheckedChange={setIsImageUpdate} />
-                                    <Label htmlFor="image-mode" className="flex items-center gap-1">
-                                        <ImageIcon className="w-4 h-4" /> Add Image
-                                    </Label>
-                                </div>
+                                {!editingUpdateId && (
+                                    <>
+                                        <div className="flex items-center space-x-2">
+                                            <Switch id="breaking" checked={isBreaking} onCheckedChange={setIsBreaking} />
+                                            <Label htmlFor="breaking" className={`font-bold flex items-center gap-1 ${isBreaking ? 'text-red-500' : 'text-muted-foreground'}`}>
+                                                <AlertTriangle className="w-4 h-4" /> Breaking News
+                                            </Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <Switch id="image-mode" checked={isImageUpdate} onCheckedChange={setIsImageUpdate} />
+                                            <Label htmlFor="image-mode" className="flex items-center gap-1">
+                                                <ImageIcon className="w-4 h-4" /> Add Image
+                                            </Label>
+                                        </div>
+                                    </>
+                                )}
+                                {editingUpdateId && (
+                                    <Badge variant="outline" className="text-primary border-primary animate-pulse">Editing Update...</Badge>
+                                )}
                             </div>
-                            <Button onClick={handlePostUpdate} disabled={isSending || (!newUpdateContent && !imageUrl)} className={isBreaking ? 'bg-red-600 hover:bg-red-700' : ''}>
-                                <Send className="w-4 h-4 mr-2" /> {isSending ? 'Posting...' : 'Post Update'}
-                            </Button>
+                            <div className="flex items-center gap-2">
+                                {editingUpdateId && (
+                                    <Button variant="ghost" size="sm" onClick={() => {
+                                        setEditingUpdateId(null);
+                                        setNewUpdateContent('');
+                                        setIsBreaking(false);
+                                    }}>
+                                        Cancel
+                                    </Button>
+                                )}
+                                <Button onClick={handlePostUpdate} disabled={isSending || (!newUpdateContent && !imageUrl)} className={isBreaking ? 'bg-red-600 hover:bg-red-700' : ''}>
+                                    <Send className="w-4 h-4 mr-2" /> {isSending ? 'Saving...' : editingUpdateId ? 'Save Changes' : 'Post Update'}
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -204,14 +233,38 @@ export default function LiveConsolePage() {
                                 layout
                                 initial={{ opacity: 0, y: -20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className={`bg-card border-l-4 p-4 rounded shadow-sm text-sm ${update.type === 'breaking' ? 'border-red-500 bg-red-50 dark:bg-red-900/10' : 'border-primary'
-                                    }`}
+                                className={cn(
+                                    "bg-card border-l-4 p-4 rounded shadow-sm text-sm relative group",
+                                    update.type === 'breaking' ? 'border-red-500 bg-red-50 dark:bg-red-900/10' : 'border-primary',
+                                    editingUpdateId === update.id && "ring-2 ring-primary"
+                                )}
                             >
                                 <div className="flex justify-between items-start mb-2">
-                                    <span className="font-bold text-xs uppercase tracking-wider text-muted-foreground">
-                                        {update.timestamp?.toDate ? new Date(update.timestamp.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}
-                                    </span>
-                                    {update.type === 'breaking' && <span className="text-red-600 font-bold text-[10px] uppercase flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> Breaking</span>}
+                                    <div className="flex flex-col">
+                                        <span className="font-bold text-xs uppercase tracking-wider text-muted-foreground">
+                                            {update.timestamp?.toDate ? new Date(update.timestamp.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}
+                                        </span>
+                                        {update.editedAt && (
+                                            <span className="text-[9px] text-blue-500 font-bold uppercase">
+                                                Edited {new Date(update.editedAt.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        {update.type === 'breaking' && <span className="text-red-600 font-bold text-[10px] uppercase flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> Breaking</span>}
+                                        {user?.uid === update.authorId && (
+                                            <button 
+                                                onClick={() => {
+                                                    setEditingUpdateId(update.id!);
+                                                    setNewUpdateContent(update.content);
+                                                    setIsBreaking(update.type === 'breaking');
+                                                }}
+                                                className="opacity-0 group-hover:opacity-100 p-1 hover:bg-secondary rounded transition-opacity"
+                                            >
+                                                <Edit2 className="w-3 h-3 text-muted-foreground" />
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                                 {update.type === 'image' && (
                                     <div className="mb-2 rounded overflow-hidden aspect-video bg-muted relative">

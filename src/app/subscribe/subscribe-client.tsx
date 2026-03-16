@@ -6,8 +6,10 @@ import { useRouter } from 'next/navigation';
 import {
     Check, Star, Crown, Coffee,
     Sparkles, ShieldCheck, ChevronDown, CreditCard,
-    Lock, Zap, EyeOff, RefreshCw, Shield, Quote,
+    Lock, Zap, EyeOff, RefreshCw, Shield, Quote, Loader2
 } from 'lucide-react';
+import { useUser } from '@/firebase';
+import { useToast } from '@/hooks/use-toast';
 
 // Reusable FAQ Accordion Item
 const FAQItem = ({ question, answer }: { question: string; answer: string }) => {
@@ -85,12 +87,13 @@ type PricingCardProps = {
     features: string[];
     planType: 'explorer' | 'insider' | 'vip';
     isDark: boolean;
+    isLoading?: boolean;
     icon: React.ElementType;
-    onViewChange: (href: string) => void;
+    onCheckout: () => void;
 };
 
 const PricingCard = ({
-    title, price, period, description, features, planType, isDark, icon: Icon, onViewChange
+    title, price, period, description, features, planType, isDark, isLoading, icon: Icon, onCheckout
 }: PricingCardProps) => {
     const getStyles = () => {
         switch (planType) {
@@ -159,7 +162,14 @@ const PricingCard = ({
                 ))}
             </div>
 
-            <button onClick={() => onViewChange('/checkout')} className={`w-full py-3 rounded-lg text-xs font-bold tracking-widest uppercase transition-all duration-300 ${styles.btn}`}>
+            <button 
+                onClick={onCheckout} 
+                disabled={isLoading}
+                className={`w-full py-3 rounded-lg text-xs font-bold tracking-widest uppercase transition-all duration-300 flex items-center justify-center ${styles.btn}`}
+            >
+                {isLoading ? (
+                    <RefreshCw className="animate-spin mr-2" size={16} />
+                ) : null}
                 {planType === 'explorer' ? 'Start Exploring' : planType === 'insider' ? 'Become an Insider' : 'Unlock VIP'}
             </button>
 
@@ -172,6 +182,42 @@ export default function SubscribePageClient() {
     const router = useRouter();
     const [isDark, setIsDark] = useState(false);
     const [billingCycle, setBillingCycle] = useState('monthly');
+    const [isCheckingOut, setIsCheckingOut] = useState<string | null>(null);
+    const { user } = useUser();
+    const { toast } = useToast();
+
+    const handleCheckout = async (planType: string) => {
+        if (!user) {
+            toast({ variant: 'destructive', title: 'Please sign in to subscribe' });
+            return;
+        }
+
+        setIsCheckingOut(planType);
+        try {
+            const response = await fetch('/api/paystack/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    planType,
+                    userId: user.uid,
+                    email: user.email,
+                    billingCycle,
+                }),
+            });
+
+            const data = await response.json();
+            if (data.authorization_url) {
+                window.location.href = data.authorization_url;
+            } else {
+                throw new Error(data.error || 'Failed to create checkout session');
+            }
+        } catch (error: any) {
+            console.error('Checkout error:', error);
+            toast({ variant: 'destructive', title: 'Checkout Error', description: error.message });
+        } finally {
+            setIsCheckingOut(null);
+        }
+    };
 
     useEffect(() => {
         const savedTheme = localStorage.getItem('theme');
@@ -293,7 +339,8 @@ export default function SubscribePageClient() {
                             features={["Standard news articles", "Weekly Newsletter", "5 Off-Record stories/mo", "Comment access"]}
                             icon={Coffee}
                             isDark={isDark}
-                            onViewChange={router.push}
+                            isLoading={isCheckingOut === 'explorer'}
+                            onCheckout={() => handleCheckout('explorer')}
                         />
 
                         <PricingCard
@@ -305,7 +352,8 @@ export default function SubscribePageClient() {
                             features={["Unlimited News Access", "Full Off-Record Access", "Daily Newsletter", "Ad-Free Experience", "Offline Reading"]}
                             icon={Star}
                             isDark={isDark}
-                            onViewChange={router.push}
+                            isLoading={isCheckingOut === 'insider'}
+                            onCheckout={() => handleCheckout('insider')}
                         />
 
                         <PricingCard
@@ -317,7 +365,8 @@ export default function SubscribePageClient() {
                             features={["Everything in Insider", "Priority Tip Submission", "Direct Editor Access", "Exclusive Events", "Family Account (4)"]}
                             icon={Crown}
                             isDark={isDark}
-                            onViewChange={router.push}
+                            isLoading={isCheckingOut === 'vip'}
+                            onCheckout={() => handleCheckout('vip')}
                         />
 
                     </div>

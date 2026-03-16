@@ -23,6 +23,7 @@ export const metadata: Metadata = {
     title: 'Live Coverage | The Chronicle',
     description: 'Real-time updates on breaking news stories.',
     images: [`${SITE_URL}/logo.png`],
+    site: '@TheChronicle',
   },
 };
 

@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     description: 'Intelligent journalism for the modern era.',
     images: [
       {
-        url: '/og-default.png', // We need to ensure this exists or use logo
+        url: '/logo.png',
         width: 1200,
         height: 630,
         alt: 'The Chronicle',
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'The Chronicle',
     description: 'Intelligent journalism for the modern era.',
-    images: ['/og-default.png'],
+    images: ['/logo.png'],
     creator: '@TheChronicle',
   },
 };

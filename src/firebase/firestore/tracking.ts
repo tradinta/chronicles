@@ -19,8 +19,8 @@ import {
 export interface PageView {
     id?: string;
     path: string;
-    articleId?: string;
-    articleTitle?: string;
+    articleId?: string | null;
+    articleTitle?: string | null;
     userId?: string | null;
     sessionId: string;
     userAgent: string;
@@ -89,8 +89,8 @@ export async function recordPageView(
 
     const pageView: Omit<PageView, 'id'> = {
         path: data.path,
-        articleId: data.articleId,
-        articleTitle: data.articleTitle,
+        articleId: data.articleId || null,
+        articleTitle: data.articleTitle || null,
         userId: data.userId || null,
         sessionId,
         userAgent,
@@ -115,7 +115,7 @@ export async function recordPageView(
         } else {
             const sessionData: SessionData = {
                 sessionId,
-                userId: data.userId,
+                userId: data.userId || null,
                 startedAt: Timestamp.now(),
                 lastActive: Timestamp.now(),
                 pageCount: 1,

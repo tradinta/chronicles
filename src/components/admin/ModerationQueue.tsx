@@ -11,10 +11,12 @@ import { format } from 'date-fns';
 
 interface FlaggedItem {
     id: string;
-    type: 'comment' | 'article';
+    type: 'article' | 'comment' | 'live-event' | 'live-update' | 'off-the-record';
     contentId: string;
+    parentEventId?: string;
     contentPreview: string;
     reason: string;
+    description?: string;
     reportedBy: string;
     reportedAt: any;
     status: 'pending' | 'reviewed' | 'dismissed';
@@ -58,17 +60,35 @@ export default function ModerationQueue() {
     };
 
     const handleRemove = async (item: FlaggedItem) => {
-        if (!firestore || !confirm('Remove this content?')) return;
+        if (!firestore || !confirm('Remove this content permanently?')) return;
         try {
-            // Remove the actual content
-            const collectionName = item.type === 'comment' ? 'comments' : 'articles';
-            await deleteDoc(doc(firestore, collectionName, item.contentId));
-            // Mark report as reviewed
-            await updateDoc(doc(firestore, 'reports', item.id), { status: 'reviewed', action: 'removed' });
+            let collectionName = '';
+            let targetId = item.contentId;
+            let subCollection = '';
+
+            switch (item.type) {
+                case 'article': collectionName = 'articles'; break;
+                case 'comment': collectionName = 'comments'; break;
+                case 'live-event': collectionName = 'liveEvents'; break;
+                case 'live-update': 
+                    collectionName = 'liveEvents';
+                    subCollection = 'updates';
+                    break;
+                case 'off-the-record': collectionName = 'offTheRecord'; break;
+            }
+
+            if (subCollection && item.parentEventId) {
+                await deleteDoc(doc(firestore, collectionName, item.parentEventId, subCollection, targetId));
+            } else {
+                await deleteDoc(doc(firestore, collectionName, targetId));
+            }
+
+            await updateDoc(doc(firestore, 'reports', item.id), { status: 'reviewed', action: 'removed', reviewedAt: new Date() });
             setItems(prev => prev.filter(i => i.id !== item.id));
-            toast({ title: 'Content removed' });
+            toast({ title: 'Content removed successfully' });
         } catch (error) {
-            toast({ variant: 'destructive', title: 'Failed to remove' });
+            console.error('Moderation error:', error);
+            toast({ variant: 'destructive', title: 'Failed to remove content' });
         }
     };
 
@@ -114,9 +134,12 @@ export default function ModerationQueue() {
                         >
                             <div className="flex items-start justify-between mb-3">
                                 <div className="flex items-center gap-2">
-                                    {item.type === 'comment' ? <MessageSquare className="w-4 h-4 text-blue-500" /> : <FileText className="w-4 h-4 text-green-500" />}
-                                    <span className="text-xs font-bold uppercase text-muted-foreground">{item.type}</span>
-                                    <span className="text-xs px-2 py-0.5 bg-red-500/10 text-red-600 rounded flex items-center gap-1">
+                                    {item.type === 'comment' ? <MessageSquare className="w-4 h-4 text-blue-500" /> : 
+                                     item.type === 'article' ? <FileText className="w-4 h-4 text-green-500" /> :
+                                     item.type === 'off-the-record' ? <Lock className="w-4 h-4 text-purple-500" /> :
+                                     <AlertTriangle className="w-4 h-4 text-orange-500" />}
+                                    <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-tighter">{item.type.replace('-', ' ')}</span>
+                                    <span className="text-[10px] px-2 py-0.5 bg-red-500/10 text-red-600 rounded flex items-center gap-1 font-bold">
                                         <Flag className="w-3 h-3" /> {item.reason}
                                     </span>
                                 </div>
@@ -124,7 +147,12 @@ export default function ModerationQueue() {
                                     {item.reportedAt?.toDate ? format(item.reportedAt.toDate(), 'MMM d, HH:mm') : 'N/A'}
                                 </span>
                             </div>
-                            <p className="text-sm mb-4 line-clamp-3 bg-secondary/50 p-3 rounded">{item.contentPreview}</p>
+                            <p className="text-sm mb-2 line-clamp-3 bg-secondary/50 p-3 rounded italic">"{item.contentPreview}"</p>
+                            {item.description && (
+                                <div className="mb-4 text-xs text-muted-foreground bg-muted p-2 rounded">
+                                    <span className="font-bold">Reporter Note:</span> {item.description}
+                                </div>
+                            )}
                             <div className="flex items-center gap-2">
                                 <button onClick={() => handleApprove(item.id)} className="flex items-center gap-1 px-3 py-1.5 bg-green-500/10 text-green-600 rounded text-xs font-bold hover:bg-green-500/20">
                                     <Check className="w-3 h-3" /> Approve

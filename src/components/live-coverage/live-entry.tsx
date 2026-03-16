@@ -3,14 +3,15 @@
 import React from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import { AlertCircle, Clock, Image as ImageIcon, MessageSquare } from 'lucide-react';
+import { AlertCircle, Clock, Image as ImageIcon, MessageSquare, Flag } from 'lucide-react';
 import { LiveUpdate } from '@/firebase/firestore/live';
 
 interface LiveEntryProps {
     update: LiveUpdate;
+    onReport?: (update: LiveUpdate) => void;
 }
 
-export default function LiveEntry({ update }: LiveEntryProps) {
+export default function LiveEntry({ update, onReport }: LiveEntryProps) {
     const isBreaking = update.type === 'breaking';
     const isImage = update.type === 'image';
 
@@ -65,7 +66,14 @@ export default function LiveEntry({ update }: LiveEntryProps) {
                     {(update as any).authorName || 'Editor'}
                 </span>
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                    {/* Future interaction buttons could go here */}
+                    {onReport && (
+                        <button 
+                            onClick={() => onReport(update)}
+                            className="text-[10px] font-bold text-muted-foreground hover:text-red-500 uppercase tracking-widest flex items-center gap-1"
+                        >
+                            <Flag size={10} /> Report
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

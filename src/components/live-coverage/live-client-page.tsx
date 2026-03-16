@@ -8,6 +8,7 @@ import { getLiveEventBySlug, subscribeToLiveUpdates, LiveEvent, LiveUpdate } fro
 import LiveEntry from '@/components/live-coverage/live-entry';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { ReportModal } from '../shared/ReportModal';
 import Link from 'next/link';
 
 type Props = {
@@ -58,11 +59,22 @@ export default function LiveRoomClientPage({ slug }: Props) {
         toast({ title: "Link Copied", description: "Share the coverage with others." });
     };
 
+    const [reportingUpdate, setReportingUpdate] = useState<LiveUpdate | null>(null);
+
     if (loading) return <div className="h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-red-600" /></div>;
     if (!event) return <div className="h-screen flex flex-col items-center justify-center text-center p-4"><h1 className="text-2xl font-bold">Event Not Found</h1><Link href="/live" className="text-primary underline mt-4">Back to Live Coverage</Link></div>;
 
     return (
         <div className="min-h-screen bg-background">
+            {/* Report Modal */}
+            <ReportModal
+                isOpen={!!reportingUpdate}
+                onClose={() => setReportingUpdate(null)}
+                contentType="live-update"
+                contentId={reportingUpdate?.id || ''}
+                parentEventId={event.id}
+                contentPreview={reportingUpdate?.content || ''}
+            />
             {/* Sticky Header */}
             <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border shadow-sm">
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">

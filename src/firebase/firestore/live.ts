@@ -31,6 +31,7 @@ export type LiveUpdate = {
     content: string;
     type: 'text' | 'image' | 'breaking' | 'quote';
     timestamp: any;
+    editedAt?: any;
     authorId: string;
     authorName?: string;
 };
@@ -106,5 +107,16 @@ export function subscribeToLiveUpdates(firestore: Firestore, eventId: string, ca
     return onSnapshot(q, (snapshot) => {
         const updates = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as LiveUpdate));
         callback(updates);
+    });
+}
+
+/**
+ * Updates an existing Live Update.
+ */
+export async function updateLiveUpdate(firestore: Firestore, eventId: string, updateId: string, content: string) {
+    const updateRef = doc(firestore, `liveEvents/${eventId}/updates`, updateId);
+    return updateDoc(updateRef, {
+        content,
+        editedAt: serverTimestamp()
     });
 }

@@ -36,7 +36,7 @@ export default function LiveEventsManagement() {
         if (!firestore) return;
         setLoading(true);
         try {
-            const q = query(collection(firestore, 'liveEvents'), orderBy('startedAt', 'desc'));
+            const q = query(collection(firestore, 'liveEvents'), orderBy('startTime', 'desc'));
             const snap = await getDocs(q);
             setEvents(snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as LiveEvent)));
         } catch (error) {

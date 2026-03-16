@@ -16,13 +16,19 @@ export const metadata: Metadata = {
     title: 'Off The Record | The Chronicle',
     description: 'Exclusive behind-the-scenes content and unfiltered journalism.',
     siteName: 'The Chronicle',
-    images: [{ url: `${SITE_URL}/logo.png`, width: 1200, height: 630, alt: 'Off The Record' }],
+    images: [{ 
+      url: `${SITE_URL}/logo.png`, 
+      width: 1200, 
+      height: 630, 
+      alt: 'Off The Record | The Chronicle' 
+    }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Off The Record | The Chronicle',
-    description: 'Exclusive behind-the-scenes content.',
+    description: 'Exclusive behind-the-scenes content and unfiltered journalism.',
     images: [`${SITE_URL}/logo.png`],
+    site: '@TheChronicle',
   },
 };
 

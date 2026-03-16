@@ -2,8 +2,8 @@
 "use client";
 
 import { useState, Dispatch, SetStateAction } from 'react';
-import { motion } from 'framer-motion';
-import { Bookmark, Share2, Type, Volume2, Minimize2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Bookmark, Share2, Type, Volume2, Minimize2, Menu, Plus, Flag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser, useFirestore } from '@/firebase';
 import { addBookmark, removeBookmark } from '@/firebase/firestore/bookmarks';
@@ -11,6 +11,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useDoc } from '@/firebase/firestore/use-doc';
 import { doc } from 'firebase/firestore';
 import { useMemo } from 'react';
+import { ReactionBar } from './reaction-bar';
+import { ReportModal } from '../shared/ReportModal';
 
 type ActionRailProps = {
   isFocusMode: boolean;
@@ -105,41 +107,79 @@ export default function ActionRail({ isFocusMode, setFocusMode, articleId }: Act
     toast({ title: `Text size: ${nextIndex === 0 ? 'Normal' : nextIndex === 1 ? 'Large' : 'Extra Large'}` });
   };
 
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+
   const actions = [
     { icon: Bookmark, label: "Save", action: handleBookmarkToggle, active: isBookmarked, fillClass: isBookmarked ? 'fill-current' : 'fill-none' },
     { icon: Share2, label: "Share", action: handleShare },
     { icon: Type, label: "Text Size", action: handleTextSize },
     { icon: Volume2, label: "Listen", action: handleAudio },
-    { icon: Minimize2, label: "Focus", action: () => setFocusMode(!isFocusMode), active: isFocusMode }
+    { icon: Minimize2, label: "Focus", action: () => setFocusMode(!isFocusMode), active: isFocusMode },
+    { icon: Flag, label: "Report", action: () => setIsReportModalOpen(true) }
   ];
 
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: 1 }}
-      className={cn(
-        "hidden lg:flex fixed right-12 bottom-12 flex-col space-y-4 z-40 transition-opacity duration-500",
-        isFocusMode ? 'opacity-20 hover:opacity-100' : 'opacity-100'
-      )}
-    >
-      {actions.map((Item, idx) => (
-        <button
-          key={idx}
-          onClick={Item.action}
-          disabled={Item.label === 'Save' && isLoadingBookmark}
-          className={cn(`p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110 relative group`,
-            Item.active
-              ? 'bg-orange-900/50 text-orange-200 dark:bg-accent dark:text-accent-foreground'
-              : 'bg-white text-muted-foreground hover:text-foreground dark:bg-secondary dark:text-muted-foreground dark:hover:text-foreground'
-          )}
+    <div className="fixed right-6 bottom-6 lg:right-12 lg:bottom-12 z-40 flex flex-col items-end space-y-4">
+      {/* Report Modal */}
+      <ReportModal 
+        isOpen={isReportModalOpen} 
+        onClose={() => setIsReportModalOpen(false)} 
+        contentType="article" 
+        contentId={articleId} 
+        contentPreview={document.querySelector('h1')?.textContent || "Article 内容"} 
+      />
+      {/* Mobile Toggle Button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="lg:hidden p-4 rounded-full bg-primary text-primary-foreground shadow-2xl transition-all active:scale-95"
+      >
+        <motion.div
+          animate={{ rotate: isOpen ? 45 : 0 }}
+          transition={{ type: "spring", stiffness: 200, damping: 20 }}
         >
-          <Item.icon size={20} strokeWidth={1.5} className={Item.fillClass} />
-          <span className="absolute right-full mr-4 top-1/2 -translate-y-1/2 px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap bg-secondary text-secondary-foreground shadow-sm">
-            {Item.label}
-          </span>
-        </button>
-      ))}
-    </motion.div>
+          <Plus size={24} />
+        </motion.div>
+      </button>
+
+      <AnimatePresence>
+        {(isOpen || (typeof window !== 'undefined' && window.innerWidth >= 1024)) && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.8 }}
+            className={cn(
+              "flex flex-col space-y-4 items-center transition-opacity duration-500",
+              isFocusMode ? 'opacity-20 hover:opacity-100' : 'opacity-100'
+            )}
+          >
+            {actions.map((Item, idx) => (
+              <button
+                key={idx}
+                onClick={() => {
+                  Item.action();
+                  if (typeof window !== 'undefined' && window.innerWidth < 1024) setIsOpen(false);
+                }}
+                disabled={Item.label === 'Save' && isLoadingBookmark}
+                className={cn(`p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110 relative group`,
+                  Item.active
+                    ? 'bg-orange-900/50 text-orange-200 dark:bg-accent dark:text-accent-foreground'
+                    : 'bg-white text-muted-foreground hover:text-foreground dark:bg-secondary dark:text-muted-foreground dark:hover:text-foreground'
+                )}
+              >
+                <Item.icon size={20} strokeWidth={1.5} className={Item.fillClass} />
+                <span className="absolute right-full mr-4 top-1/2 -translate-y-1/2 px-2 py-1 text-xs rounded opacity-0 lg:group-hover:opacity-100 transition-opacity whitespace-nowrap bg-secondary text-secondary-foreground shadow-sm pointer-events-none">
+                  {Item.label}
+                </span>
+              </button>
+            ))}
+            <div className="bg-white dark:bg-secondary p-1 rounded-full shadow-2xl flex items-center justify-center border border-border/50">
+              <ReactionBar articleId={articleId} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }

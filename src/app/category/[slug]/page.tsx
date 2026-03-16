@@ -31,6 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: `${categoryName} News | The Chronicle`,
       description: `Latest ${categoryName.toLowerCase()} news and coverage.`,
       images: [`${SITE_URL}/logo.png`],
+      site: '@TheChronicle',
     },
   };
 }
@@ -41,6 +42,29 @@ export default async function CategoryPage({ params }: Props) {
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Home',
+                item: SITE_URL,
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: categoryName,
+                item: `${SITE_URL}/category/${slug}`,
+              },
+            ],
+          }),
+        }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

@@ -1,6 +1,6 @@
 import { Firestore, doc, runTransaction, getDoc, collection, query, orderBy, getDocs, serverTimestamp, increment, updateDoc } from 'firebase/firestore';
 
-export type ReactionType = 'like' | 'love' | 'insightful' | 'surprised' | 'angry';
+export type ReactionType = 'upvote' | 'love' | 'laugh' | 'shock' | 'angry';
 
 export interface Reaction {
     id?: string;
@@ -112,12 +112,12 @@ export async function getArticleReactions(firestore: Firestore, articleId: strin
     if (snap.exists()) {
         const reactions = snap.data().reactions || {};
         return {
-            like: reactions.like || 0,
+            upvote: reactions.upvote || 0,
             love: reactions.love || 0,
-            insightful: reactions.insightful || 0,
-            surprised: reactions.surprised || 0,
+            laugh: reactions.laugh || 0,
+            shock: reactions.shock || 0,
             angry: reactions.angry || 0,
         };
     }
-    return { like: 0, love: 0, insightful: 0, surprised: 0, angry: 0 };
+    return { upvote: 0, love: 0, laugh: 0, shock: 0, angry: 0 };
 }

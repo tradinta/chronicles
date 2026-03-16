@@ -1,15 +1,37 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Settings, Globe, Palette, Shield, AlertTriangle, Save, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Settings, Globe, Palette, Shield, AlertTriangle, Save, Loader2, CreditCard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { useFirestore } from '@/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+
+interface SiteSettingsData {
+    siteName: string;
+    tagline: string;
+    siteUrl: string;
+    contactEmail: string;
+    freeArticlesPerMonth: number;
+    enablePaywall: boolean;
+    enableComments: boolean;
+    enableReactions: boolean;
+    maintenanceMode: boolean;
+    accentColor: string;
+    pricing: {
+        explorer: number;
+        insider: number;
+        vip: number;
+    };
+}
 
 export default function SiteSettings() {
+    const firestore = useFirestore();
     const { toast } = useToast();
     const [saving, setSaving] = useState(false);
+    const [loading, setLoading] = useState(true);
 
-    const [settings, setSettings] = useState({
+    const [settings, setSettings] = useState<SiteSettingsData>({
         siteName: 'The Chronicle',
         tagline: 'Intelligent journalism for the modern era',
         siteUrl: 'https://thechronicle.news',
@@ -19,20 +41,60 @@ export default function SiteSettings() {
         enableComments: true,
         enableReactions: true,
         maintenanceMode: false,
-        accentColor: '#d97706'
+        accentColor: '#d97706',
+        pricing: {
+            explorer: 650,
+            insider: 1500,
+            vip: 3200
+        }
     });
 
+    useEffect(() => {
+        if (!firestore) return;
+        const loadSettings = async () => {
+            try {
+                const docRef = doc(firestore, 'settings', 'site');
+                const snap = await getDoc(docRef);
+                if (snap.exists()) {
+                    setSettings(prev => ({ ...prev, ...snap.data() }));
+                }
+            } catch (error) {
+                console.error('Failed to load settings:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadSettings();
+    }, [firestore]);
+
     const handleChange = (key: string, value: any) => {
-        setSettings(prev => ({ ...prev, [key]: value }));
+        setSettings((prev: SiteSettingsData) => ({ ...prev, [key]: value }));
+    };
+
+    const handlePricingChange = (key: string, value: number) => {
+        setSettings((prev: SiteSettingsData) => ({
+            ...prev,
+            pricing: { ...prev.pricing, [key]: value }
+        }));
     };
 
     const handleSave = async () => {
+        if (!firestore) return;
         setSaving(true);
-        // Simulate save - in production, save to Firestore 'siteConfig' doc
-        await new Promise(r => setTimeout(r, 1000));
-        toast({ title: 'Settings saved' });
-        setSaving(false);
+        try {
+            await setDoc(doc(firestore, 'settings', 'site'), settings);
+            toast({ title: 'Settings saved to Firestore' });
+        } catch (error) {
+            console.error('Failed to save settings:', error);
+            toast({ variant: 'destructive', title: 'Failed to save settings' });
+        } finally {
+            setSaving(false);
+        }
     };
+
+    if (loading) {
+        return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>;
+    }
 
     return (
         <div className="space-y-8 max-w-3xl">
@@ -113,37 +175,44 @@ export default function SiteSettings() {
                 <h3 className="text-lg font-bold flex items-center gap-2">
                     <Shield className="w-5 h-5" /> Features
                 </h3>
-                <div className="space-y-3">
-                    {[
-                        { key: 'enablePaywall', label: 'Enable Paywall', desc: 'Require subscription for full access' },
-                        { key: 'enableComments', label: 'Enable Comments', desc: 'Allow users to comment on articles' },
-                        { key: 'enableReactions', label: 'Enable Reactions', desc: 'Allow users to react to articles' },
-                    ].map(item => (
-                        <label key={item.key} className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg border border-border cursor-pointer hover:bg-secondary">
-                            <div>
-                                <p className="font-medium text-sm">{item.label}</p>
-                                <p className="text-xs text-muted-foreground">{item.desc}</p>
-                            </div>
-                            <input
-                                type="checkbox"
-                                checked={(settings as any)[item.key]}
-                                onChange={(e) => handleChange(item.key, e.target.checked)}
-                                className="w-5 h-5 accent-primary"
-                            />
-                        </label>
-                    ))}
+... (lines 116-146 removed for brevity)
+            </section>
+
+            {/* Subscription Pricing */}
+            <section className="space-y-4">
+                <h3 className="text-lg font-bold flex items-center gap-2">
+                    <CreditCard className="w-5 h-5" /> Subscription Pricing (KES)
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-secondary/30 rounded-lg border border-border">
                     <div>
-                        <label className="text-sm font-medium mb-1 block">Free Articles per Month</label>
+                        <label className="text-xs font-bold uppercase mb-1 block">Explorer</label>
                         <input
                             type="number"
-                            min={0}
-                            max={100}
-                            value={settings.freeArticlesPerMonth}
-                            onChange={(e) => handleChange('freeArticlesPerMonth', parseInt(e.target.value))}
-                            className="w-24 px-3 py-2 bg-secondary border border-border rounded-lg text-sm"
+                            value={settings.pricing.explorer}
+                            onChange={(e) => handlePricingChange('explorer', parseInt(e.target.value))}
+                            className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-xs font-bold uppercase mb-1 block">Insider</label>
+                        <input
+                            type="number"
+                            value={settings.pricing.insider}
+                            onChange={(e) => handlePricingChange('insider', parseInt(e.target.value))}
+                            className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-xs font-bold uppercase mb-1 block">VIP</label>
+                        <input
+                            type="number"
+                            value={settings.pricing.vip}
+                            onChange={(e) => handlePricingChange('vip', parseInt(e.target.value))}
+                            className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm"
                         />
                     </div>
                 </div>
+                <p className="text-[10px] text-muted-foreground italic">* Changes will reflect on the subscription page and Stripe checkout immediately.</p>
             </section>
 
             {/* Danger Zone */}

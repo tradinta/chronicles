@@ -4,14 +4,16 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFirestore } from '@/firebase';
 import { collection, query, orderBy, onSnapshot, limit } from 'firebase/firestore';
-import { Loader2, Camera, Quote, Video, Mic, Eye, Lock, Play, Pause } from 'lucide-react';
+import { Loader2, Camera, Quote, Video, Mic, Eye, Lock, Play, Pause, Flag } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
+import { ReportModal } from '@/components/shared/ReportModal';
 
 export default function OffTheRecordClient() {
     const firestore = useFirestore();
     const [posts, setPosts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [reportingPost, setReportingPost] = useState<any | null>(null);
 
     useEffect(() => {
         if (!firestore) return;
@@ -52,7 +54,7 @@ export default function OffTheRecordClient() {
                 ) : (
                     <div className="space-y-12">
                         {posts.map((post, index) => (
-                            <FeedItem key={post.id} post={post} index={index} />
+                            <FeedItem key={post.id} post={post} index={index} onReport={setReportingPost} />
                         ))}
                     </div>
                 )}
@@ -61,7 +63,7 @@ export default function OffTheRecordClient() {
     );
 }
 
-function FeedItem({ post, index }: { post: any, index: number }) {
+function FeedItem({ post, index, onReport }: { post: any, index: number, onReport: (post: any) => void }) {
     const [isRevealed, setIsRevealed] = useState(!post.isSensitive);
 
     return (
@@ -71,6 +73,15 @@ function FeedItem({ post, index }: { post: any, index: number }) {
             transition={{ delay: index * 0.1 }}
             className={`bg-background border border-border rounded-none md:rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow relative group ${post.isSensitive ? 'border-red-900/20' : ''}`}
         >
+            {/* Action Overlay */}
+            <div className="absolute top-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button 
+                    onClick={() => onReport(post)}
+                    className="p-2 rounded-full bg-black/50 backdrop-blur text-white hover:bg-red-600 transition-colors"
+                >
+                    <Flag size={14} />
+                </button>
+            </div>
             {post.isSensitive && !isRevealed && (
                 <div className="p-4 bg-red-50 dark:bg-red-900/10 border-b border-red-100 dark:border-red-900/20 flex justify-between items-center">
                     <div className="flex items-center gap-2 text-red-600 dark:text-red-400">

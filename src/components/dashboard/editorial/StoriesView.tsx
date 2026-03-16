@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useUser, useFirestore } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
-import { Plus, PenTool, ExternalLink, Calendar, Search, Filter } from 'lucide-react';
+import { Plus, PenTool, ExternalLink, Calendar, Search, Filter, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 

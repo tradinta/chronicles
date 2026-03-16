@@ -19,9 +19,11 @@ import CommentSection from './comment-section';
 
 type Props = {
     slug: string;
+    initialArticle?: DocumentData | null;
+    isRestricted?: boolean;
 };
 
-export default function ArticleClientPage({ slug }: Props) {
+export default function ArticleClientPage({ slug, initialArticle, isRestricted }: Props) {
     const router = useRouter();
     const articleId = slug;
     const firestore = useFirestore();
@@ -32,9 +34,9 @@ export default function ArticleClientPage({ slug }: Props) {
         restDelta: 0.001
     });
 
-    const [article, setArticle] = useState<DocumentData | null>(null);
+    const [article, setArticle] = useState<DocumentData | null>(initialArticle || null);
     const [author, setAuthor] = useState<DocumentData | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(!initialArticle);
 
     useEffect(() => {
         const fetchArticle = async () => {
@@ -86,7 +88,15 @@ export default function ArticleClientPage({ slug }: Props) {
         );
     }
 
-    const publishDate = article.publishDate?.toDate ? format(article.publishDate.toDate(), 'MMM dd, yyyy') : 'Date not available';
+    const getFormattedDate = (date: any) => {
+        if (!date) return 'Date not available';
+        if (typeof date === 'number') return format(new Date(date), 'MMM dd, yyyy');
+        if (date.toDate) return format(date.toDate(), 'MMM dd, yyyy');
+        if (date.seconds) return format(new Date(date.seconds * 1000), 'MMM dd, yyyy');
+        return 'Date not available';
+    };
+
+    const publishDate = getFormattedDate(article.publishDate);
     const readTime = article.content ? Math.ceil(article.content.split(/\s+/).length / 200) : 5;
 
     return (
@@ -101,7 +111,11 @@ export default function ArticleClientPage({ slug }: Props) {
                 className="fixed top-0 left-0 right-0 h-1 bg-primary transform origin-left z-50"
                 style={{ scaleX }}
             />
-            <ActionRail isFocusMode={isFocusMode} setFocusMode={setFocusMode} articleId={articleId} />
+            <ActionRail 
+                isFocusMode={isFocusMode} 
+                setFocusMode={setFocusMode} 
+                articleId={article.id} 
+            />
 
             <div className={`pt-24 px-6 md:px-12 max-w-4xl mx-auto transition-opacity duration-500 ${isFocusMode ? 'opacity-0' : 'opacity-100'}`}>
                 <nav className="flex items-center text-xs text-muted-foreground font-mono uppercase tracking-widest space-x-2">
@@ -166,7 +180,25 @@ export default function ArticleClientPage({ slug }: Props) {
                     )}
 
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
-                        <div className="prose prose-lg md:prose-xl dark:prose-invert font-serif prose-p:leading-[1.8] prose-h2:font-serif prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6 prose-headings:font-bold prose-a:text-primary prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-muted-foreground prose-figure:my-12 prose-img:rounded-xl" dangerouslySetInnerHTML={{ __html: article.content }} />
+                        <div className="prose prose-lg md:prose-xl dark:prose-invert font-serif prose-p:leading-[1.8] prose-h2:font-serif prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6 prose-headings:font-bold prose-a:text-primary prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-muted-foreground prose-figure:my-12 prose-img:rounded-xl relative" >
+                            <div dangerouslySetInnerHTML={{ __html: article.content }} />
+                            
+                            {isRestricted && (
+                                <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background to-transparent z-10 flex items-end justify-center pb-8">
+                                    <div className="bg-card border border-border p-8 rounded-2xl shadow-2xl max-w-lg w-full text-center backdrop-blur-sm">
+                                        <h3 className="text-2xl font-serif font-bold mb-3">Keep Reading with Premium</h3>
+                                        <p className="text-muted-foreground mb-6">This investigative report is exclusive to Chronicle subscribers. Support independent journalism and get unlimited access.</p>
+                                        <Link 
+                                            href="/subscribe" 
+                                            className="inline-block w-full py-4 bg-primary text-primary-foreground rounded-full font-bold hover:opacity-90 transition-all shadow-lg hover:shadow-primary/20"
+                                        >
+                                            Subscribe for $5/month
+                                        </Link>
+                                        <p className="mt-4 text-xs text-muted-foreground underline cursor-pointer">Already a subscriber? Sign In</p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </motion.div>
                 </div>
             </article>

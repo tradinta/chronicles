@@ -57,8 +57,5 @@ export default function ArticleFooter({ onViewChange, author }: ArticleFooterPro
       </div>
     </div>
   );
-}      </div >
-    </div >
-  );
 }
 

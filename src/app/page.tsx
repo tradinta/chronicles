@@ -71,17 +71,24 @@ export default function Home() {
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             '@context': 'https://schema.org',
-            '@type': 'WebSite',
+            '@type': 'NewsMediaOrganization',
             name: 'The Chronicle',
             url: SITE_URL,
+            logo: {
+              '@type': 'ImageObject',
+              url: `${SITE_URL}/logo.png`,
+              width: 600,
+              height: 60,
+            },
+            sameAs: [
+              'https://twitter.com/TheChronicle',
+              'https://facebook.com/TheChronicleNews',
+              'https://instagram.com/TheChronicle'
+            ],
             description: 'Intelligent journalism for the modern era.',
             publisher: {
               '@type': 'Organization',
-              name: 'The Chronicle',
-              logo: {
-                '@type': 'ImageObject',
-                url: `${SITE_URL}/logo.png`,
-              },
+              name: 'The Chronicle Media Group',
             },
             potentialAction: {
               '@type': 'SearchAction',

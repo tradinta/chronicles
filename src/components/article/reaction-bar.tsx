@@ -8,12 +8,12 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const REACTION_CONFIG: { type: ReactionType; icon: any; label: string; color: string }[] = [
-    { type: 'like', icon: Heart, label: 'Like', color: 'text-red-500' },
-    { type: 'love', icon: Sparkles, label: 'Love', color: 'text-pink-500' },
-    { type: 'insightful', icon: Lightbulb, label: 'Insightful', color: 'text-yellow-500' },
-    { type: 'surprised', icon: Zap, label: 'Surprised', color: 'text-blue-500' },
-    { type: 'angry', icon: Frown, label: 'Disagree', color: 'text-orange-600' },
+const REACTION_CONFIG: { type: ReactionType; emoji: string; label: string; color: string }[] = [
+    { type: 'upvote', emoji: '👍', label: 'Upvote', color: 'text-blue-500' },
+    { type: 'love', emoji: '❤️', label: 'Love', color: 'text-red-500' },
+    { type: 'laugh', emoji: '🤣', label: 'Laugh', color: 'text-yellow-500' },
+    { type: 'shock', emoji: '😲', label: 'Shock', color: 'text-purple-500' },
+    { type: 'angry', emoji: '😡', label: 'Angry', color: 'text-orange-600' },
 ];
 
 interface ReactionBarProps {
@@ -26,7 +26,7 @@ export function ReactionBar({ articleId }: ReactionBarProps) {
     const { toast } = useToast();
 
     const [userReaction, setUserReaction] = useState<ReactionType | null>(null);
-    const [counts, setCounts] = useState<Record<ReactionType, number>>({ like: 0, love: 0, insightful: 0, surprised: 0, angry: 0 });
+    const [counts, setCounts] = useState<Record<ReactionType, number>>({ upvote: 0, love: 0, laugh: 0, shock: 0, angry: 0 });
     const [isExpanded, setIsExpanded] = useState(false);
 
     const [isLoading, setIsLoading] = useState(false);
@@ -96,40 +96,50 @@ export function ReactionBar({ articleId }: ReactionBarProps) {
                 )}
             >
                 {userReaction ? (
-                    <span className={REACTION_CONFIG.find(r => r.type === userReaction)?.color}>
-                        {(() => {
-                            const Icon = REACTION_CONFIG.find(r => r.type === userReaction)?.icon || Heart;
-                            return <Icon size={18} fill="currentColor" />;
-                        })()}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                        <span className="text-xl">
+                            {REACTION_CONFIG.find(r => r.type === userReaction)?.emoji}
+                        </span>
+                        <span className="text-xs font-bold uppercase tracking-wider">
+                            {REACTION_CONFIG.find(r => r.type === userReaction)?.label}
+                        </span>
+                    </div>
                 ) : (
-                    <Heart size={18} className="text-muted-foreground" />
+                    <div className="flex items-center gap-2">
+                        <Heart size={18} className="text-muted-foreground group-hover:text-red-500 transition-colors" />
+                        <span className="text-xs font-bold uppercase tracking-wider">React</span>
+                    </div>
                 )}
-                <span className="text-sm font-medium">{totalReactions > 0 ? totalReactions : 'React'}</span>
+                {totalReactions > 0 && (
+                    <div className="ml-1 px-1.5 py-0.5 rounded-full bg-secondary text-[10px] font-black">
+                        {totalReactions}
+                    </div>
+                )}
             </button>
 
             <AnimatePresence>
-                {isExpanded && !isLoading && (
+                {isExpanded && (
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9, y: 10 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                        className="absolute bottom-full left-0 mb-2 flex gap-1 p-1 bg-background border border-border rounded-full shadow-lg"
+                        className="absolute bottom-full right-0 mb-4 p-2 bg-card border border-border rounded-2xl shadow-2xl flex items-center gap-1 z-50 min-w-max"
                         onMouseEnter={() => setIsExpanded(true)}
                         onMouseLeave={() => setIsExpanded(false)}
                     >
-                        {REACTION_CONFIG.map(({ type, icon: Icon, label, color }) => (
+                        {REACTION_CONFIG.map(({ type, emoji, label, color }) => (
                             <button
                                 key={type}
                                 onClick={() => handleReaction(type)}
                                 disabled={isLoading}
                                 className={cn(
-                                    "p-2 rounded-full transition-all hover:scale-125",
-                                    userReaction === type ? `${color} bg-secondary` : "text-muted-foreground hover:text-foreground"
+                                    "px-2 py-1.5 rounded-xl transition-all hover:scale-110 flex flex-col items-center min-w-[50px]",
+                                    userReaction === type ? "bg-secondary scale-105" : "hover:bg-muted"
                                 )}
                                 title={label}
                             >
-                                <Icon size={20} fill={userReaction === type ? "currentColor" : "none"} />
+                                <span className="text-xl">{emoji}</span>
+                                <span className="text-[9px] font-bold mt-0.5">{counts[type]}</span>
                             </button>
                         ))}
                     </motion.div>
