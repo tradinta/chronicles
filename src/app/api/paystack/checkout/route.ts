@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getFirebaseServer } from '@/lib/firebase-server';
 import { doc, getDoc } from 'firebase/firestore';
 
-const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
-
 const DEFAULT_PLAN_PRICES: Record<string, number> = {
     'explorer': 650,
     'insider': 1500,
@@ -11,8 +9,11 @@ const DEFAULT_PLAN_PRICES: Record<string, number> = {
 };
 
 export async function POST(request: NextRequest) {
+    const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+    
     if (!PAYSTACK_SECRET_KEY) {
-        return NextResponse.json({ error: 'Paystack is not configured' }, { status: 500 });
+        console.error('CRITICAL: PAYSTACK_SECRET_KEY is not defined in environment variables.');
+        return NextResponse.json({ error: 'Paystack is not configured on the server. Please check environment variables.' }, { status: 500 });
     }
 
     const { firestore } = getFirebaseServer();

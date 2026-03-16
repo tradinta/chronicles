@@ -118,8 +118,8 @@ export default async function Page({ params }: Props) {
     ...article,
     publishDate: article.publishDate?.toDate ? article.publishDate.toDate().getTime() : null,
     content: isRestricted 
-      ? (article.content.substring(0, 800) + "... [PROTECTED CONTENT]") 
-      : article.content
+      ? ((article.content || "").substring(0, 800) + "... [PROTECTED CONTENT]") 
+      : (article.content || "")
   };
 
   const jsonLd = {

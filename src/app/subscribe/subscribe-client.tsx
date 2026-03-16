@@ -8,8 +8,9 @@ import {
     Sparkles, ShieldCheck, ChevronDown, CreditCard,
     Lock, Zap, EyeOff, RefreshCw, Shield, Quote, Loader2
 } from 'lucide-react';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { doc, getDoc } from 'firebase/firestore';
 
 // Reusable FAQ Accordion Item
 const FAQItem = ({ question, answer }: { question: string; answer: string }) => {
@@ -184,7 +185,31 @@ export default function SubscribePageClient() {
     const [billingCycle, setBillingCycle] = useState('monthly');
     const [isCheckingOut, setIsCheckingOut] = useState<string | null>(null);
     const { user } = useUser();
+    const firestore = useFirestore();
     const { toast } = useToast();
+    const [pricing, setPricing] = useState({
+        explorer: 650,
+        insider: 1500,
+        vip: 3200
+    });
+    const [isPricingLoading, setIsPricingLoading] = useState(true);
+
+    useEffect(() => {
+        if (!firestore) return;
+        const loadPricing = async () => {
+            try {
+                const snap = await getDoc(doc(firestore, 'settings', 'site'));
+                if (snap.exists() && snap.data().pricing) {
+                    setPricing(snap.data().pricing);
+                }
+            } catch (error) {
+                console.error('Failed to load pricing:', error);
+            } finally {
+                setIsPricingLoading(false);
+            }
+        };
+        loadPricing();
+    }, [firestore]);
 
     const handleCheckout = async (planType: string) => {
         if (!user) {
@@ -209,11 +234,19 @@ export default function SubscribePageClient() {
             if (data.authorization_url) {
                 window.location.href = data.authorization_url;
             } else {
-                throw new Error(data.error || 'Failed to create checkout session');
+                const errorMsg = data.error || 'Failed to create checkout session';
+                throw new Error(errorMsg);
             }
         } catch (error: any) {
             console.error('Checkout error:', error);
-            toast({ variant: 'destructive', title: 'Checkout Error', description: error.message });
+            const isConfigError = error.message?.toLowerCase().includes('configured');
+            toast({ 
+                variant: 'destructive', 
+                title: 'Checkout Error', 
+                description: isConfigError 
+                    ? `${error.message}. If you are the administrator, try restarting the development server.`
+                    : error.message 
+            });
         } finally {
             setIsCheckingOut(null);
         }
@@ -229,10 +262,18 @@ export default function SubscribePageClient() {
         }
     }, []);
 
+    const calculateAnnual = (monthly: number) => {
+        return Math.round(monthly * 12 * 0.85);
+    };
+
+    const formatPrice = (amount: number) => {
+        return new Intl.NumberFormat('en-KE').format(amount);
+    };
+
     const prices = {
-        explorer: billingCycle === 'monthly' ? "650" : "550",
-        insider: billingCycle === 'monthly' ? "1,500" : "1,275",
-        vip: billingCycle === 'monthly' ? "3,200" : "2,720"
+        explorer: billingCycle === 'monthly' ? formatPrice(pricing.explorer) : formatPrice(calculateAnnual(pricing.explorer) / 12),
+        insider: billingCycle === 'monthly' ? formatPrice(pricing.insider) : formatPrice(calculateAnnual(pricing.insider) / 12),
+        vip: billingCycle === 'monthly' ? formatPrice(pricing.vip) : formatPrice(calculateAnnual(pricing.vip) / 12)
     };
 
     const period = billingCycle === 'monthly' ? "mo" : "mo*";
